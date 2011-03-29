@@ -57,7 +57,7 @@
 		this.remaining_timeline_outpoints = [];
 
 		//Timeline functions
-		this.bind('play seek', function() {
+		this.bind('media-play media-seek', function() {
 			this.executeTimeline();
 		});
 		this.seeking(function(event, ms) {
@@ -70,35 +70,47 @@
 			this.fragment((source.substring(source.lastIndexOf('#') + 1)).toLowerCase());	
 		});
 
-		//seek and volume events
+		//Events
 		var that = this;
+
+		//Seek events
 		var seek_timeout;
-		var volume_timeout;
-
 		var execute_seek = function () {
-			that.trigger('seek', [that.time()]);
+			that.trigger('media-seek', [that.time()]);
 		}
-		var execute_volume = function () {
-			that.trigger('volume', [that.volume()]);
-		}
-
-		this.bind('seeked', function () {
+		this.bind('seeked seeking', function () {
 			clearTimeout(seek_timeout);
 			seek_timeout = setTimeout(execute_seek, 500);
+			this.trigger('media-seeking', [this.time()]);
 		});
 
+		//Volume events
+		var volume_timeout;
+		var execute_volume = function () {
+			that.trigger('media-volume', [that.volume()]);
+		}
 		this.bind('volumechange', function () {
 			clearTimeout(volume_timeout);
 			volume_timeout = setTimeout(execute_volume, 500);
+			this.trigger('media-changingVolume', [this.volume()])
 		});
 
-		//Fix renamed events (end, seek, volume)
+		//Other events
 		this.bind('ended', function () {
-			this.trigger('end');
+			this.trigger('media-end', [this.time()]);
+		});
+		this.bind('pause', function () {
+			this.trigger('media-pause', [this.time()]);
+		});
+		this.bind('waiting', function () {
+			this.trigger('media-waiting', [this.time()]);
+		});
+		this.bind('play', function () {
+			this.trigger('media-play', [this.time()]);
 		});
 		this.bind('timeupdate', function () {
 			if (!this.media.paused) {
-				this.trigger('playing', [this.time()]);
+				this.trigger('media-playing', [this.time()]);
 			}
 		});
 	}
@@ -373,7 +385,7 @@
 	 */
 	$media.prototype.play = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('play', fn, one);
+			this.bind('media-play', this, one);
 		} else {
 			this.media.play();
 		}
@@ -390,7 +402,7 @@
 	 */
 	$media.prototype.playing = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('playing', fn, one);
+			this.bind('media-playing', fn, one);
 
 			return this;
 		}
@@ -407,9 +419,8 @@
 	 */
 	$media.prototype.waiting = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('waiting', function (event) {
-				$.proxy(fn, this)(event, this.time());
-			}, one);
+			this.bind('media-waiting', fn, one);
+
 			return this;
 		}
 
@@ -425,7 +436,7 @@
 	 */
 	$media.prototype.pause = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('pause', fn, one);
+			this.bind('media-pause', fn, one);
 		} else {
 			this.media.pause();
 		}
@@ -442,7 +453,7 @@
 	 */
 	$media.prototype.playPause = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('playPause', fn, one);
+			this.bind('media-playPause', fn, one);
 		} else {
 			if (this.media.paused) {
 				this.play();
@@ -450,7 +461,7 @@
 				this.pause();
 			}
 
-			this.trigger('playPause');
+			this.trigger('media-playPause', [this.time(), this.media.paused]);
 		}
 
 		return this;
@@ -465,12 +476,11 @@
 	 */
 	$media.prototype.stop = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('stop', fn, one);
+			this.bind('media-stop', fn, one);
 		} else {
-			this.pause();
-			this.seek(0);
+			this.pause().seek(0);
 
-			this.trigger('stop');
+			this.trigger('media-stop', [this.time()]);
 		}
 
 		return this;
@@ -485,9 +495,9 @@
 	 */
 	$media.prototype.end = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('end', fn, one);
+			this.bind('media-end', fn, one);
 		} else {
-			this.seek(this.media.duration);
+			this.pause().seek(this.media.duration);
 		}
 
 		return this;
@@ -496,13 +506,13 @@
 
 	/**
 	 * function seek (fn, [one])
-	 * function seek (time, [callback])
+	 * function seek (time)
 	 *
 	 * Seek for specific point of media or bind a function to seek event
 	 */
 	$media.prototype.seek = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('seek', fn, one);
+			this.bind('media-seek', fn, one);
 		} else {
 			var time = this.time(fn);
 			this.media.currentTime = (time/1000);
@@ -519,9 +529,7 @@
 	 */
 	$media.prototype.seeking = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('seeking', function (event) {
-				$.proxy(fn, this)(event, this.time());
-			}, one);
+			this.bind('media-seeking', fn, one);
 
 			return this;
 		}
@@ -543,9 +551,7 @@
 		}
 
 		if ($.isFunction(fn)) {
-			this.bind('volume', function (event) {
-				$.proxy(fn, this)(event, Math.round(this.media.volume * 100));
-			}, one);
+			this.bind('media-volume', fn, one);
 		} else {
 			this.media.volume = parseInt(fn)/100;
 		}
@@ -561,11 +567,7 @@
 	 */
 	$media.prototype.changingVolume = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('volumechange', function (event) {
-				$.proxy(fn, this)(event, Math.round(this.media.volume * 100));
-			}, one);
-		} else {
-			this.media.volume = parseInt(fn)/100;
+			this.bind('media-changingVolume', fn, one);
 		}
 
 		return this;
@@ -581,15 +583,15 @@
 	 */
 	$media.prototype.mute = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('mute', function (event) {
-				$.proxy(fn, this)(event, this.media.muted);
-			}, one);
-		} else if (typeof fn == 'boolean') {
-			this.media.muted = fn;
-			this.trigger('mute', fn);
+			this.bind('media-mute', fn, one);
 		} else {
-			this.media.muted = this.media.muted ? false : true;
-			this.trigger('mute', [this.media.muted]);
+			if (typeof fn == 'boolean') {
+				this.media.muted = fn;
+			} else {
+				this.media.muted = this.media.muted ? false : true;
+			}
+
+			this.trigger('media-mute', [this.media.muted]);
 		}
 
 		return this;
@@ -866,7 +868,7 @@
 		//Execute functions
 		var ms = this.time();
 
-		while (this.remaining_timeline_points[0] && this.remaining_timeline_points[0].ms[0] < ms) {
+		while (this.remaining_timeline_points[0] && this.remaining_timeline_points[0].ms[0] <= ms) {
 			var point = this.remaining_timeline_points.shift();
 
 			if (!point.waiting) {

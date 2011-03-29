@@ -16,20 +16,31 @@
 			
 			$(document).ready(function () {
 
-				//Load video, add tracks and get the plugin
-				video = $.media('video').addPlugin('tracks').volume(10).play();
+				//Set video
+				video = $.media('video')
+
+				//Add tracks plugin with config
+				video.addPlugin('tracks', {
+					subtitles: {
+						target: $('#subtitles')
+					},
+					chapters: {
+						start: function (chapter) {
+							$('#current_chapter').append('<p id="chapter_' + chapter.num + '">' + chapter.content + '</p>');
+						},
+						end: function (chapter) {
+							$('#chapter_' + chapter.num).remove();
+						}
+					}
+				});
+
+				tracks = video.plugins.tracks;
 
 				//Swich between films
 				$('button.films').click(function () {
 					video.sources($(this).val());
 				});
 
-				tracks = video.plugins.tracks;
-
-				//Set the settings for subtitles
-				tracks.settingsFor('subtitles', {
-					target: $('#subtitles')
-				});
 
 				//Load and unload the subtitles
 				$('#change_subtitles input:checkbox').change(function () {
@@ -41,28 +52,21 @@
 				});
 
 
-				//Set the settings for chapters (start and end function)
-				tracks.settingsFor('chapters', {
-					start: function (chapter) {
-						$('#current_chapter').append('<p id="chapter_' + chapter.num + '">' + chapter.content + '</p>');
-					},
-					end: function (chapter) {
-						$('#chapter_' + chapter.num).remove();
-					}
+				//Set the settings for specific subtitle
+				tracks.settingsFor('#sub-en', {
+					target: '#subtitulos-ingles'
 				});
 
-				//Load a chapter
-				tracks.load('#chap-gl');
-
-				//Get list of chapters and execute a function with data
-				tracks.dataOf('#chap-gl', function (chapters, element) {
+				//Load a chapter and execute a function with data
+				tracks.load('#chap-gl', function (chapters) {
 					var $chapters = $('#chapters');
-					
+
 					$.each(chapters, function (index, chapter) {
 						$chapters.append('<p data-id-chapter="' + chapter.id + '">' + chapter.content + '</p>');
 					});
 				});
-				
+
+
 				//Navigation chapters:
 
 				//Go to specific chapter (using a string with the id)
@@ -121,6 +125,7 @@
 				<track id="chap-gl" kind="chapters" src="concerto.srt" srclang="gl" label="Track info">
 			</video>
 			<div id="subtitles"></div>
+			<strong id="subtitulos-ingles"></strong>
 		</div>
 		<div style="overflow: hidden;">
 			<div id="navigation"><button id="prev-chapter">Previous chapter</button> <button id="curr-chapter">Current chapter</button> <button id="next-chapter">Next chapter</button></div>

@@ -35,29 +35,49 @@
 		 * Get/Set the settings for a kind of track
 		 */
 		settingsFor: function (type, settings) {
-			if (settings == undefined) {
-				return this.settings[type];
+			if (typeof type == 'string' && this.settings[type]) {
+				if (settings == undefined) {
+					return this.settings[type];
+				}
+
+				$.extend(this.settings[type], settings);
 			}
 
-			if (!this.settings[type]) {
+			type = $(type).eq(0);
+			
+			if (!type.length) {
 				return false;
 			}
 
-			$.extend(this.settings[type], settings);
+			if (typeof settings != 'object') {
+				return type.data('settings');
+			}
+
+			var current_settings = type.data('settings');
+
+			if (!current_settings) {
+				current_settings = {};
+			}
+
+			type.data('settings', $.extend(current_settings, settings));
 		},
 
 
 		/**
-		 * function load (elements, [callback])
+		 * function load (elements, [callback], [settings])
 		 *
-		 * Load a track in the video
+		 * Load a track from the video
 		 */
-		load: function (elements, callback) {
+		load: function (elements, callback, settings) {
 			var that = this;
 
 			$(elements).each(function () {
 				that.dataOf(this, function (data, $element) {
-					this.setTrack($element, callback);
+					this.setTrack($element, settings);
+
+					if ($.isFunction(callback)) {
+						$.proxy(callback, that)(data, $element);
+					}
 				});
 			});
 		},
@@ -73,6 +93,10 @@
 
 			$(elements).each(function () {
 				that.unsetTrack($(this), callback);
+
+				if ($.isFunction(callback)) {
+					$.proxy(callback, that)($(this));
+				}
 			});
 		},
 
@@ -108,39 +132,43 @@
 
 
 		/**
-		 * function setTrack ($element, [callback])
+		 * function setTrack ($element, settings)
 		 *
 		 * Set a track element
 		 */
-		setTrack: function ($element, callback) {
+		setTrack: function ($element, settings) {
 			var channel = $element.data('channel_name');
 
 			if (this.media.enabledChannel(channel)) {
 				return false;
 			}
 
+			var current_settings = $element.data('settings');
+
+			if (!current_settings) {
+				current_settings = {};
+			}
+
 			switch ($element.attr('kind')) {
 				case 'subtitles':
+					this.settingsFor($element, $.extend({}, this.settings.subtitles, current_settings, settings));
 					this.setSubtitles($element);
 					break;
 
 				case 'chapters':
+					this.settingsFor($element, $.extend({}, this.settings.chapters, current_settings, settings));
 					this.setChapters($element);
 					break;
-			}
-
-			if ($.isFunction(callback)) {
-				$.proxy(callback, this)($element);
 			}
 		},
 
 
 		/**
-		 * function unsetTrack ($element, [callback])
+		 * function unsetTrack ($element)
 		 *
 		 * Set a track element
 		 */
-		unsetTrack: function ($element, callback) {
+		unsetTrack: function ($element) {
 			var channel = $element.data('channel_name');
 
 			if (!this.media.enabledChannel(channel)) {
@@ -152,10 +180,6 @@
 				case 'chapters':
 					this.media.enableChannel(channel, false);
 					break;
-			}
-
-			if ($.isFunction(callback)) {
-				$.proxy(callback, this)($element);
 			}
 		},
 
@@ -177,6 +201,7 @@
 
 			var that = this;
 			var data = $element.data('parsed_data');
+			var settings = $element.data('settings');
 			var timeline = [];
 
 			$.each(data, function (index, point) {
@@ -185,7 +210,7 @@
 				timeline.push({
 					time: [point.start, point.end],
 					channel: channel,
-					data: [that.settings.subtitles.target, channel, point],
+					data: [settings.target, channel, point],
 					fn: that.showSubtitle,
 					fn_out: that.hideSubtitle,
 					proxy: that.video
@@ -221,6 +246,7 @@
 
 			var that = this;
 			var data = $element.data('parsed_data');
+			var settings = $element.data('settings');
 			var timeline = [];
 
 			$.each(data, function (index, point) {
@@ -229,7 +255,7 @@
 				timeline.push({
 					time: [point.start, point.end],
 					channel: channel,
-					data: [channel, point],
+					data: [channel, point, settings],
 					fn: that.startChapter,
 					fn_out: that.endChapter,
 					proxy: that
@@ -239,26 +265,28 @@
 			that.media.createChannel(channel, true);
 			that.media.timeline(timeline);
 		},
-		startChapter: function (ms, channel, point) {
+		startChapter: function (ms, channel, point, settings) {
 			if (!this.current_chapters[channel]) {
 				this.current_chapters[channel] = {};
 			}
 
 			this.current_chapters[channel][point.num] = point;
 
-			if ($.isFunction(this.settings.chapters.start)) {
-				$.proxy(this.settings.chapters.start, this)(point);
+			if (settings && $.isFunction(settings.start)) {
+				$.proxy(settings.start, this)(point);
 			};
 		},
-		endChapter: function (ms, channel, point) {
+		endChapter: function (ms, channel, point, settings) {
 			if (this.current_chapters[channel]) {
 				delete this.current_chapters[channel][point.num];
 			}
 
-			if ($.isFunction(this.settings.chapters.end)) {
-				$.proxy(this.settings.chapters.end, this)(point);
+			if (settings && $.isFunction(settings.end)) {
+				$.proxy(settings.end, this)(point);
 			};
 		},
+
+
 		seekTo: function (element, position) {
 			var $element = $(element);
 			var channel = $element.data('channel_name');
@@ -287,7 +315,7 @@
 				position = 0;
 			} else if (position < 0) {
 				reverse = true;
-				position *= -1;
+				position = (position * -1) -1;
 			}
 
 			var point = this.media.getPoints(ms, reverse, channel, position, 1)[0];
