@@ -390,7 +390,7 @@
 	 */
 	$media.prototype.playing = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('timeupdate', fn, one);
+			this.bind('playing', fn, one);
 
 			return this;
 		}
@@ -1004,10 +1004,18 @@
 	$media.prototype.milisecondsTo = function (time, outputFormat) {
 		switch (outputFormat) {
 			case 'ss':
+				if (typeof time != 'number') {
+					return 0;
+				}
+
 				return parseFloat(time / 1000);
 
 			case 'hh:mm:ss':
 			case 'hh:mm:ss.ms':
+				if (typeof time != 'number') {
+					return '0:00:00';
+				}
+
 				var hh = Math.floor(time / 3600000);
 				time = time - (hh * 3600000);
 

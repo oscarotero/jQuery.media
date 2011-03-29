@@ -86,6 +86,10 @@
 				$('#next-chapter').click(function () {
 					tracks.seekTo('#chap-gl', 1);
 				});
+				
+				video.playing(function (event, ms) {
+					$('#time').html(this.milisecondsTo(ms, 'hh:mm:ss') + ' / ' + this.milisecondsTo(this.totalTime(), 'hh:mm:ss'));
+				});
 			});
 		</script>
 	</head>
@@ -106,6 +110,7 @@
 				</fieldset>
 			</form>
 
+			<div id="time"></div>
 			<video width="500" controls>
 				<track id="sub-de" kind="subtitles" src="de.srt" srclang="de" label="Deusche">
 				<track id="sub-en" kind="subtitles" src="en.srt" srclang="en" label="English">
