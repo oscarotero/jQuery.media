@@ -1049,19 +1049,40 @@
 		if (!$.isFunction(fn)) {
 			return this.toMiliseconds(this.media.duration, 'ss');
 		}
-
-		if (this.media.readyState) {
+		
+		return this.ready(1, function () {
 			$.proxy(fn, this)(this.toMiliseconds(this.media.duration, 'ss'));
+		});
+	}
+
+
+	/**
+	 * function ready ([state], fn)
+	 *
+	 * Return if the video is ready to play
+	 */
+	$media.prototype.ready = function (state, fn) {
+		if (typeof state != 'number') {
+			fn = state;
+			state = 3;
+		}
+
+		if (!$.isFunction(fn)) {
+			return (this.media.readyState < state) ? false : true;
+		}
+
+		if (this.media.readyState >= state) {
+			$.proxy(fn, this)();
 		} else {
 			var that = this;
-			var ready_duration = function () {
-				if (that.media.readyState) {
-					clearInterval(interval_ready_duration);
-					$.proxy(fn, that)(that.toMiliseconds(that.media.duration, 'ss'));
+			var ready = function () {
+				if (that.media.readyState >= state) {
+					clearInterval(interval_ready);
+					$.proxy(fn, that)();
 				}
 			}
 
-			var interval_ready_duration = setInterval($.proxy(ready_duration, that), 13);
+			var interval_ready = setInterval($.proxy(ready, that), 13);
 		}
 
 		return this;

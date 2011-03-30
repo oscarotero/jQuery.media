@@ -39,6 +39,10 @@
 				//Swich between films
 				$('button.films').click(function () {
 					video.sources($(this).val());
+					console.log(video.totalTime());
+					video.totalTime(function (total) {
+						console.log(total);
+					});
 				});
 
 
@@ -93,6 +97,101 @@
 				
 				video.playing(function (event, ms) {
 					$('#time').html(this.milisecondsTo(ms, 'hh:mm:ss') + ' / ' + this.milisecondsTo(this.totalTime(), 'hh:mm:ss'));
+				});
+				
+				/*
+				video.bind('loadstart', function () {
+					console.log('Browser starts loading data');
+				});
+				
+				video.bind('progress', function () {
+					console.log('Browser loads data');
+				});
+				
+				video.bind('suspend', function () {
+					console.log('Browser does not load data, waiting');
+				});
+				
+				video.bind('abort', function () {
+					console.log('Data loading was aborted');
+				});
+				
+				video.bind('error', function () {
+					console.log('An error ocurred');
+				});
+				
+				video.bind('emptied', function () {
+					console.log('Data not present unexpectedly');
+				});
+				
+				video.bind('stalled', function () {
+					console.log('Data transfer stalled');
+				});
+				
+				video.bind('play', function () {
+					console.log('Video started playing');
+				});
+				
+				video.bind('pause', function () {
+					console.log('Video has paused');
+				});
+				
+				video.bind('loadedmetadata', function () {
+					console.log('Metadata loaded');
+				});
+				
+				video.bind('loadeddata', function () {
+					console.log('Data loaded');
+				});
+				
+				video.bind('waiting', function () {
+					console.log('Waiting for more data');
+				});
+				
+				video.bind('playing', function () {
+					console.log('Blayback started');
+				});
+				
+				video.bind('canplay', function () {
+					console.log('Video can be played, but possibly must stop to buffer content');
+				});
+				
+				video.bind('canplaythrough', function () {
+					console.log('Enough data to play the whole video');
+				});
+				
+				video.bind('seeking', function () {
+					console.log('Seeking is true');
+				});
+				
+				video.bind('seeked', function () {
+					console.log('Seeking is now false');
+				});
+				
+				video.bind('timeupdate', function () {
+					console.log('currentTime was changed');
+				});
+				
+				video.bind('ended', function () {
+					console.log('Video has ended');
+				});
+				
+				video.bind('ratechange', function () {
+					console.log('Playback rate has changed');
+				});
+				
+				video.bind('durationchange', function () {
+					console.log('Duration has changed (for streams)');
+				});
+
+				video.bind('volumechange', function () {
+					console.log('Volume has changed');
+				});
+				*/
+				video.seek(function () {
+					this.ready(4, function () {
+						console.log('ola');
+					});
 				});
 			});
 		</script>
