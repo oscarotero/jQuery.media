@@ -9,38 +9,81 @@
 
 
 (function($) {
+
+	//Parse WebSRT
+	var parseWebSRT = function (text) {
+		var pieces = $.trim(text).replace(/\r/gm, "").split("\n\n");
+		var parse = [];
+		var num = 0;
+
+		$.each(pieces, function (index, piece) {
+			var lines = piece.split("\n");
+			var id = '';
+
+			if (lines[0].indexOf(' --> ') == -1) {
+				id = $.trim(lines.shift());
+			}
+
+			var time = /^([0-9:\.,]+) --> ([0-9:\.,]+) ?(.*)?$/g.exec($.trim(lines.shift()));
+			var settings = $.trim(time[3]);
+
+			if (settings) {
+				var settings_array = settings.split(' ');
+				settings = {};
+
+				for (s in settings_array) {
+					var s = settings_array[s].split(':', 2);
+
+					s[0] = $.trim(s[0]);
+					settings[s[0]] = $.trim(s[1]);
+				}
+			}
+
+			parse.push({
+				num: num++,
+				id: id,
+				start: time[1],
+				end: time[2],
+				settings: settings,
+				content: lines.join('<br>')
+			});
+		});
+
+		return parse;
+	};
+
 	$media.plugins.tracks = function (media, settings) {
 		this.media = media;
-		this.settings = {subtitles: {}, chapters: {}};
+		this.default_settings = {subtitles: {}, chapters: {}};
 		this.tracks = {subtitles: {}, chapters: {}};
 
 		this.chapters = {};
 		this.current_chapters = {};
 
 		var that = this;
-		
+
 		//Settings
 		if (settings) {
 			$.each(settings, function (type, setting) {
-				that.settingsFor(type, setting);
+				that.settings(type, setting);
 			});
 		}
 	}
 
 	$media.plugins.tracks.prototype = {
-		
+
 		/**
-		 * function settingsFor (type, [settings])
+		 * function settings (type, [settings])
 		 *
 		 * Get/Set the settings for a kind of track
 		 */
-		settingsFor: function (type, settings) {
-			if (typeof type == 'string' && this.settings[type]) {
+		settings: function (type, settings) {
+			if (typeof type == 'string' && this.default_settings[type]) {
 				if (settings == undefined) {
-					return this.settings[type];
+					return this.default_settings[type];
 				}
 
-				$.extend(this.settings[type], settings);
+				$.extend(this.default_settings[type], settings);
 			}
 
 			type = $(type).eq(0);
@@ -72,7 +115,7 @@
 			var that = this;
 
 			$(elements).each(function () {
-				that.dataOf(this, function (data, $element) {
+				that.data(this, function (data, $element) {
 					this.setTrack($element, settings);
 
 					if ($.isFunction(callback)) {
@@ -102,11 +145,11 @@
 
 
 		/**
-		 * function dataOf (element, callback)
+		 * function data (element, callback)
 		 *
 		 * Get the data of points of a track element
 		 */
-		dataOf: function (element, callback) {
+		data: function (element, callback) {
 			var $element = $(element).eq(0);
 
 			if (!$element.length || !$element.is('track')) {
@@ -123,7 +166,9 @@
 					$element.data('channel_name', $element.attr('kind') + date.getTime());
 				}
 
-				this.media.loadWebSRT($element.attr('src'), function (parsed) {
+				$.get($element.attr('src'), function (text) {
+					var parsed = parseWebSRT(text);
+
 					$element.data('parsed_data', parsed);
 					$.proxy(callback, that)(parsed, $element);
 				});
@@ -151,12 +196,12 @@
 
 			switch ($element.attr('kind')) {
 				case 'subtitles':
-					this.settingsFor($element, $.extend({}, this.settings.subtitles, current_settings, settings));
+					this.settings($element, $.extend({}, this.default_settings.subtitles, current_settings, settings));
 					this.setSubtitles($element);
 					break;
 
 				case 'chapters':
-					this.settingsFor($element, $.extend({}, this.settings.chapters, current_settings, settings));
+					this.settings($element, $.extend({}, this.default_settings.chapters, current_settings, settings));
 					this.setChapters($element);
 					break;
 			}
@@ -287,7 +332,7 @@
 		},
 
 
-		seekTo: function (element, position) {
+		seek: function (element, position) {
 			var $element = $(element);
 			var channel = $element.data('channel_name');
 			var type = $element.attr('kind');

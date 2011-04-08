@@ -5,15 +5,13 @@
 		<meta charset="utf-8" />
 		<title>HTML5 Video Player</title>
 
-		<script src="jquery-1.5.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="jquery-1.5.2.min.js" type="text/javascript" charset="utf-8"></script>
 		<script src="jquery.media.js" type="text/javascript" charset="utf-8"></script>
-		<script src="jquery.media.websrt.js" type="text/javascript" charset="utf-8"></script>
 		<script src="jquery.media.tracks.js" type="text/javascript" charset="utf-8"></script>
 
 		<script type="text/javascript">
 			var video;
-			var tracks;
-			
+
 			$(document).ready(function () {
 
 				//Set video
@@ -34,35 +32,33 @@
 					}
 				});
 
-				tracks = video.plugins.tracks;
 
 				//Swich between films
 				$('button.films').click(function () {
 					video.sources($(this).val());
-					console.log(video.totalTime());
-					video.totalTime(function (total) {
-						console.log(total);
-					});
+					
+					video.attr('poster', 'http://www.whatwg.org/images/logo');
 				});
 
 
 				//Load and unload the subtitles
 				$('#change_subtitles input:checkbox').change(function () {
 					if ($(this).is(':checked')) {
-						tracks.load('#' + $(this).val());
+						video.tracks.load('#' + $(this).val());
 					} else {
-						tracks.unload('#' + $(this).val());
+						video.tracks.unload('#' + $(this).val());
 					}
 				});
 
 
 				//Set the settings for specific subtitle
-				tracks.settingsFor('#sub-en', {
+				video.tracks.settings('#sub-en', {
 					target: '#subtitulos-ingles'
 				});
 
+
 				//Load a chapter and execute a function with data
-				tracks.load('#chap-gl', function (chapters) {
+				video.tracks.load('#chap-gl', function (chapters) {
 					var $chapters = $('#chapters');
 
 					$.each(chapters, function (index, chapter) {
@@ -77,26 +73,26 @@
 				$('#chapters').delegate('p', 'click', function () {
 					var id_chapter = $(this).data('id-chapter');
 
-					tracks.seekTo('#chap-gl', id_chapter);
+					video.tracks.seek('#chap-gl', id_chapter);
 				});
 				
 				//Go to start of the previous chapter (zero)
 				$('#curr-chapter').click(function () {
-					tracks.seekTo('#chap-gl', 0);
+					video.tracks.seek('#chap-gl', 0);
 				});
 				
 				//Go to previous chapter (negative number)
 				$('#prev-chapter').click(function () {
-					tracks.seekTo('#chap-gl', -1);
+					video.tracks.seek('#chap-gl', -1);
 				});
-				
+
 				//Go to next chapter (positive number)
 				$('#next-chapter').click(function () {
-					tracks.seekTo('#chap-gl', 1);
+					video.tracks.seek('#chap-gl', 1);
 				});
 				
 				video.playing(function (event, ms) {
-					$('#time').html(this.milisecondsTo(ms, 'hh:mm:ss') + ' / ' + this.milisecondsTo(this.totalTime(), 'hh:mm:ss'));
+					$('#time').html(ms.milisecondsTo('hh:mm:ss') + ' / ' + this.totalTime().milisecondsTo('hh:mm:ss'));
 				});
 				
 				/*
@@ -188,11 +184,6 @@
 					console.log('Volume has changed');
 				});
 				*/
-				video.seek(function () {
-					this.ready(4, function () {
-						console.log('ola');
-					});
-				});
 			});
 		</script>
 	</head>
@@ -201,7 +192,7 @@
 		<div style="float: left; width: 50%">
 			<button class="films" value="http://people.opera.com/brucel/demo/video/leverage-a-synergy.ogv">Film with subtitles</button>
 			<button class="films" value="http://fakenfb.anavallasuiza.com/ogg-not-chopped/chinchin.ogv">Film with chapters</button>
-			
+
 			<form id="change_subtitles">
 				<fieldset>
 					<legend>Choose subtitles:</legend>

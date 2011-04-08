@@ -1,60 +1,10 @@
-/**
- * $video jQuery plugin (v.1.2)
- *
- * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
- *
- * $video is a jQuery plugin that allow manage html5 video and audio elements: events, timeline, etc.
- * $video is released under the GNU Affero GPL version 3.
- * More information at http://www.gnu.org/licenses/agpl-3.0.html
- */
+$media jQuery plugin (v.1.0)
 
-USAGE:
+2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
 
-//Init
-var video = $.video('#my-video');
+$media is a jQuery plugin that allow manage html5 video and audio elements: events, timeline, etc.
+$media is released under the GNU Affero GPL version 3.
+More information at http://www.gnu.org/licenses/agpl-3.0.html
 
-//Basic methods
-video.play();
-video.pause();
-video.playPause(); //Toggle play/pause
-video.stop(); //Goes to start
-video.end(); //Goes to end
-video.seek(time); //You can use seconds, miliseconds, percentage and hh:mm:ss
-video.volume(volume); //0-100
-video.mute();
-
-//Events
-video.play(fn, one); //If one is true, the function is executed just once.
-video.pause(fn, one);
-video.playPause(fn, one);
-video.stop(fn, one);
-video.end(fn, one);
-video.seek(fn, one);
-video.afterSeek(fn, one); //Triggered 1 second after user stops seeking
-video.volume(fn, one);
-video.mute(fn, one);
-video.afterVolume(fn, one); //Triggered 1 second after user stops changing volume
-video.bind(event, fn, one);
-video.trigger(event, data);
-video.timeline(time, fn, channel); //For execute functions in a specific time point
-video.totalTime(fn); //When the audio/video duration is available
-video.readyToPlay(fn, one); //When loaded data is enought to start playing
-
-//Properties
-video.sources(sources); //Get/set audio/video sources
-video.attr(name, value); //Get/set audio/video attributes
-video.fragment(fragment); //Get/set audio/video fragment (for example: t=30,50)
-video.time(); //Current time
-video.time('50%'); //Audio/video 50% time
-video.time('+2000'); //Audio/video time next 2 seconds
-video.totalTime(); //Audio/video duration
-
-//Utilities
-video.toMiliseconds(time); //Convert any time value to miliseconds
-video.milisecondsTo(time, outputFormat); //Convert miliseconds value to any time format
-video.extend(object); //Extends the class with other functions or properties
-video.canPlay(); //If the browser can play the audio/video file or not
-video.mimeType(ext); //Return the mime type of a extension
-video.refreshTimeline(); //Refresh the timeline after some operations
 
 More info and examples in doc.html
