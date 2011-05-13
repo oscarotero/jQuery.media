@@ -878,6 +878,7 @@
 	 * Function to execute on timeOut
 	 */
 	$media.prototype.timelineTimeout = function () {
+		console.log('timelineTimeout');
 		if (!this.remaining_timeline_points.length && !this.remaining_timeline_outpoints.length) {
 			return;
 		}
@@ -1268,22 +1269,6 @@
 
 
 /**
- * function Number.toMiliseconds ()
- *
- * Convert any number to miliseconds
- */
-Number.prototype.toMiliseconds = function () {
-	var time = this;
-
-	if (/\./.test(time)) {
-		return Math.round(time * 1000);
-	}
-
-	return time;
-}
-
-
-/**
  * function String.toMiliseconds ()
  *
  * Convert any number to miliseconds
@@ -1307,12 +1292,50 @@ String.prototype.toMiliseconds = function () {
 		return (((parseInt(time[0], 10) * 60) + parseFloat(ms[0])) * 1000) + parseInt(ms[1], 10);
 	}
 
-	return parseFloat(time).toMiliseconds();
+	if (/\./.test(time)) {
+		return Math.round(parseFloat(time) * 1000);
+	}
+
+	return parseInt(time, 10);
 }
 
 
 /**
- * function Number.milisecondsTo (time, outputFormat)
+ * function String.milisecondsTo (outputFormat)
+ *
+ * Convert a miliseconds time value to any other time format
+ */
+String.prototype.milisecondsTo = function (outputFormat) {
+	time = this;
+
+	if (/\./.test(time)) {
+		time = Math.round(parseFloat(time) * 1000);
+	} else {
+		time = parseInt(time, 10);
+	}
+
+	return time.milisecondsTo(outputFormat);
+}
+
+
+/**
+ * function Number.toMiliseconds ()
+ *
+ * Convert any number to miliseconds
+ */
+Number.prototype.toMiliseconds = function () {
+	var time = this;
+
+	if (/\./.test(time)) {
+		return Math.round(time * 1000);
+	}
+
+	return time;
+}
+
+
+/**
+ * function Number.milisecondsTo (outputFormat)
  *
  * Convert a miliseconds time value to any other time format
  */
