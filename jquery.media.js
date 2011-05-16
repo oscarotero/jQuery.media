@@ -276,7 +276,7 @@
 	 *
 	 * Get or set source values
 	 */
-	$media.prototype.sources = function (sources) {
+	$media.prototype.sources = function (sources, autoload) {
 		var $media = this.$media;
 
 		//Getter
@@ -322,6 +322,11 @@
 			});
 		}
 
+		//Autoload
+		if (autoload !== false) {
+			this.media.load();
+		}
+
 		//Update fragment
 		this.totalTime(function () {
 			var source = this.source();
@@ -353,25 +358,66 @@
 		}
 
 		if (value == undefined) {
-			switch (name) {
-				case 'width':
-					if (this.type == 'video') {
-						return this.$media.attr('width') ? this.$media.attr('width') : this.$media.attr('videoWidth');
-					}
-					return this.$media.attr(name);
-
-				case 'height':
-					if (this.type == 'video') {
-						return this.$media.attr('height') ? this.$media.attr('height') : this.$media.attr('videoHeight');
-					}
-					return this.$media.attr(name);
-
-				default:
-					return this.$media.attr(name);
-			}
+			return this.$media.attr(name);
 		}
 
 		this.$media.attr(name, value);
+
+		return this;
+	}
+
+
+	/**
+	 * function prop (name, [value])
+	 *
+	 * Get or set media properties
+	 */
+	$media.prototype.prop = function (name, value) {
+		if (value == undefined) {
+			return this.$media.prop(name);
+		}
+
+		this.$media.prop(name, value);
+
+		return this;
+	}
+
+
+	/**
+	 * function width (videoWidth)
+	 *
+	 * Get or set the width value
+	 */
+	$media.prototype.width = function (videoWidth) {
+		if (videoWidth === true) {
+			return this.media.videoWidth;
+		}
+
+		if (videoWidth == undefined) {
+			return this.$media.width();
+		}
+
+		this.$media.width(videoWidth);
+
+		return this;
+	}
+
+
+	/**
+	 * function height (videoHeight)
+	 *
+	 * Get or set the height value
+	 */
+	$media.prototype.height = function (videoHeight) {
+		if (videoHeight === true) {
+			return this.media.videoHeight;
+		}
+
+		if (videoHeight == undefined) {
+			return this.$media.height();
+		}
+
+		this.$media.height(videoHeight);
 
 		return this;
 	}
