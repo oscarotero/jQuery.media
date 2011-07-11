@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<meta charset="utf-8" />
+
+		<title>HTML5 Video Player</title>
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../source/jquery.media.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+	<body>
+		<label>
+			Change src:
+			<select class="src">
+				<option value="">--</option>
+				<option value="http://anavallasuiza.com/chinchin.webm">A long webm video</option>
+				<option value="http://fakenfb.anavallasuiza.com/ogg-not-chopped/chinchin2.ogv">A long ogv video</option>
+				<option value="http://fakenfb.anavallasuiza.com/mp4/chinchin.mp4">A long mp4 video</option>
+			</select>
+		</label><br>
+		<label>
+			Change src:
+			<input type="text" class="src">
+		</label><br>
+
+		<video width="500" controls>
+		</video>
+
+		<script type="text/javascript">
+			var video;
+
+			$(document).ready(function () {
+				video = $.media('video');
+
+				$('.src').change(function () {
+					if ($(this).val()) {
+						video.sources($(this).val());
+					}
+				});
+			});
+		</script>
+	</body>
+</html>
