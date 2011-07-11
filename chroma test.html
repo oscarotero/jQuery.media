@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>HTML5 Video Player</title>
+
+		<script src="jquery-1.5.2.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="jquery.media.js" type="text/javascript" charset="utf-8"></script>
+		<script src="jquery.media.chroma.js" type="text/javascript" charset="utf-8"></script>
+
+		<script type="text/javascript">
+			var video;
+
+			$(document).ready(function () {
+				//Set video
+				video = $.media('video');
+
+				
+				video.toCanvas('canvas', 'pixel_manipulation', function (color) {
+					if (color.g > 100 && color.r > 100 && color.b < 50) {
+						color.a = 0;
+					}
+				});
+
+				/*
+				video.toCanvas('canvas', function () {
+					var frame = this.canvas_context.getImageData(0, 0, this.canvas.width, this.canvas.height);
+					var l = frame.data.length / 4;
+
+					for (var i = 0; i < l; i++) {
+						frame.data[i * 4 + 0] = 128;
+					}
+
+					this.canvas_context.putImageData(frame, 0, 0);
+				});
+				*/
+			});
+		</script>
+	</head>
+
+	<body style="background: #963;">
+		<video src="video2.ogv" controls>
+		</video>
+
+		<canvas></canvas>
+	</body>
+</html>
