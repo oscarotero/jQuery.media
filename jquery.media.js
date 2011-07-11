@@ -31,15 +31,24 @@
 		return sorted;
 	}
 
+	//Detect device
+	var device = navigator.userAgent.toLowerCase();
+
+	if (device.match(/(iphone|ipod|ipad)/)) {
+		device = 'ios';
+	} else {
+		device = 'browser';
+	}
+
 	window.$media = function (element) {
-		this.media = element;
-		this.$media = $(element);
+		this.element = element;
+		this.$element = $(element);
 		this.fragments = {};
 		this.seek_points = {};
 
-		if (this.$media.is('video')) {
+		if (this.$element.is('video')) {
 			this.type = 'video';
-		} else if (this.$media.is('audio')) {
+		} else if (this.$element.is('audio')) {
 			this.type = 'audio';
 		}
 
@@ -58,7 +67,7 @@
 		this.remaining_timeline_outpoints = [];
 
 		//Timeline functions
-		this.bind('media-play media-seek', function() {
+		this.bind('mediaPlay mediaSeek', function() {
 			this.executeTimeline();
 		});
 		this.seeking(function(event, ms) {
@@ -77,41 +86,41 @@
 		//Seek events
 		var seek_timeout;
 		var execute_seek = function () {
-			that.trigger('media-seek', [that.time()]);
+			that.trigger('mediaSeek', [that.time()]);
 		}
 		this.bind('seeked seeking', function () {
 			clearTimeout(seek_timeout);
 			seek_timeout = setTimeout(execute_seek, 500);
-			this.trigger('media-seeking', [this.time()]);
+			this.trigger('mediaSeeking', [this.time()]);
 		});
 
 		//Volume events
 		var volume_timeout;
 		var execute_volume = function () {
-			that.trigger('media-volume', [that.volume()]);
+			that.trigger('mediaVolume', [that.volume()]);
 		}
 		this.bind('volumechange', function () {
 			clearTimeout(volume_timeout);
 			volume_timeout = setTimeout(execute_volume, 500);
-			this.trigger('media-changingVolume', [this.volume()])
+			this.trigger('mediaChangingVolume', [this.volume()])
 		});
 
 		//Other events
 		this.bind('ended', function () {
-			this.trigger('media-end', [this.time()]);
+			this.trigger('mediaEnd', [this.time()]);
 		});
 		this.bind('pause', function () {
-			this.trigger('media-pause', [this.time()]);
+			this.trigger('mediaPause', [this.time()]);
 		});
 		this.bind('waiting', function () {
-			this.trigger('media-waiting', [this.time()]);
+			this.trigger('mediaWaiting', [this.time()]);
 		});
 		this.bind('play', function () {
-			this.trigger('media-play', [this.time()]);
+			this.trigger('mediaPlay', [this.time()]);
 		});
 		this.bind('timeupdate', function () {
-			if (!this.media.paused) {
-				this.trigger('media-playing', [this.time()]);
+			if (!this.element.paused) {
+				this.trigger('mediaPlaying', [this.time()]);
 			}
 		});
 	}
@@ -217,7 +226,7 @@
 	 * Check if the browser can play the media
 	 */
 	$media.prototype.canPlay = function (source) {
-		if (!(this.media.canPlayType)) {
+		if (!(this.element.canPlayType)) {
 			return false;
 		}
 
@@ -232,7 +241,7 @@
 			type = this.mimeType(type);
 		}
 
-		switch (this.media.canPlayType(type)) {
+		switch (this.element.canPlayType(type)) {
 			case 'probably':
 			return 2;
 			
@@ -277,7 +286,7 @@
 	 * Get or set source values
 	 */
 	$media.prototype.sources = function (sources, autoload) {
-		var $media = this.$media;
+		var $media = this.$element;
 
 		//Getter
 		if (sources == undefined) {
@@ -324,7 +333,7 @@
 
 		//Autoload
 		if (autoload !== false) {
-			this.media.load();
+			this.element.load();
 		}
 
 		//Update fragment
@@ -343,7 +352,7 @@
 	 * Get the current source value
 	 */
 	$media.prototype.source = function () {
-		return this.media.currentSrc;
+		return this.element.currentSrc;
 	}
 
 
@@ -358,10 +367,10 @@
 		}
 
 		if (value == undefined) {
-			return this.$media.attr(name);
+			return this.$element.attr(name);
 		}
 
-		this.$media.attr(name, value);
+		this.$element.attr(name, value);
 
 		return this;
 	}
@@ -374,10 +383,10 @@
 	 */
 	$media.prototype.prop = function (name, value) {
 		if (value == undefined) {
-			return this.$media.prop(name);
+			return this.$element.prop(name);
 		}
 
-		this.$media.prop(name, value);
+		this.$element.prop(name, value);
 
 		return this;
 	}
@@ -390,14 +399,14 @@
 	 */
 	$media.prototype.width = function (videoWidth) {
 		if (videoWidth === true) {
-			return this.media.videoWidth;
+			return this.element.videoWidth;
 		}
 
 		if (videoWidth == undefined) {
-			return this.$media.width();
+			return this.$element.width();
 		}
 
-		this.$media.width(videoWidth);
+		this.$element.width(videoWidth);
 
 		return this;
 	}
@@ -410,14 +419,14 @@
 	 */
 	$media.prototype.height = function (videoHeight) {
 		if (videoHeight === true) {
-			return this.media.videoHeight;
+			return this.element.videoHeight;
 		}
 
 		if (videoHeight == undefined) {
-			return this.$media.height();
+			return this.$element.height();
 		}
 
-		this.$media.height(videoHeight);
+		this.$element.height(videoHeight);
 
 		return this;
 	}
@@ -431,9 +440,9 @@
 	 */
 	$media.prototype.play = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('media-play', this, one);
+			this.bind('mediaPlay', fn, one);
 		} else {
-			this.media.play();
+			this.element.play();
 		}
 
 		return this;
@@ -448,12 +457,12 @@
 	 */
 	$media.prototype.playing = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('media-playing', fn, one);
+			this.bind('mediaPlaying', fn, one);
 
 			return this;
 		}
 
-		return this.media.paused ? false : true;
+		return this.element.paused ? false : true;
 	}
 
 
@@ -465,12 +474,12 @@
 	 */
 	$media.prototype.waiting = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('media-waiting', fn, one);
+			this.bind('mediaWaiting', fn, one);
 
 			return this;
 		}
 
-		return (this.media.readyState > 2) ? false : true;
+		return (this.element.readyState > 2) ? false : true;
 	}
 
 
@@ -482,9 +491,9 @@
 	 */
 	$media.prototype.pause = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('media-pause', fn, one);
+			this.bind('mediaPause', fn, one);
 		} else {
-			this.media.pause();
+			this.element.pause();
 		}
 
 		return this;
@@ -499,15 +508,15 @@
 	 */
 	$media.prototype.playPause = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('media-playPause', fn, one);
+			this.bind('mediaPlayPause', fn, one);
 		} else {
-			if (this.media.paused) {
+			if (this.element.paused) {
 				this.play();
 			} else {
 				this.pause();
 			}
 
-			this.trigger('media-playPause', [this.time(), this.media.paused]);
+			this.trigger('mediaPlayPause', [this.time(), this.element.paused]);
 		}
 
 		return this;
@@ -522,11 +531,11 @@
 	 */
 	$media.prototype.stop = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('media-stop', fn, one);
+			this.bind('mediaStop', fn, one);
 		} else {
 			this.pause().reload();
 
-			this.trigger('media-stop', [this.time()]);
+			this.trigger('mediaStop', [this.time()]);
 		}
 
 		return this;
@@ -541,9 +550,9 @@
 	 */
 	$media.prototype.end = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('media-end', fn, one);
+			this.bind('mediaEnd', fn, one);
 		} else {
-			this.pause().seek(this.media.duration);
+			this.pause().seek(this.element.duration);
 		}
 
 		return this;
@@ -558,10 +567,10 @@
 	 */
 	$media.prototype.seek = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('media-seek', fn, one);
+			this.bind('mediaSeek', fn, one);
 		} else {
 			var time = (typeof this.seek_points[fn] == 'number') ? this.seek_points[fn] : this.time(fn);
-			this.media.currentTime = (time/1000);
+			this.element.currentTime = (time/1000);
 		}
 
 		return this;
@@ -592,12 +601,12 @@
 	 */
 	$media.prototype.seeking = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('media-seeking', fn, one);
+			this.bind('mediaSeeking', fn, one);
 
 			return this;
 		}
 
-		return this.media.seeking;
+		return this.element.seeking;
 	}
 
 
@@ -609,14 +618,18 @@
 	 * Set a volume value of media, bind a function to volume event or return the current value (in 0-100 range)
 	 */
 	$media.prototype.volume = function (fn, one) {
+		if (device == 'ios') {
+			return this;
+		}
+
 		if (fn == undefined) {
-			return Math.round(this.media.volume * 100);
+			return Math.round(this.element.volume * 100);
 		}
 
 		if ($.isFunction(fn)) {
-			this.bind('media-volume', fn, one);
+			this.bind('mediaVolume', fn, one);
 		} else {
-			this.media.volume = parseInt(fn)/100;
+			this.element.volume = parseInt(fn)/100;
 		}
 
 		return this;
@@ -630,7 +643,7 @@
 	 */
 	$media.prototype.changingVolume = function (fn, one) {
 		if ($.isFunction(fn)) {
-			this.bind('media-changingVolume', fn, one);
+			this.bind('mediaChangingVolume', fn, one);
 		}
 
 		return this;
@@ -645,16 +658,20 @@
 	 * Mute or unmute the media or bind a function to mute event
 	 */
 	$media.prototype.mute = function (fn, one) {
+		if (device == 'ios') {
+			return this;
+		}
+
 		if ($.isFunction(fn)) {
-			this.bind('media-mute', fn, one);
+			this.bind('mediaMute', fn, one);
 		} else {
 			if (typeof fn == 'boolean') {
-				this.media.muted = fn;
+				this.element.muted = fn;
 			} else {
-				this.media.muted = this.media.muted ? false : true;
+				this.element.muted = this.element.muted ? false : true;
 			}
 
-			this.trigger('media-mute', [this.media.muted]);
+			this.trigger('mediaMute', [this.element.muted]);
 		}
 
 		return this;
@@ -668,9 +685,9 @@
 	 */
 	$media.prototype.bind = function (event, fn, one) {
 		if (one) {
-			this.$media.one(event, $.proxy(fn, this));
+			this.$element.one(event, $.proxy(fn, this));
 		} else {
-			this.$media.bind(event, $.proxy(fn, this));
+			this.$element.bind(event, $.proxy(fn, this));
 		}
 
 		return this;
@@ -683,7 +700,7 @@
 	 * Trigger an event
 	 */
 	$media.prototype.trigger = function (event, data) {
-		this.$media.trigger(event, data);
+		this.$element.trigger(event, data);
 
 		return this;
 	}
@@ -924,7 +941,6 @@
 	 * Function to execute on timeOut
 	 */
 	$media.prototype.timelineTimeout = function () {
-		console.log('timelineTimeout');
 		if (!this.remaining_timeline_points.length && !this.remaining_timeline_outpoints.length) {
 			return;
 		}
@@ -949,7 +965,7 @@
 		this.executeTimelineOutPoints(ms);
 
 		//Create other timeout
-		if (this.media.paused || this.media.seeking || (!this.remaining_timeline_points.length && !this.remaining_timeline_outpoints.length)) {
+		if (this.element.paused || this.element.seeking || (!this.remaining_timeline_points.length && !this.remaining_timeline_outpoints.length)) {
 			return;
 		}
 
@@ -985,7 +1001,7 @@
 	 */
 	$media.prototype.time = function (time) {
 		if (time == undefined) {
-			return this.media.currentTime.toMiliseconds();
+			return this.element.currentTime.toMiliseconds();
 		}
 
 		if (isNaN(parseInt(time))) {
@@ -1004,9 +1020,9 @@
 			}
 
 			if (time.indexOf('%') == -1) {
-				int_time = sum + this.media.currentTime.toMiliseconds();
+				int_time = sum + this.element.currentTime.toMiliseconds();
 			} else {
-				int_time = Math.round((this.totalTime() / 100) * parseInt(sum)) + this.media.currentTime.toMiliseconds();
+				int_time = Math.round((this.totalTime() / 100) * parseInt(sum)) + this.element.currentTime.toMiliseconds();
 			}
 		} else if (time.indexOf('%') != -1) {
 			int_time = Math.round((this.totalTime() / 100) * time.toMiliseconds());
@@ -1031,11 +1047,11 @@
 	 */
 	$media.prototype.totalTime = function (fn) {
 		if (!$.isFunction(fn)) {
-			return this.media.duration.toMiliseconds();
+			return this.element.duration.toMiliseconds();
 		}
 		
 		return this.ready(1, function () {
-			$.proxy(fn, this)(this.media.duration.toMiliseconds());
+			$.proxy(fn, this)(this.element.duration.toMiliseconds());
 		});
 	}
 
@@ -1052,15 +1068,15 @@
 		}
 
 		if (!$.isFunction(fn)) {
-			return (this.media.readyState < state) ? false : true;
+			return (this.element.readyState < state) ? false : true;
 		}
 
-		if (this.media.readyState >= state) {
+		if (this.element.readyState >= state) {
 			$.proxy(fn, this)();
 		} else {
 			var that = this;
 			var ready = function () {
-				if (that.media.readyState >= state) {
+				if (that.element.readyState >= state) {
 					clearInterval(interval_ready);
 					$.proxy(fn, that)();
 				}
