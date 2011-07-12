@@ -441,7 +441,7 @@
 	$media.prototype.play = function (fn, one) {
 		if ($.isFunction(fn)) {
 			this.bind('mediaPlay', fn, one);
-		} else {
+		} else if (this.element.paused) {
 			this.element.play();
 		}
 
@@ -492,7 +492,7 @@
 	$media.prototype.pause = function (fn, one) {
 		if ($.isFunction(fn)) {
 			this.bind('mediaPause', fn, one);
-		} else {
+		} else if (!this.element.paused) {
 			this.element.pause();
 		}
 
@@ -569,8 +569,11 @@
 		if ($.isFunction(fn)) {
 			this.bind('mediaSeek', fn, one);
 		} else {
-			var time = (typeof this.seek_points[fn] == 'number') ? this.seek_points[fn] : this.time(fn);
-			this.element.currentTime = (time/1000);
+			var time = ((typeof this.seek_points[fn] == 'number') ? this.seek_points[fn] : this.time(fn)) / 1000;
+
+			if (this.element.currentTime != time) {
+				this.element.currentTime = time;
+			}
 		}
 
 		return this;
