@@ -263,6 +263,7 @@
 
 			if (point) {
 				this.media.seek(point.start);
+				this.point = point.num;
 			}
 
 			return this;
