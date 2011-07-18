@@ -21,8 +21,11 @@
 					var total = pixels.length / 4;
 
 					for (var i = 0; i < total; i ++) {
-						pixels[i * 4 + 1] = pixels[(i+10) * 4 + 1];
-						
+						//pixels[i * 4 + 1] = pixels[(i+10) * 4 + 1];
+						if (pixels[i * 4 + 1] > 128) {
+							pixels[i * 4 + 3] = 0;
+						}
+
 
 						if (i % 2) {
 							//pixels[i * 4 + 3] = 0;

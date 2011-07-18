@@ -1357,11 +1357,7 @@ String.prototype.toMiliseconds = function () {
 		return (((parseInt(time[0], 10) * 60) + parseFloat(ms[0])) * 1000) + parseInt(ms[1], 10);
 	}
 
-	if (/\./.test(time)) {
-		return Math.round(parseFloat(time) * 1000);
-	}
-
-	return parseInt(time, 10);
+	return Math.round(parseFloat(time) * 1000);
 }
 
 
@@ -1391,11 +1387,7 @@ String.prototype.milisecondsTo = function (outputFormat) {
 Number.prototype.toMiliseconds = function () {
 	var time = this;
 
-	if (/\./.test(time)) {
-		return Math.round(time * 1000);
-	}
-
-	return time;
+	return Math.round(time * 1000);
 }
 
 
@@ -1411,13 +1403,20 @@ Number.prototype.milisecondsTo = function (outputFormat) {
 		case 'ss':
 			return parseFloat(time / 1000);
 
+		case 'mm:ss':
 		case 'hh:mm:ss':
 		case 'hh:mm:ss.ms':
-			var hh = Math.floor(time / 3600000);
-			time = time - (hh * 3600000);
+			var hh = '';
+
+			if (outputFormat != 'mm:ss') {
+				hh = Math.floor(time / 3600000);
+				time = time - (hh * 3600000);
+				hh += ':';
+			}
 
 			var mm = Math.floor(time / 60000);
 			time = time - (mm * 60000);
+			mm += ':';
 
 			var ss = (time / 1000);
 
@@ -1428,7 +1427,7 @@ Number.prototype.milisecondsTo = function (outputFormat) {
 			mm = (mm < 10) ? ("0" + mm) : mm;
 			ss = (ss < 10) ? ("0" + ss) : ss;
 
-			return hh + ':' + mm + ':' + ss;
+			return hh + mm + ss;
 	}
 
 	return time;
