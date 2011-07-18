@@ -237,7 +237,6 @@
 
 			if (typeof position == 'number') {
 				position += this.point;
-
 				return this.points[position];
 			}
 

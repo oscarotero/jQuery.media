@@ -70,8 +70,9 @@
 		this.bind('mediaPlay mediaSeek', function() {
 			this.executeTimeline();
 		});
-		this.seeking(function(event, ms) {
-			this.executeTimelineOutPoints(ms);
+		this.seeking(function(event, time) {
+			this.executeTimelineOutPoints(time * 1000);
+			this.trigger('mediaPlaying', time);
 		});
 
 		//Update fragment
@@ -169,8 +170,8 @@
 
 						that.fragments.t = {
 							format: format ? format[0] : 'npt',
-							start: times[0].toMiliseconds(),
-							end: times[1].toMiliseconds()
+							start: times[0].toSeconds(),
+							end: times[1].toSeconds()
 						};
 					} else {
 						that.fragments.t = value;
@@ -569,7 +570,7 @@
 		if ($.isFunction(fn)) {
 			this.bind('mediaSeek', fn, one);
 		} else {
-			var time = ((typeof this.seek_points[fn] == 'number') ? this.seek_points[fn] : this.time(fn)) / 1000;
+			var time = (typeof this.seek_points[fn] == 'number') ? this.seek_points[fn] : this.time(fn);
 
 			if (this.element.currentTime != time) {
 				this.element.currentTime = time;
@@ -747,9 +748,12 @@
 
 			for (var i = 0; i < length; i++) {
 				if ($.isArray(points[i].time)) {
-					var ms = [this.time(points[i].time[0]), this.time(points[i].time[1])];
+					var ms = [
+						Math.round(this.time(points[i].time[0]) * 1000),
+						Math.round(this.time(points[i].time[1]) * 1000)
+					];
 				} else {
-					var ms = [this.time(points[i].time)];
+					var ms = [Math.round(this.time(points[i].time) * 1000)];
 					ms.push(ms[0]);
 				}
 
@@ -820,15 +824,16 @@
 
 
 	/**
-	 * function getPoints (ms, [channels], [length])
+	 * function getPoints (second, [channels], [length])
 	 *
 	 * Get the timeline points from/to any time
 	 */
-	$media.prototype.getPoints = function (ms, reverse, channels, offset, length) {
-		if (ms == undefined) {
-			ms = this.time();
+	$media.prototype.getPoints = function (second, reverse, channels, offset, length) {
+		if (second == undefined) {
+			second = this.time();
 		}
 
+		var ms = Math.round(second * 1000);
 		var active_timeline_points = [];
 
 		if (channels) {
@@ -918,7 +923,7 @@
 
 
 	/**
-	 * function executeTimeline (ms)
+	 * function executeTimeline ()
 	 *
 	 * Execute the timeline functions
 	 */
@@ -939,7 +944,7 @@
 
 
 	/**
-	 * function timelineTimeout (ms)
+	 * function timelineTimeout ()
 	 *
 	 * Function to execute on timeOut
 	 */
@@ -949,7 +954,7 @@
 		}
 
 		//Execute functions
-		var ms = this.time();
+		var ms = this.time() * 1000;
 
 		while (this.remaining_timeline_points[0] && this.remaining_timeline_points[0].ms[0] <= ms) {
 			var point = this.remaining_timeline_points.shift();
@@ -1004,7 +1009,7 @@
 	 */
 	$media.prototype.time = function (time) {
 		if (time == undefined) {
-			return this.element.currentTime.toMiliseconds();
+			return this.element.currentTime.toSeconds();
 		}
 
 		if (isNaN(parseInt(time))) {
@@ -1016,21 +1021,21 @@
 		var int_time = 0;
 
 		if (time.indexOf('+') === 0 || time.indexOf('-') === 0) {
-			var sum = time.substr(1).toMiliseconds();
+			var sum = time.substr(1).toSeconds();
 
 			if (time.indexOf('-') === 0) {
 				sum = -sum;
 			}
 
 			if (time.indexOf('%') == -1) {
-				int_time = sum + this.element.currentTime.toMiliseconds();
+				int_time = sum + this.element.currentTime.toSeconds();
 			} else {
-				int_time = Math.round((this.totalTime() / 100) * parseInt(sum)) + this.element.currentTime.toMiliseconds();
+				int_time = Math.round((this.totalTime() / 100) * parseInt(sum)) + this.element.currentTime.toSeconds();
 			}
 		} else if (time.indexOf('%') != -1) {
-			int_time = Math.round((this.totalTime() / 100) * time.toMiliseconds());
+			int_time = Math.round((this.totalTime() / 100) * time.toSeconds());
 		} else {
-			int_time = time.toMiliseconds();
+			int_time = time.toSeconds();
 		}
 
 		if (int_time < 0) {
@@ -1046,15 +1051,15 @@
 	/**
 	 * function totalTime ()
 	 *
-	 * Return the media duration in miliseconds
+	 * Return the media duration in seconds
 	 */
 	$media.prototype.totalTime = function (fn) {
 		if (!$.isFunction(fn)) {
-			return this.element.duration.toMiliseconds();
+			return this.element.duration.toSeconds();
 		}
 		
 		return this.ready(1, function () {
-			$.proxy(fn, this)(this.element.duration.toMiliseconds());
+			$.proxy(fn, this)(this.element.duration.toSeconds());
 		});
 	}
 
@@ -1334,13 +1339,13 @@
 
 
 /**
- * function String.toMiliseconds ()
+ * function String.toSeconds ()
  *
- * Convert any number to miliseconds
+ * Convert any number to seconds
  */
-String.prototype.toMiliseconds = function () {
+String.prototype.toSeconds = function () {
 	var time = this;
-	
+
 	if (/^([0-9]{1,2}:)?[0-9]{1,2}:[0-9]{1,2}(\.[0-9]+)?(,[0-9]+)?$/.test(time)) {
 		time = time.split(':', 3);
 
@@ -1348,60 +1353,50 @@ String.prototype.toMiliseconds = function () {
 			var ms = time[2].split(',', 2);
 			ms[1] = ms[1] ? ms[1] : 0;
 
-			return (((parseInt(time[0], 10) * 3600) + (parseInt(time[1], 10) * 60) + parseFloat(ms[0])) * 1000) + parseInt(ms[1], 10);
+			return ((((parseInt(time[0], 10) * 3600) + (parseInt(time[1], 10) * 60) + parseFloat(ms[0])) * 1000) + parseInt(ms[1], 10)) / 1000;
 		}
 
 		var ms = time[1].split(',', 1);
 		ms[1] = ms[1] ? ms[1] : 0;
 
-		return (((parseInt(time[0], 10) * 60) + parseFloat(ms[0])) * 1000) + parseInt(ms[1], 10);
+		return ((((parseInt(time[0], 10) * 60) + parseFloat(ms[0])) * 1000) + parseInt(ms[1], 10)) / 1000;
 	}
 
-	return Math.round(parseFloat(time) * 1000);
+	return parseFloat(time).toSeconds();
 }
 
 
 /**
- * function String.milisecondsTo (outputFormat)
+ * function String.secondsTo (outputFormat)
  *
- * Convert a miliseconds time value to any other time format
+ * Convert a seconds time value to any other time format
  */
-String.prototype.milisecondsTo = function (outputFormat) {
-	time = this;
-
-	if (/\./.test(time)) {
-		time = Math.round(parseFloat(time) * 1000);
-	} else {
-		time = parseInt(time, 10);
-	}
-
-	return time.milisecondsTo(outputFormat);
+String.prototype.secondsTo = function (outputFormat) {
+	return this.toSeconds().secondsTo(outputFormat);
 }
 
 
 /**
- * function Number.toMiliseconds ()
+ * function Number.toSeconds ()
  *
- * Convert any number to miliseconds
+ * Convert any number to seconds
  */
-Number.prototype.toMiliseconds = function () {
-	var time = this;
-
-	return Math.round(time * 1000);
+Number.prototype.toSeconds = function () {
+	return Math.round(this * 1000) / 1000;
 }
 
 
 /**
- * function Number.milisecondsTo (outputFormat)
+ * function Number.secondsTo (outputFormat)
  *
- * Convert a miliseconds time value to any other time format
+ * Convert a seconds time value to any other time format
  */
-Number.prototype.milisecondsTo = function (outputFormat) {
+Number.prototype.secondsTo = function (outputFormat) {
 	var time = this;
 
 	switch (outputFormat) {
-		case 'ss':
-			return parseFloat(time / 1000);
+		case 'ms':
+			return Math.round(time * 1000);
 
 		case 'mm:ss':
 		case 'hh:mm:ss':
@@ -1409,22 +1404,21 @@ Number.prototype.milisecondsTo = function (outputFormat) {
 			var hh = '';
 
 			if (outputFormat != 'mm:ss') {
-				hh = Math.floor(time / 3600000);
-				time = time - (hh * 3600000);
+				hh = Math.floor(time / 3600);
+				time = time - (hh * 3600);
 				hh += ':';
 			}
 
-			var mm = Math.floor(time / 60000);
-			time = time - (mm * 60000);
+			var mm = Math.floor(time / 60);
+			time = time - (mm * 60);
+			mm = (mm < 10) ? ("0" + mm) : mm;
 			mm += ':';
 
-			var ss = (time / 1000);
+			var ss = time;
 
 			if (outputFormat == 'hh:mm:ss') {
 				ss = Math.round(ss);
 			}
-
-			mm = (mm < 10) ? ("0" + mm) : mm;
 			ss = (ss < 10) ? ("0" + ss) : ss;
 
 			return hh + mm + ss;
