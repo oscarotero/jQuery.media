@@ -6,48 +6,30 @@
 		<title>HTML5 Video Player</title>
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
-		<script src="../source/jquery.media.js" type="text/javascript" charset="utf-8"></script>
-		<script src="../source/jquery.media.syncwith.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../source/media-core.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../source/plugins/syncwith.js" type="text/javascript" charset="utf-8"></script>
 
 		<script type="text/javascript">
 			var video1;
 			var video2;
+			var video3;
 
 			$(document).ready(function () {
 				video1 = $.media('#video1').mute();
 				video2 = $.media('#video2').mute();
 				video3 = $.media('#video3').mute();
-				video4 = $.media('#video4').mute();
-				video5 = $.media('#video5').mute();
-				video6 = $.media('#video6').mute();
-				video7 = $.media('#video7').mute();
-				video8 = $.media('#video8').mute();
-				video9 = $.media('#video9').mute();
-				video10 = $.media('#video10').mute();
 
-				video1.syncWith(video2);
-				video2.syncWith(video3);
-				video3.syncWith(video4);
-				video4.syncWith(video5);
-				video5.syncWith(video6);
-				video6.syncWith(video7);
-				video7.syncWith(video8);
-				video8.syncWith(video9);
-				video9.syncWith(video10);
+				video1.syncWith(video2, 1).syncWith(video3, 2);
+				video1.syncReady(function () {
+					this.play();
+				});
 			});
 		</script>
 	</head>
 
 	<body style="background: #CCC;">
-		<video src="video2.ogv" controls id="video1"></video>
-		<video src="video2.ogv" controls id="video2"></video>
-		<video src="video2.ogv" controls id="video3"></video>
-		<video src="video2.ogv" controls id="video4"></video>
-		<video src="video2.ogv" controls id="video5"></video>
-		<video src="video2.ogv" controls id="video6"></video>
-		<video src="video2.ogv" controls id="video7"></video>
-		<video src="video2.ogv" controls id="video8"></video>
-		<video src="video2.ogv" controls id="video9"></video>
-		<video src="video2.ogv" controls id="video10"></video>
+		<video src="files/video2.ogv" controls id="video1"></video>
+		<video src="files/video2.ogv" controls id="video2"></video>
+		<video src="files/video2.ogv" controls id="video3"></video>
 	</body>
 </html>

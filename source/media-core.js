@@ -1,5 +1,5 @@
 /**
- * $media jQuery plugin (v.1.0)
+ * $media (core) jQuery plugin (v.1.0)
  *
  * 2011. Created by Oscar Otero (http://oscarotero.com)
  *
@@ -9,27 +9,6 @@
 
 
 (function($) {
-
-	//Generic functions
-	var sortObject = function (o) {
-		var sorted = {}, key, keys = [];
-
-		for (key in o) {
-			if (o.hasOwnProperty(key)) {
-				keys.push(key);
-			}
-		}
-
-		keys.sort(function (a, b) {
-			return a - b;
-		});
-
-		for (key = 0; key < keys.length; key++) {
-			sorted[keys[key]] = o[keys[key]];
-		}
-
-		return sorted;
-	}
 
 	//Detect device
 	var device = navigator.userAgent.toLowerCase();
@@ -43,8 +22,6 @@
 	window.$media = function (element) {
 		this.element = element;
 		this.$element = $(element);
-		this.fragments = {};
-		this.seek_points = {};
 
 		if (this.$element.is('video')) {
 			this.type = 'video';
@@ -52,77 +29,10 @@
 			this.type = 'audio';
 		}
 
-		this.channels = {
-			timeline: {
-				enabled: true
-			}
-		};
-
-		//Timeline variables
-		this.timeline_timeout_id = false;
-		this.executing_timeline = false;
-		this.timeline_points = {};
-		this.active_timeline_points = [];
-		this.remaining_timeline_points = [];
-		this.remaining_timeline_outpoints = [];
-
-		//Timeline functions
-		this.bind('mediaPlay mediaSeek', function() {
-			this.executeTimeline();
-		});
-		this.seeking(function(event, time) {
-			this.executeTimelineOutPoints(time * 1000);
-			this.trigger('mediaPlaying', time);
-		});
-
 		//Update fragment
 		this.totalTime(function () {
 			var source = this.source();
 			this.fragment((source.substring(source.lastIndexOf('#') + 1)).toLowerCase());	
-		});
-
-		//Events
-		var that = this;
-
-		//Seek events
-		var seek_timeout;
-		var execute_seek = function () {
-			that.trigger('mediaSeek', [that.time()]);
-		}
-		this.bind('seeked seeking', function () {
-			clearTimeout(seek_timeout);
-			seek_timeout = setTimeout(execute_seek, 500);
-			this.trigger('mediaSeeking', [this.time()]);
-		});
-
-		//Volume events
-		var volume_timeout;
-		var execute_volume = function () {
-			that.trigger('mediaVolume', [that.volume()]);
-		}
-		this.bind('volumechange', function () {
-			clearTimeout(volume_timeout);
-			volume_timeout = setTimeout(execute_volume, 500);
-			this.trigger('mediaChangingVolume', [this.volume()])
-		});
-
-		//Other events
-		this.bind('ended', function () {
-			this.trigger('mediaEnd', [this.time()]);
-		});
-		this.bind('pause', function () {
-			this.trigger('mediaPause', [this.time()]);
-		});
-		this.bind('waiting', function () {
-			this.trigger('mediaWaiting', [this.time()]);
-		});
-		this.bind('play', function () {
-			this.trigger('mediaPlay', [this.time()]);
-		});
-		this.bind('timeupdate', function () {
-			if (!this.element.paused) {
-				this.trigger('mediaPlaying', [this.time()]);
-			}
 		});
 	}
 
@@ -138,11 +48,11 @@
 	$media.prototype.fragment = function (fragment) {
 		//Getter
 		if (fragment == undefined) {
-			return this.fragments;
+			return this.$element.data('fragments');
 		}
 
 		//Setter
-		this.fragments = {};
+		var fragments = {};
 
 		if (typeof fragment == 'string') {
 			var variables = fragment.split('&');
@@ -159,8 +69,6 @@
 			return this;
 		}
 
-		var that = this;
-
 		$.each(fragment, function (name, value) {
 			switch (name) {
 				case 't':
@@ -168,23 +76,23 @@
 						var format = value.match(/^(npt|smpte)/gi);
 						var times = value.replace(/^(npt:|smpte[^:]+:)/, '').split(',', 2);
 
-						that.fragments.t = {
+						fragments.t = {
 							format: format ? format[0] : 'npt',
 							start: times[0].toSeconds(),
 							end: times[1].toSeconds()
 						};
 					} else {
-						that.fragments.t = value;
+						fragments.t = value;
 
-						if (!that.fragments.t.format) {
-							that.fragments.t.format = 'npt';
+						if (!fragments.t.format) {
+							fragments.t.format = 'npt';
 						}
 					}
 					break;
 
 				case 'track':
 				case 'id':
-					that.fragments.track = value;
+					fragments.track = value;
 					break;
 
 				case 'xywh':
@@ -192,7 +100,7 @@
 						var format = value.match(/^(pixel|percent)/gi);
 						var dimmensions = value.replace(/^(pixel:|percent:)/, '').split(',', 4);
 
-						that.fragments.xywh = {
+						fragments.xywh = {
 							format: format ? format[0] : 'pixel',
 							x: dimmensions[0],
 							y: dimmensions[1],
@@ -200,10 +108,10 @@
 							h: dimmensions[3]
 						};
 					} else {
-						that.fragments.xywh = value;
+						fragments.xywh = value;
 
-						if (!that.fragments.xywh.format) {
-							that.fragments.xywh.format = 'pixel';
+						if (!fragments.xywh.format) {
+							fragments.xywh.format = 'pixel';
 						}
 					}
 					break;
@@ -211,11 +119,13 @@
 		});
 
 		//Go to start point
-		if (this.fragments.t) {
+		if (fragments.t) {
 			this.totalTime(function () {
-				this.seek(this.fragments.t.start);
+				this.seek(fragments.t.start);
 			});
 		}
+
+		this.$element.data('fragments', fragments);
 
 		return this;
 	}
@@ -570,7 +480,7 @@
 		if ($.isFunction(fn)) {
 			this.bind('mediaSeek', fn, one);
 		} else {
-			var time = (typeof this.seek_points[fn] == 'number') ? this.seek_points[fn] : this.time(fn);
+			var time = this.seekPoint(fn) || this.time(fn);
 
 			if (this.element.currentTime != time) {
 				this.element.currentTime = time;
@@ -588,11 +498,15 @@
 	 * Get/Set a seek point with a name
 	 */
 	$media.prototype.seekPoint = function (name, value) {
+		var seek_points = this.$element.data('seek_points') || {};
+
 		if (value == undefined) {
-			return this.seek_points[name];
+			return seek_points[name];
 		}
 
-		this.seek_points[name] = this.time(value);
+		seek_points[name] = this.time(value);
+
+		this.$element.data('seek_points', seek_points);
 
 		return this;
 	}
@@ -688,10 +602,80 @@
 	 * Bind a function to specific event
 	 */
 	$media.prototype.bind = function (event, fn, one) {
+		var exists = this.$element.data('events');
+		exists = (exists && exists[event]) ? true : false;
+
 		if (one) {
 			this.$element.one(event, $.proxy(fn, this));
 		} else {
 			this.$element.bind(event, $.proxy(fn, this));
+		}
+
+		if (exists) {
+			return this;
+		}
+
+		//Media events
+		var that = this;
+
+		switch (event) {
+			case 'mediaEnd':
+				this.bind('ended', function () {
+					this.trigger('mediaEnd', [this.time()]);
+				});
+				break;
+			
+			case 'mediaPause':
+				this.bind('pause', function () {
+					this.trigger('mediaPause', [this.time()]);
+				});
+				break;
+
+			case 'mediaWaiting':
+				this.bind('waiting', function () {
+					this.trigger('mediaWaiting', [this.time()]);
+				});
+				break;
+			
+			case 'mediaPlay':
+				this.bind('play', function () {
+					this.trigger('mediaPlay', [this.time()]);
+				});
+				break;
+			
+			case 'mediaPlaying':
+				this.bind('timeupdate', function () {
+					if (!this.element.paused) {
+						this.trigger('mediaPlaying', [this.time()]);
+					}
+				});
+				break;
+			
+			case 'mediaSeek':
+			case 'mediaSeeking':
+				var seek_timeout;
+				var execute_seek = function () {
+					that.trigger('mediaSeek', [that.time()]);
+				}
+				this.bind('seeked seeking', function () {
+					clearTimeout(seek_timeout);
+					seek_timeout = setTimeout(execute_seek, 500);
+					this.trigger('mediaSeeking', [this.time()]);
+				});
+				break;
+			
+			case 'mediaVolume':
+			case 'mediaChangingVolume':
+				var volume_timeout;
+				var execute_volume = function () {
+					that.trigger('mediaVolume', [that.volume()]);
+				}
+				this.bind('volumechange', function () {
+					clearTimeout(volume_timeout);
+					volume_timeout = setTimeout(execute_volume, 500);
+					this.trigger('mediaChangingVolume', [this.volume()])
+				});
+				break;
 		}
 
 		return this;
@@ -708,298 +692,6 @@
 
 		return this;
 	}
-
-
-	/**
-	 * function timeline (time, fn)
-	 * function timeline (time)
-	 *
-	 * Insert a function in media timeline
-	 */
-	$media.prototype.timeline = function (time, fn, channel) {
-		var this_time = time;
-		var this_fn = fn;
-		var this_channel = channel;
-
-		this.totalTime(function () {
-			var points = [];
-
-			if ($.isArray(this_time)) {
-				points = this_time;
-				this_channel = this_fn;
-			} else if (typeof this_time == 'object') {
-				points = [this_time];
-				this_channel = this_fn;
-			} else if ($.isFunction(this_fn)) {
-				points[0] = {
-					time: this_time,
-					fn: this_fn
-				};
-			}
-
-			this_channel = this_channel ? this_channel : 'timeline';
-
-			var length = points.length;
-
-			if (!length) {
-				console.error('There is nothing to add to timeline');
-				return this;
-			}
-
-			for (var i = 0; i < length; i++) {
-				if ($.isArray(points[i].time)) {
-					var ms = [
-						Math.round(this.time(points[i].time[0]) * 1000),
-						Math.round(this.time(points[i].time[1]) * 1000)
-					];
-				} else {
-					var ms = [Math.round(this.time(points[i].time) * 1000)];
-					ms.push(ms[0]);
-				}
-
-				points[i].ms = ms;
-
-				var channel = points[i].channel ? points[i].channel : this_channel;
-
-				if (!this.channels[channel]) {
-					console.error(channel + ' is not a valid channel');
-					continue;
-				}
-
-				if (this.timeline_points[channel] == undefined) {
-					this.timeline_points[channel] = {};
-				}
-
-				if (this.timeline_points[channel][ms[0]] == undefined) {
-					this.timeline_points[channel][ms[0]] = [];
-				}
-
-				this.timeline_points[channel][ms[0]].push(points[i]);
-			}
-
-			this.refreshTimeline();
-		});
-
-		return this;
-	}
-
-
-	/**
-	 * function refreshTimeline ()
-	 *
-	 * Set the active_timeline_points array
-	 */
-	$media.prototype.refreshTimeline = function () {
-		this.active_timeline_points = [];
-		var active_points = {};
-
-		for (channel in this.channels) {
-			if (!this.channels[channel].enabled) {
-				continue;
-			}
-
-			for (ms in this.timeline_points[channel]) {
-				if (active_points[ms] == undefined) {
-					active_points[ms] = [];
-				}
-
-				for (p in this.timeline_points[channel][ms]) {
-					var point = this.timeline_points[channel][ms][p];
-					point.channel = channel;
-					active_points[ms].push(point);
-				}
-			}
-		}
-
-		active_points = sortObject(active_points);
-
-		for (ms in active_points) {
-			for (p in active_points[ms]) {
-				this.active_timeline_points.push(active_points[ms][p]);
-			}
-		}
-
-		this.executeTimeline();
-	}
-
-
-	/**
-	 * function getPoints (second, [channels], [length])
-	 *
-	 * Get the timeline points from/to any time
-	 */
-	$media.prototype.getPoints = function (second, reverse, channels, offset, length) {
-		if (second == undefined) {
-			second = this.time();
-		}
-
-		var ms = Math.round(second * 1000);
-		var active_timeline_points = [];
-
-		if (channels) {
-			if (!$.isArray(channels)) {
-				channels = [channels];
-			}
-
-			for (k in this.active_timeline_points) {
-				if ($.inArray(this.active_timeline_points[k].channel, channels) != -1) {
-					active_timeline_points.push(this.active_timeline_points[k]);
-				}
-			}
-		} else {
-			$.merge(active_timeline_points, this.active_timeline_points);
-		}
-
-		if (!active_timeline_points.length) {
-			return [];
-		}
-
-		var returned_points = [];
-
-		if (reverse) {
-			for (k in active_timeline_points) {
-				if (ms > active_timeline_points[k].ms[1]) {
-					returned_points.push(active_timeline_points[k]);
-				}
-			}
-
-			returned_points.reverse();
-		} else {
-			for (k in active_timeline_points) {
-				if (ms < active_timeline_points[k].ms[1]) {
-					returned_points.push(active_timeline_points[k]);
-				}
-			}
-		}
-
-		if (typeof offset != 'number') {
-			return returned_points;
-		}
-
-		if (typeof length == 'number') {
-			return returned_points.slice(offset, offset + length);
-		}
-
-		return returned_points.slice(offset);
-	}
-
-
-	//Execute out functions
-	$media.prototype.executeTimelineOutPoints = function (ms) {
-		if (!this.remaining_timeline_outpoints.length) {
-			return;
-		}
-
-		for (s in this.remaining_timeline_outpoints) {
-			if (ms < this.remaining_timeline_outpoints[s].ms[0] || ms > this.remaining_timeline_outpoints[s].ms[1] || !this.channels[this.remaining_timeline_outpoints[s].channel].enabled) {
-				this.executeTimelinePoint(this.remaining_timeline_outpoints[s], 'fn_out');
-				this.remaining_timeline_outpoints[s].waiting = false;
-				this.remaining_timeline_outpoints.splice(s, 1);
-			}
-		}
-	}
-
-
-	$media.prototype.executeTimelinePoint = function (point, fn) {
-		if (!fn) {
-			fn = 'fn';
-		}
-
-		if (!$.isFunction(point[fn])) {
-			console.error('There is not function to execute in timeline');
-			return false;
-		}
-
-		if (!$.isArray(point.data)) {
-			point.data = (point.data == undefined) ? [] : [point.data];
-		}
-
-		if (!point.proxy) {
-			point.proxy = this;
-		}
-
-		point[fn].apply(point.proxy, $.merge([point.ms[0]], point.data));
-	}
-
-
-	/**
-	 * function executeTimeline ()
-	 *
-	 * Execute the timeline functions
-	 */
-	$media.prototype.executeTimeline = function () {
-		if (!this.active_timeline_points.length && !this.remaining_timeline_points.length && !this.remaining_timeline_outpoints.length) {
-			return;
-		}
-
-		//Get tmp_timeline (from now to the end)
-		this.remaining_timeline_points = this.getPoints(this.time());
-
-		if (!this.remaining_timeline_points.length && !this.remaining_timeline_outpoints.length) {
-			return;
-		}
-
-		this.timelineTimeout();
-	}
-
-
-	/**
-	 * function timelineTimeout ()
-	 *
-	 * Function to execute on timeOut
-	 */
-	$media.prototype.timelineTimeout = function () {
-		if (!this.remaining_timeline_points.length && !this.remaining_timeline_outpoints.length) {
-			return;
-		}
-
-		//Execute functions
-		var ms = this.time() * 1000;
-
-		while (this.remaining_timeline_points[0] && this.remaining_timeline_points[0].ms[0] <= ms) {
-			var point = this.remaining_timeline_points.shift();
-
-			if (!point.waiting) {
-				this.executeTimelinePoint(point);
-
-				if ($.isFunction(point.fn_out)) {
-					point.waiting = true;
-					this.remaining_timeline_outpoints.push(point);
-				}
-			}
-		}
-
-		//Execute out functions
-		this.executeTimelineOutPoints(ms);
-
-		//Create other timeout
-		if (this.element.paused || this.element.seeking || (!this.remaining_timeline_points.length && !this.remaining_timeline_outpoints.length)) {
-			return;
-		}
-
-		var new_ms = 0;
-
-		if (this.remaining_timeline_points[0]) {
-			new_ms = this.remaining_timeline_points[0].ms[0];
-		}
-
-		if (this.remaining_timeline_outpoints.length) {
-			for (n in this.remaining_timeline_outpoints) {
-				if (!new_ms || this.remaining_timeline_outpoints[n].ms[1] < new_ms) {
-					new_ms = this.remaining_timeline_outpoints[n].ms[1];
-				}
-			}
-		}
-		
-		new_ms = (new_ms - ms) + 10;
-
-		if (new_ms < 20) {
-			new_ms = 20;
-		}
-
-		clearTimeout(this.timeline_timeout_id);
-		this.timeline_timeout_id = setTimeout($.proxy(this.timelineTimeout, this), new_ms);
-	},
 
 
 	/**
@@ -1098,6 +790,18 @@
 
 
 	/**
+	 * function reload ()
+	 *
+	 * Reload the video
+	 */
+	$media.prototype.reload = function () {
+		this.sources(this.sources());
+
+		return this;
+	}
+
+
+	/**
 	 * function extend (name, value)
 	 * function extend (object)
 	 *
@@ -1162,165 +866,6 @@
 
 
 	/**
-	 * function pluginAttr (plugin, name, value)
-	 *
-	 * Get/Set attributes from plugin
-	 */
-	$media.prototype.pluginAttr = function (plugin, name, value) {
-		if (!this.plugins[plugin]) {
-			return;
-		}
-
-		if ((value == undefined) && (typeof name == 'string')) {
-			return this.plugins[plugin][name];
-		}
-
-		if (this.plugins[plugin]) {
-			if (typeof name == 'object') {
-				for (n in name) {
-					this.plugins[plugin][n] = name[n];
-				}
-			} else {
-				this.plugins[plugin][name] = value;
-			}
-		}
-
-		return this;
-	}
-	
-	
-	/**
-	 * function createChannel (channel, [options])
-	 *
-	 * Create a new channel
-	 */
-	$media.prototype.createChannel = function (channel, options) {
-		if (!channel || this.channels[channel]) {
-			return false;
-		}
-
-		if (typeof options != 'object') {
-			options = {enabled: options ? true : false}
-		}
-
-		this.channels[channel] = options;
-	}
-
-
-	/**
-	 * function removeChannel (channel)
-	 *
-	 * Remove a channel
-	 */
-	$media.prototype.removeChannel = function (channel) {
-		if (!channel || !this.channels[channel]) {
-			return false;
-		}
-
-		if ($.isFunction(this.channels[channel].remove)) {
-			$.proxy(this.channels[channel].remove, this)(channel);
-		}
-
-		delete this.channels[channel];
-	}
-
-
-	/**
-	 * function enableChannel (channel, [enable])
-	 *
-	 * Get/set the enabled and disabled channels
-	 */
-	$media.prototype.enableChannel = function (channel, enable) {
-		if (channel == undefined) {
-			return this;
-		}
-
-		enable = enable ? true : false;
-		var refresh = false;
-
-		if (typeof channel == 'string') {
-			if (this.channels[channel]) {
-				if (this.channels[channel].enabled != enable) {
-					if (enable && $.isFunction(this.channels[channel].enable)) {
-						$.proxy(this.channels[channel].enable, this)(channel);
-					} else if (!enable && $.isFunction(this.channels[channel].disable)) {
-						$.proxy(this.channels[channel].disable, this)(channel);
-					}
-
-					this.channels[channel].enabled = enable;
-					refresh = true;
-				}
-			}
-
-		} else if ($.isArray(channel)) {
-			for (k in channel) {
-				if (this.channels[channel[k]]) {
-					if (this.channels[channel[k]].enabled != enable) {
-						if (enable && $.isFunction(this.channels[channel[k]].enable)) {
-							$.proxy(this.channels[channel[k]].enable, this)(channel[k]);
-						} else if (!enable && $.isFunction(this.channels[channel[k]].disable)) {
-							$.proxy(this.channels[channel[k]].disable, this)(channel[k]);
-						}
-
-						this.channels[channel[k]].enabled = enable;
-						refresh = true;
-					}
-				}
-			}
-
-		} else if (typeof channel == 'object') {
-			for (k in channel) {
-				if (this.channels[k]) {
-					var enable = channel[k] ? true : false;
-					
-					if (this.channels[k].enabled != enable) {
-						if (enable && $.isFunction(this.channels[k].enable)) {
-							$.proxy(this.channels[k].enable, this)(k);
-						} else if (!enable && $.isFunction(this.channels[k].disable)) {
-							$.proxy(this.channels[k].disable, this)(k);
-						}
-						this.channels[k].enabled = enable;
-						refresh = true;
-					}
-				}
-			}
-		}
-
-		if (refresh) {
-			this.refreshTimeline();
-		}
-
-		return this;
-	}
-	
-	
-	/**
-	 * function enabledChannel (channel)
-	 *
-	 * Return true if the channel is enabled
-	 */
-	$media.prototype.enabledChannel = function (channel) {
-		if (!this.channels[channel] || !this.channels[channel].enabled) {
-			return false;
-		}
-
-		return true;
-	}
-
-
-	/**
-	 * function reload ()
-	 *
-	 * Reload the video
-	 */
-	$media.prototype.reload = function () {
-		this.sources(this.sources());
-
-		return this;
-	}
-
-
-	/**
 	 * function jQuery.media (selector)
 	 *
 	 * Creates and return a $media object
@@ -1335,7 +880,6 @@
 		return new $media(selector.get(0));
 	}
 })(jQuery);
-
 
 
 /**
