@@ -142,8 +142,22 @@
 		}
 
 		if (source == undefined) {
-			source = this.source();
-			source = (source.substring(source.lastIndexOf('.') + 1)).toLowerCase().split('#', 2)[0];
+			if (this.source()) {
+				source = this.source();
+				return this.canPlay((source.substring(source.lastIndexOf('.') + 1)).toLowerCase().split('#', 2)[0]);
+			}
+
+			source = this.sources();
+
+			var length = source.length;
+			var result = 0;
+
+			for (var i = 0; i < length; i++) {
+				var r = this.canPlay((source[i].substring(source[i].lastIndexOf('.') + 1)).toLowerCase().split('#', 2)[0]);
+				result = (r > result) ? r : result;
+			}
+
+			return result;
 		}
 
 		var type = source;

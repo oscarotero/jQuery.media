@@ -101,7 +101,9 @@
 			}
 
 		} else if ($.isArray(channel)) {
-			for (k in channel) {
+			var length = channel.length;
+
+			for (var k = 0; k < length; k++) {
 				if (this.channels[channel[k]]) {
 					if (this.channels[channel[k]].enabled != enable) {
 						if (enable && $.isFunction(this.channels[channel[k]].enable)) {
@@ -117,7 +119,9 @@
 			}
 
 		} else if (typeof channel == 'object') {
-			for (k in channel) {
+			var length = channel.length;
+
+			for (var k = 0; k < length; k++) {
 				if (this.channels[k]) {
 					var enable = channel[k] ? true : false;
 					
@@ -177,7 +181,7 @@
 				this.executeTimeline();
 			});
 			this.seeking(function(event, time) {
-				this.executeTimelineOutPoints(time * 1000);
+				this.executeTimelineOutPoints(time.secondsTo('ms'));
 			});
 		}
 
@@ -213,11 +217,11 @@
 			for (var i = 0; i < length; i++) {
 				if ($.isArray(points[i].time)) {
 					var ms = [
-						Math.round(this.time(points[i].time[0]) * 1000),
-						Math.round(this.time(points[i].time[1]) * 1000)
+						this.time(points[i].time[0]).secondsTo('ms'),
+						this.time(points[i].time[1]).secondsTo('ms')
 					];
 				} else {
-					var ms = [Math.round(this.time(points[i].time) * 1000)];
+					var ms = [this.time(points[i].time).secondsTo('ms')];
 					ms.push(ms[0]);
 				}
 
@@ -267,7 +271,9 @@
 					active_points[ms] = [];
 				}
 
-				for (p in this.timeline_data.points[channel][ms]) {
+				var length = this.timeline_data.points[channel][ms].length;
+
+				for (var p = 0; p < length; p++) {
 					var point = this.timeline_data.points[channel][ms][p];
 					point.channel = channel;
 					active_points[ms].push(point);
@@ -278,7 +284,9 @@
 		active_points = sortObject(active_points);
 
 		for (ms in active_points) {
-			for (p in active_points[ms]) {
+			var length = active_points[ms].length;
+
+			for (var p = 0; p < length; p++) {
 				this.timeline_data.active_points.push(active_points[ms][p]);
 			}
 		}
@@ -297,7 +305,7 @@
 			second = this.time();
 		}
 
-		var ms = Math.round(second * 1000);
+		var ms = second.secondsTo('ms');
 		var active_timeline_points = [];
 
 		if (channels) {
@@ -305,7 +313,9 @@
 				channels = [channels];
 			}
 
-			for (k in this.timeline_data.active_points) {
+			var length = this.timeline_data.active_points.length;
+
+			for (var k = 0; k < length; k++) {
 				if ($.inArray(this.timeline_data.active_points[k].channel, channels) != -1) {
 					active_timeline_points.push(this.timeline_data.active_points[k]);
 				}
@@ -321,7 +331,9 @@
 		var returned_points = [];
 
 		if (reverse) {
-			for (k in active_timeline_points) {
+			var length = active_timeline_points.length;
+
+			for (var k = 0; k < length; k++) {
 				if (ms > active_timeline_points[k].ms[1]) {
 					returned_points.push(active_timeline_points[k]);
 				}
@@ -329,7 +341,9 @@
 
 			returned_points.reverse();
 		} else {
-			for (k in active_timeline_points) {
+			var length = active_timeline_points.length;
+
+			for (var k = 0; k < length; k++) {
 				if (ms < active_timeline_points[k].ms[1]) {
 					returned_points.push(active_timeline_points[k]);
 				}
@@ -354,8 +368,10 @@
 			return;
 		}
 
-		for (s in this.timeline_data.remaining_outpoints) {
-			if (ms < this.timeline_data.remaining_outpoints[s].ms[0] || ms > this.timeline_data.remaining_outpoints[s].ms[1] || !this.channels[this.timeline_data.remaining_outpoints[s].channel].enabled) {
+		var length = this.timeline_data.remaining_outpoints.length;
+
+		for (var s = 0; s < length; s++) {
+			if (this.timeline_data.remaining_outpoints[s] && (ms < this.timeline_data.remaining_outpoints[s].ms[0] || ms > this.timeline_data.remaining_outpoints[s].ms[1] || !this.channels[this.timeline_data.remaining_outpoints[s].channel].enabled)) {
 				this.executeTimelinePoint(this.timeline_data.remaining_outpoints[s], 'fn_out');
 				this.timeline_data.remaining_outpoints[s].waiting = false;
 				this.timeline_data.remaining_outpoints.splice(s, 1);
@@ -418,7 +434,7 @@
 		}
 
 		//Execute functions
-		var ms = this.time() * 1000;
+		var ms = this.time().secondsTo('ms');
 
 		while (this.timeline_data.remaining_points[0] && this.timeline_data.remaining_points[0].ms[0] <= ms) {
 			var point = this.timeline_data.remaining_points.shift();
@@ -448,7 +464,9 @@
 		}
 
 		if (this.timeline_data.remaining_outpoints.length) {
-			for (n in this.timeline_data.remaining_outpoints) {
+			var length = this.timeline_data.remaining_outpoints.length;
+
+			for (var n = 0; n < length; n++) {
 				if (!new_ms || this.timeline_data.remaining_outpoints[n].ms[1] < new_ms) {
 					new_ms = this.timeline_data.remaining_outpoints[n].ms[1];
 				}
