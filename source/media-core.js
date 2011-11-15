@@ -880,18 +880,36 @@
 
 
 	/**
-	 * function jQuery.media (selector)
+	 * function jQuery.media (selector, properties)
 	 *
-	 * Creates and return a $media object
+	 * Creates and returns a $media object
 	 */
-	jQuery.media = function (selector) {
-		selector = $(selector);
+	jQuery.media = function (selector, properties) {
+		if (properties) {
+			selector = $(selector, properties);
+		} else {
+			selector = $(selector);
 
-		if (!selector.is('video, audio')) {
-			selector = selector.find('video, audio');
+			if (!selector.is('video, audio')) {
+				selector = selector.find('video, audio');
+			}
 		}
 
 		return new $media(selector.get(0));
+	}
+
+
+	/**
+	 * function jQuery.mediaVideo (properties)
+	 *
+	 * Creates a video element and returns a $media object with it
+	 */
+	jQuery.mediaVideo = function (properties) {
+		if (typeof properties == 'string') {
+			properties = {src: properties};
+		}
+
+		return $.media('<video>', properties);
 	}
 })(jQuery);
 

@@ -8,6 +8,7 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
 		<script src="../source/media-core.js" type="text/javascript" charset="utf-8"></script>
 		<script src="../source/plugins/syncwith.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../source/plugins/tocanvas.js" type="text/javascript" charset="utf-8"></script>
 
 		<script type="text/javascript">
 			var video1;
@@ -15,21 +16,44 @@
 			var video3;
 
 			$(document).ready(function () {
-				video1 = $.media('#video1').mute();
-				video2 = $.media('#video2').mute();
-				video3 = $.media('#video3').mute();
+				video1 = $.mediaVideo('files/video2.ogv').mute().toCanvas('#video1');
+				video2 = $.mediaVideo('files/video2.ogv').mute().toCanvas('#video2');
+				video3 = $.mediaVideo('files/video2.ogv').mute().toCanvas('#video3'); /*, 'pixel_manipulation', function (pixels) {
+					var total = pixels.length / 4;
 
-				video1.syncWith(video2, 1).syncWith(video3, 2);
-				video1.syncReady(function () {
-					this.play();
+					for (var i = 0; i < total; i ++) {
+						pixels[i * 4 + 1] = pixels[(i+10) * 4 + 1];
+						if (pixels[i * 4 + 1] > 128) {
+							//pixels[i * 4 + 3] = 0;
+						}
+
+
+						if (i % 2) {
+							//pixels[i * 4 + 3] = 0;
+						}
+					}
+				});
+				*/
+
+				video1
+					.syncWith(video2)
+					.syncWith(video3)
+					.syncReady(function () {
+						this.play();
+					}).end(function () {
+						this.seek(0).play();
+					});
+
+				$('body').click(function () {
+					video1.seek('50%');
 				});
 			});
 		</script>
 	</head>
 
 	<body style="background: #CCC;">
-		<video src="files/video2.ogv" controls id="video1"></video>
-		<video src="files/video2.ogv" controls id="video2"></video>
-		<video src="files/video2.ogv" controls id="video3"></video>
+		<canvas id="video1"></canvas>
+		<canvas id="video2"></canvas>
+		<canvas id="video3"></canvas>
 	</body>
 </html>

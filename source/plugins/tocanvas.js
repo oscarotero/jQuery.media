@@ -36,6 +36,21 @@
 			$.proxy(fx, media)(settings);
 		}
 
+		if (window.mozRequestAnimationFrame) {
+			window.mozRequestAnimationFrame(function () {
+				timerCallback(media, fx, settings);
+			});
+
+			return;
+		}
+
+		if (window.webkitRequestAnimationFrame) {
+			window.webkitRequestAnimationFrame(function () {
+				timerCallback(media, fx, settings);
+			});
+			return;
+		}
+
 		setTimeout(function () {
 			timerCallback(media, fx, settings);
 		});
@@ -46,13 +61,13 @@
 		this.canvas = $(canvas).get(0);
 		this.canvas_context = this.canvas.getContext('2d');
 
-		this.play(function () {
-			this.ready(1, function () {
-				this.canvas.width = this.width();
-				this.canvas.height = this.height();
-
-				timerCallback(this, fx, settings);
-			});
+		this.ready(1, function () {
+			this.canvas.width = this.width(true);
+			this.canvas.height = this.height(true);
+		}).play(function () {
+			timerCallback(this, fx, settings);
 		});
+
+		return this;
 	});
 })(jQuery);

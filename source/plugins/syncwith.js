@@ -7,7 +7,6 @@
  * More information at http://www.gnu.org/licenses/agpl-3.0.html
  */
 
-var n = 0;
 (function ($) {
 	var syncReady = function (medias, state) {
 		var sync_ready = true;
@@ -22,23 +21,30 @@ var n = 0;
 		return sync_ready;
 	}
 
-	var synchronize = function (media, time) {
+	var synchronize = function (media, time, dont_play) {
 		$.each(media.sync, function (i, sync) {
-			if (!sync.media.ready()) {
+			if (!sync.media.ready() || sync.media.seeking()) {
 				return;
 			}
 
 			var sync_offset = sync.offset + time;
 			var sync_time = sync.media.time();
 
-			if (sync_time > (sync_offset + 0.2) || sync_time < (sync_offset - 0.2)) {
-				this.media.seek(sync_offset);
+			if (sync_time > (sync_offset + 0.1) || sync_time < (sync_offset - 0.1)) {
+				this.media.seek(sync_offset + 0.1);
+
+				if (!dont_play) {
+					sync.media.play();
+				} else {
+					sync.media.pause();
+				}
 			}
 		});
 	}
 
 	$media.extend('syncWith', function (media, offset) {
-		offset = offset ? offset.toSeconds() : 0;
+		offset = offset ? offset.toSeconds() : media.time();
+		offset = this.time() - offset;
 
 		if ($.isArray(this.sync)) {
 			this.sync.push({
@@ -58,19 +64,19 @@ var n = 0;
 		});
 
 		this.play(function (event, time) {
-			$.each(this.sync, function (i, sync) {
-				sync.media.play();
-			});
+			synchronize(this, time);
 		});
 
 		this.pause(function (event, time) {
-			$.each(this.sync, function (i, sync) {
-				sync.media.pause();
-			});
+			synchronize(this, time, true);
 		});
 
 		this.playing(function (event, time) {
 			synchronize(this, time);
+		});
+
+		this.syncReady(function () {
+			synchronize(this, this.time(), true);
 		});
 
 		return this;

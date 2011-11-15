@@ -13,17 +13,25 @@
 			var video;
 
 			$(document).ready(function () {
-				video = $.media('video').mute();
+				video = $.mediaVideo('files/video2.ogv').toCanvas('canvas');
+
+				$('body').click(function () {
+					//$.mediaVideo('files/video2.ogv').toCanvas('canvas').play();
+					video.playPause();
+				})
+
+
 
 				//video.toCanvas('canvas', 'blur', {level: 4, passes: 4});
+				/*
 
 				video.toCanvas('canvas', 'pixel_manipulation', function (pixels) {
 					var total = pixels.length / 4;
 
 					for (var i = 0; i < total; i ++) {
-						//pixels[i * 4 + 1] = pixels[(i+10) * 4 + 1];
+						pixels[i * 4 + 1] = pixels[(i+10) * 4 + 1];
 						if (pixels[i * 4 + 1] > 128) {
-							pixels[i * 4 + 3] = 0;
+							//pixels[i * 4 + 3] = 0;
 						}
 
 
@@ -50,9 +58,6 @@
 	</head>
 
 	<body style="background: #CCC;">
-		<video src="files/video2.ogv" controls>
-		</video>
-
 		<canvas></canvas>
 	</body>
 </html>

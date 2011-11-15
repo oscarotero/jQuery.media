@@ -25,7 +25,8 @@
 					id = $.trim(lines.shift());
 				}
 
-				var time = /^([0-9:\.,]+) --> ([0-9:\.,]+) ?(.*)?$/g.exec($.trim(lines.shift()));
+				var line = $.trim(lines.shift());
+				var time = line.match(/^([0-9:\.,]+) --> ([0-9:\.,]+)(.*)?$/);
 				var settings = $.trim(time[3]);
 
 				if (settings) {
