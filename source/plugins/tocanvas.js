@@ -58,6 +58,14 @@
 
 	$media.extend('toCanvas', function (canvas, fx, settings) {
 		this.$canvas = $(canvas);
+
+		if (this.$canvas.data('toCanvas')) {
+			console.error('The canvas just have a video related');
+			return this;
+		}
+
+		this.$canvas.data('toCanvas', true);
+
 		this.canvas = $(canvas).get(0);
 		this.canvas_context = this.canvas.getContext('2d');
 
@@ -66,6 +74,8 @@
 			this.canvas.height = this.height(true);
 		}).play(function () {
 			timerCallback(this, fx, settings);
+		}).remove(function () {
+			this.$canvas.removeData('toCanvas');
 		});
 
 		return this;

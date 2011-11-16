@@ -387,7 +387,7 @@
 			return this;
 		}
 
-		return this.element.paused ? false : true;
+		return (this.element.paused === false) ? true : false;
 	}
 
 
@@ -485,6 +485,30 @@
 
 
 	/**
+	 * function remove (fn)
+	 * function remove ()
+	 *
+	 * Removes the video/audio element or bind a function to remove event
+	 */
+	$media.prototype.remove = function (fn) {
+		if ($.isFunction(fn)) {
+			this.bind('mediaRemove', fn);
+			return this;
+		}
+
+		this.trigger('mediaRemove');
+
+		this.$element.remove();
+
+		for (prop in this) {
+			if (this.hasOwnProperty(prop)) {
+				this[prop] = {};
+			}
+		}
+	}
+
+
+	/**
 	 * function seek (fn, [one])
 	 * function seek (time)
 	 *
@@ -494,11 +518,13 @@
 		if ($.isFunction(fn)) {
 			this.bind('mediaSeek', fn, one);
 		} else {
-			var time = this.seekPoint(fn) || this.time(fn);
+			this.ready(1, function () {
+				var time = this.seekPoint(fn) || this.time(fn);
 
-			if (this.element.currentTime != time) {
-				this.element.currentTime = time;
-			}
+				if (this.element.currentTime != time) {
+					this.element.currentTime = time;
+				}
+			});
 		}
 
 		return this;
@@ -772,6 +798,7 @@
 
 	/**
 	 * function ready ([state], fn)
+	 * function ready (fn)
 	 *
 	 * Return if the video is ready to play
 	 */
@@ -789,14 +816,9 @@
 			$.proxy(fn, this)();
 		} else {
 			var that = this;
-			var ready = function () {
-				if (that.element.readyState >= state) {
-					clearInterval(interval_ready);
-					$.proxy(fn, that)();
-				}
-			}
-
-			var interval_ready = setInterval($.proxy(ready, that), 13);
+			setTimeout(function () {
+				that.ready(state, fn)
+			}, 13);
 		}
 
 		return this;
@@ -886,13 +908,26 @@
 	 */
 	jQuery.media = function (selector, properties) {
 		if (properties) {
-			selector = $(selector, properties);
-		} else {
-			selector = $(selector);
-
-			if (!selector.is('video, audio')) {
-				selector = selector.find('video, audio');
+			if (properties.src) {
+				var src = properties.src;
+				delete(properties.src);
 			}
+
+			selector = $(selector, properties);
+
+			var media = new $media(selector.get(0));
+
+			if (src) {
+				media.sources(src);
+			}
+
+			return media;
+		}
+
+		selector = $(selector);
+
+		if (!selector.is('video, audio')) {
+			selector = selector.find('video, audio');
 		}
 
 		return new $media(selector.get(0));
@@ -910,6 +945,20 @@
 		}
 
 		return $.media('<video>', properties);
+	}
+
+
+	/**
+	 * function jQuery.mediaAudio (properties)
+	 *
+	 * Creates an audio element and returns a $media object with it
+	 */
+	jQuery.mediaAudio = function (properties) {
+		if (typeof properties == 'string') {
+			properties = {src: properties};
+		}
+
+		return $.media('<audio>', properties);
 	}
 })(jQuery);
 

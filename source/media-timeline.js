@@ -436,7 +436,7 @@
 		//Execute functions
 		var ms = this.time().secondsTo('ms');
 
-		while (this.timeline_data.remaining_points[0] && this.timeline_data.remaining_points[0].ms[0] <= ms) {
+		while (this.timeline_data.remaining_points && this.timeline_data.remaining_points[0] && this.timeline_data.remaining_points[0].ms[0] <= ms) {
 			var point = this.timeline_data.remaining_points.shift();
 
 			if (!point.waiting) {
@@ -447,6 +447,10 @@
 					this.timeline_data.remaining_outpoints.push(point);
 				}
 			}
+		}
+
+		if (!this.timeline_data.remaining_points) {
+			return;
 		}
 
 		//Execute out functions

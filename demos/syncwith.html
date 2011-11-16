@@ -7,51 +7,44 @@
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
 		<script src="../source/media-core.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../source/media-timeline.js" type="text/javascript" charset="utf-8"></script>
 		<script src="../source/plugins/syncwith.js" type="text/javascript" charset="utf-8"></script>
 		<script src="../source/plugins/tocanvas.js" type="text/javascript" charset="utf-8"></script>
 
 		<script type="text/javascript">
+			var video0;
 			var video1;
 			var video2;
 			var video3;
 
 			$(document).ready(function () {
+				video0 = $.mediaVideo('files/video2.ogv').mute().toCanvas('#video0');
 				video1 = $.mediaVideo('files/video2.ogv').mute().toCanvas('#video1');
 				video2 = $.mediaVideo('files/video2.ogv').mute().toCanvas('#video2');
-				video3 = $.mediaVideo('files/video2.ogv').mute().toCanvas('#video3'); /*, 'pixel_manipulation', function (pixels) {
-					var total = pixels.length / 4;
+				video3 = $.mediaVideo('files/video2.ogv').mute().toCanvas('#video3');
 
-					for (var i = 0; i < total; i ++) {
-						pixels[i * 4 + 1] = pixels[(i+10) * 4 + 1];
-						if (pixels[i * 4 + 1] > 128) {
-							//pixels[i * 4 + 3] = 0;
-						}
+				video0
+					.syncWith(video1, -0.3)
+					.syncWith(video2, -0.6)
+					.syncWith(video3, -0.9);
+
+				video0.syncReady(function () {
+					this.play();
+				});
 
 
-						if (i % 2) {
-							//pixels[i * 4 + 3] = 0;
-						}
-					}
+				
+				/*
+				video0.play().timeline(2, function () {
+					this.remove();
 				});
 				*/
-
-				video1
-					.syncWith(video2)
-					.syncWith(video3)
-					.syncReady(function () {
-						this.play();
-					}).end(function () {
-						this.seek(0).play();
-					});
-
-				$('body').click(function () {
-					video1.seek('50%');
-				});
 			});
 		</script>
 	</head>
 
 	<body style="background: #CCC;">
+		<canvas id="video0"></canvas>
 		<canvas id="video1"></canvas>
 		<canvas id="video2"></canvas>
 		<canvas id="video3"></canvas>
