@@ -22,6 +22,7 @@
 	window.$media = function (element) {
 		this.element = element;
 		this.$element = $(element);
+		this.isFullScreen = false;
 
 		if (this.$element.is('video')) {
 			this.type = 'video';
@@ -375,6 +376,44 @@
 
 
 	/**
+	 * function fullScreen (fn, [one])
+	 * function fullScreen (bool)
+	 * function fullScreen ()
+	 *
+	 * Toggles fullscreen mode or binds a function to fullscreen event
+	 * This method works only in webkit and mozilla platforms
+	 */
+	$media.prototype.fullScreen = function (fn, one) {
+		if ($.isFunction(fn)) {
+			this.bind('mediaFullScreen', fn, one);
+			return this;
+		}
+
+		if (fn === false) {
+			if ($.isFunction(document.webkitCancelFullScreen)) {
+				document.webkitCancelFullScreen();
+			} else if ($.isFunction(document.mozCancelFullScreen)) {
+				document.mozCancelFullScreen();
+			}
+		} else if (fn === true) {
+			if ($.isFunction(this.element.webkitRequestFullScreen)) {
+				this.element.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+			} else if ($.isFunction(this.element.mozRequestFullScreen)) {
+				this.element.mozRequestFullScreen();
+			}
+		} else {
+			if (document.mozFullScreen || document.webkitIsFullScreen) {
+				this.fullScreen(false);
+			} else {
+				this.fullScreen(true);
+			}
+		}
+
+		return this;
+	}
+
+
+	/**
 	 * function playing (fn, [one])
 	 * function playing ()
 	 *
@@ -659,6 +698,25 @@
 		var that = this;
 
 		switch (event) {
+			case 'mediaFullScreen':
+				this.bind('mozfullscreenchange', function (e) {
+					this.trigger('mediaFullScreen', [true]);
+					this.isFullScreen = true;
+				});
+
+				$(document).bind('mozfullscreenchange', function (e) {
+					if ((document.mozFullScreen === false) && that.isFullScreen) {
+						that.trigger('mediaFullScreen', [false]);
+						that.isFullScreen = false;
+					}
+				});
+
+				this.bind('webkitfullscreenchange', function (e) {
+					this.trigger('mediaFullScreen', [document.webkitIsFullScreen]);
+					this.isFullScreen = true;
+				});
+				break;
+
 			case 'mediaEnd':
 				this.bind('ended', function () {
 					this.trigger('mediaEnd', [this.time()]);

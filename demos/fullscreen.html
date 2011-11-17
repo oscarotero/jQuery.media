@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>HTML5 Video Player</title>
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../source/media-core.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../source/media-timeline.js" type="text/javascript" charset="utf-8"></script>
+
+		<script type="text/javascript">
+			var video;
+
+			$(document).ready(function () {
+				video = $.media('#v1');
+				video2 = $.media('#v2');
+
+				video.fullScreen(function (event, enter) {
+					if (enter) {
+						console.log('entrando no video 1');
+					} else {
+						console.log('saíndo do video 1');
+					}
+				});
+
+				video2.fullScreen(function (event, enter) {
+					return;
+					if (enter) {
+						console.log('entrando no video 2');
+					} else {
+						console.log('saíndo do video 2');
+					}
+				});
+
+
+				//Fullscreen
+				video.bind('click', function () {
+					this.fullScreen();
+				});
+				video2.bind('click', function () {
+					this.fullScreen();
+				});
+			});
+		</script>
+	</head>
+
+	<body>
+		<div>
+			<button id="fullscreen">Fullscreen</button>
+
+			<video id="v1" src="files/snow.ogv" controls></video>
+			<video id="v2" src="files/snow.ogv" controls></video>
+		</div>
+	</body>
+</html>

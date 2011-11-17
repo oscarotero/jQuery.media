@@ -21,6 +21,14 @@
 					}
 				});
 
+				video.fullScreen(function (event, enter) {
+					if (enter) {
+						alert('entrando');
+					} else {
+						alert('saíndo');
+					}
+				});
+
 				//Load and unload the subtitles
 				$('#change_subtitles input:checkbox').change(function () {
 					var value = $(this).val();
@@ -35,6 +43,12 @@
 							subtitles[value].disable();
 						}
 					}
+				});
+
+				//Fullscreen
+				$('#fullscreen').click(function () {
+					video.fullScreen();
+					return false;
 				});
 			});
 		</script>
@@ -51,6 +65,8 @@
 					<label><input type="checkbox" value="#sub-ja"> Japan</label><br>
 					<label><input type="checkbox" value="#sub-nl"> Dutch</label>
 				</fieldset>
+
+				<button id="fullscreen">Fullscreen</button>
 			</form>
 
 			<video width="500" src="http://people.opera.com/brucel/demo/video/leverage-a-synergy.ogv" controls>
