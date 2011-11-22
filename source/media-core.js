@@ -426,7 +426,7 @@
 			return this;
 		}
 
-		return (this.element.paused === false) ? true : false;
+		return (this.element.paused || this.element.ended) ? false : true;
 	}
 
 
@@ -743,7 +743,7 @@
 			
 			case 'mediaPlaying':
 				this.bind('timeupdate', function () {
-					if (!this.element.paused) {
+					if (this.playing()) {
 						this.trigger('mediaPlaying', [this.time()]);
 					}
 				});
