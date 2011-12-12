@@ -15,19 +15,8 @@
 			var subtitles = {};
 
 			$(document).ready(function () {
-				video = $.media('video').addPlugin('tracks', {
-					subtitles: {
-						target: $('#subtitles')
-					}
-				});
-
-				video.fullScreen(function (event, enter) {
-					if (enter) {
-						alert('entrando');
-					} else {
-						alert('saíndo');
-					}
-				});
+				video = $.media('video');
+				video.addPlugin('tracks');
 
 				//Load and unload the subtitles
 				$('#change_subtitles input:checkbox').change(function () {
@@ -44,12 +33,6 @@
 						}
 					}
 				});
-
-				//Fullscreen
-				$('#fullscreen').click(function () {
-					video.fullScreen();
-					return false;
-				});
 			});
 		</script>
 	</head>
@@ -65,8 +48,6 @@
 					<label><input type="checkbox" value="#sub-ja"> Japan</label><br>
 					<label><input type="checkbox" value="#sub-nl"> Dutch</label>
 				</fieldset>
-
-				<button id="fullscreen">Fullscreen</button>
 			</form>
 
 			<video width="500" src="http://people.opera.com/brucel/demo/video/leverage-a-synergy.ogv" controls>
@@ -76,8 +57,6 @@
 				<track id="sub-ja" kind="subtitles" src="files/ja.srt" srclang="ja" label="Japan">
 				<track id="sub-nl" kind="subtitles" src="files/nl.srt" srclang="nl" label="Dutch">
 			</video>
-
-			<div id="subtitles"></div>
 		</div>
 	</body>
 </html>

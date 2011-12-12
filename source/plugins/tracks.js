@@ -54,7 +54,7 @@
 			return parse;
 		},
 		startPoint: function (point) {
-			$(this.settings.target).append('<span id="track-' + this.kind + '-' + this.channel + '-' + point.num + '">' + point.content + '</span>');
+			$(this.settings.target).append('<div id="track-' + this.kind + '-' + this.channel + '-' + point.num + '">' + point.content + '</div>');
 		},
 		endPoint: function (point) {
 			$('#track-' + this.kind + '-' + this.channel + '-' + point.num).remove();
@@ -285,6 +285,10 @@
 
 			if (settings[kinds[i]]) {
 				$.extend(this.settings[kinds[i]], settings[kinds[i]]);
+			}
+
+			if (!this.settings[kinds[i]].target) {
+				this.settings[kinds[i]].target = $('<div class="track_' + kinds[i] + '"></div>').insertAfter(this.media.$element);
 			}
 		}
 	}

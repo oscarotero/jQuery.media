@@ -9,7 +9,6 @@
 		<script src="../source/media-core.js" type="text/javascript" charset="utf-8"></script>
 		<script src="../source/media-timeline.js" type="text/javascript" charset="utf-8"></script>
 		<script src="../source/plugins/syncwith.js" type="text/javascript" charset="utf-8"></script>
-		<script src="../source/plugins/tocanvas.js" type="text/javascript" charset="utf-8"></script>
 
 		<script type="text/javascript">
 			var video0;
@@ -18,35 +17,27 @@
 			var video3;
 
 			$(document).ready(function () {
-				video0 = $.mediaVideo('files/video2.ogv').mute().toCanvas('#video0');
-				video1 = $.mediaVideo('files/video2.ogv').mute().toCanvas('#video1');
-				video2 = $.mediaVideo('files/video2.ogv').mute().toCanvas('#video2');
-				video3 = $.mediaVideo('files/video2.ogv').mute().toCanvas('#video3');
+				video0 = $.media('#video0');
+				video1 = $.media('#video1');
+				video2 = $.media('#video2');
+				video3 = $.media('#video3');
 
 				video0
-					.syncWith(video1, -0.3)
-					.syncWith(video2, -0.6)
-					.syncWith(video3, -0.9);
+					.syncWith(video1)
+					.syncWith(video2)
+					.syncWith(video3);
 
 				video0.syncReady(function () {
 					this.play();
 				});
-
-
-				
-				/*
-				video0.play().timeline(2, function () {
-					this.remove();
-				});
-				*/
 			});
 		</script>
 	</head>
 
 	<body style="background: #CCC;">
-		<canvas id="video0"></canvas>
-		<canvas id="video1"></canvas>
-		<canvas id="video2"></canvas>
-		<canvas id="video3"></canvas>
+		<video id="video0" src="files/video2.ogv" controls></video>
+		<video id="video1" src="files/video2.ogv" controls></video>
+		<video id="video2" src="files/video2.ogv" controls></video>
+		<video id="video3" src="files/video2.ogv" controls></video>
 	</body>
 </html>

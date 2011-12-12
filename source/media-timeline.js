@@ -1,7 +1,7 @@
 /**
- * $media (timeline module) jQuery plugin (v.1.0)
+ * $media (timeline module) jQuery plugin (v.1.1)
  *
- * 2011. Created by Oscar Otero (http://oscarotero.com)
+ * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
  *
  * $media is released under the GNU Affero GPL version 3.
  * More information at http://www.gnu.org/licenses/agpl-3.0.html

@@ -21,7 +21,7 @@
 		return sync_ready;
 	}
 
-	var synchronize = function (media, time, fn) {
+	var synchronize = function (media, time) {
 		$.each(media.sync, function (i, sync) {
 			if (sync.media.seeking()) {
 				return;
@@ -32,10 +32,12 @@
 
 			if (sync_time > (sync_offset + 0.1) || sync_time < (sync_offset - 0.1)) {
 				sync.media.seek(sync_offset + 0.1);
+			}
 
-				if (fn) {
-					sync.media[fn]();
-				}
+			if (media.playing()) {
+				sync.media.play();
+			} else {
+				sync.media.pause();
 			}
 		});
 	}
@@ -61,19 +63,19 @@
 		});
 
 		this.play(function (event, time) {
-			synchronize(this, time, 'play');
+			synchronize(this, time);
 		});
 
 		this.pause(function (event, time) {
-			synchronize(this, time, 'pause');
+			synchronize(this, time);
 		});
 
 		this.playing(function (event, time) {
-			synchronize(this, time, 'play');
+			synchronize(this, time);
 		});
 
 		this.syncReady(function () {
-			synchronize(this, this.time(), 'pause');
+			synchronize(this, this.time());
 		});
 
 		return this;
