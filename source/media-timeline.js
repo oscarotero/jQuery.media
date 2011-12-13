@@ -37,6 +37,30 @@
 		}
 	};
 
+	$media.prototype.timeline_data = {
+		points: [],
+		active_points: [],
+		remaining_outpoints: [],
+		remaining_points: [],
+		timeout: false
+	};
+
+
+	/**
+	 * function clearTimeline ()
+	 *
+	 * Removes all timeline data
+	 */
+	$media.prototype.clearTimeline = function () {
+		this.timeline_data = {
+			points: [],
+			active_points: [],
+			remaining_outpoints: [],
+			remaining_points: []
+		};
+	}
+
+
 	/**
 	 * function createChannel (channel, [options])
 	 *
@@ -74,6 +98,55 @@
 
 
 	/**
+	 * function disableChannel (channel)
+	 *
+	 * Get/set the enabled and disabled channels
+	 */
+	$media.prototype.disableChannel = function (channel) {
+		if (channel == undefined) {
+			return this;
+		}
+
+		var refresh = false;
+
+		if (typeof channel == 'string') {
+			if (this.channels[channel]) {
+				if (this.channels[channel].enabled) {
+					if ($.isFunction(this.channels[channel].disable)) {
+						$.proxy(this.channels[channel].disable, this)(channel);
+					}
+
+					this.channels[channel].enabled = false;
+					refresh = true;
+				}
+			}
+
+		} else if ($.isArray(channel)) {
+			var length = channel.length;
+
+			for (var k = 0; k < length; k++) {
+				if (this.channels[channel[k]]) {
+					if (this.channels[channel[k]].enabled) {
+						if ($.isFunction(this.channels[channel[k]].disable)) {
+							$.proxy(this.channels[channel[k]].disable, this)(channel[k]);
+						}
+
+						this.channels[channel[k]].enabled = false;
+						refresh = true;
+					}
+				}
+			}
+		}
+
+		if (refresh) {
+			this.refreshTimeline();
+		}
+
+		return this;
+	}
+
+
+	/**
 	 * function enableChannel (channel, [enable])
 	 *
 	 * Get/set the enabled and disabled channels
@@ -83,7 +156,7 @@
 			return this;
 		}
 
-		enable = enable ? true : false;
+		enable = (enable === false) ? false : true;
 		var refresh = false;
 
 		if (typeof channel == 'string') {
@@ -167,14 +240,8 @@
 	 * Insert a function in media timeline
 	 */
 	$media.prototype.timeline = function (time, fn, channel) {
-		if (!this.timeline_data) {
-			this.timeline_data = {
-				timeout: false,
-				points: {},
-				active_points: [],
-				remaining_points: [],
-				remaining_outpoints: []
-			};
+		if (this.timeline_data.timeout === false) {
+			this.timeline_data.timeout = 0;
 
 			//Timeline functions
 			this.bind('mediaPlay mediaSeek', function() {
@@ -185,71 +252,102 @@
 			});
 		}
 
-		var this_time = time;
-		var this_fn = fn;
-		var this_channel = channel;
+		var points = [];
 
-		this.totalTime(function () {
-			var points = [];
+		if ($.isArray(time)) {
+			points = time;
+			channel = fn;
+		} else if (typeof time == 'object') {
+			points = [time];
+			channel = fn;
+		} else if ($.isFunction(fn)) {
+			points[0] = {
+				time: time,
+				fn: fn
+			};
+		}
 
-			if ($.isArray(this_time)) {
-				points = this_time;
-				this_channel = this_fn;
-			} else if (typeof this_time == 'object') {
-				points = [this_time];
-				this_channel = this_fn;
-			} else if ($.isFunction(this_fn)) {
-				points[0] = {
-					time: this_time,
-					fn: this_fn
-				};
-			}
+		channel = channel ? channel : 'timeline';
 
-			this_channel = this_channel ? this_channel : 'timeline';
+		var percent = this.addPointsToTimeline(points, channel);
 
-			var length = points.length;
-
-			if (!length) {
-				console.error('There is nothing to add to timeline');
-				return this;
-			}
-
-			for (var i = 0; i < length; i++) {
-				if ($.isArray(points[i].time)) {
-					var ms = [
-						this.time(points[i].time[0]).secondsTo('ms'),
-						this.time(points[i].time[1]).secondsTo('ms')
-					];
-				} else {
-					var ms = [this.time(points[i].time).secondsTo('ms')];
-					ms.push(ms[0]);
-				}
-
-				points[i].ms = ms;
-
-				var channel = points[i].channel ? points[i].channel : this_channel;
-
-				if (!this.channels[channel]) {
-					console.error(channel + ' is not a valid channel');
-					continue;
-				}
-
-				if (this.timeline_data.points[channel] == undefined) {
-					this.timeline_data.points[channel] = {};
-				}
-
-				if (this.timeline_data.points[channel][ms[0]] == undefined) {
-					this.timeline_data.points[channel][ms[0]] = [];
-				}
-
-				this.timeline_data.points[channel][ms[0]].push(points[i]);
-			}
-
-			this.refreshTimeline();
-		});
+		if (percent) {
+			this.totalTime(function () {
+				this.addPointsToTimeline(percent, channel);
+			});
+		}
 
 		return this;
 	}
+
+
+	/**
+	 * function addPointsToTimeline (array points, string channel)
+	 *
+	 * Adds points to this.timeline_data.points array and refresh the Timeline
+	 */
+	$media.prototype.addPointsToTimeline = function (points, channel) {
+		var length = points.length;
+
+		if (!length) {
+			console.error('There is nothing to add to timeline');
+			return false;
+		}
+
+		var percent = [];
+		var totaltime = this.totalTime();
+
+		for (var i = 0; i < length; i++) {
+			if ($.isArray(points[i].time)) {
+				points[i].time[0] = '' + points[i].time[0];
+				points[i].time[1] = '' + points[i].time[1];
+
+				if (!totaltime && (points[i].time[0].indexOf('%') !== -1 || points[i].time[1].indexOf('%') !== -1)) {
+					percent.push(points[i]);
+					continue;
+				}
+
+				var ms = [
+					this.time(points[i].time[0]).secondsTo('ms'),
+					this.time(points[i].time[1]).secondsTo('ms')
+				];
+			} else {
+				points[i].time = '' + points[i].time;
+
+				if (!totaltime && points[i].time.indexOf('%') !== -1) {
+					percent.push(points[i]);
+					continue;
+				}
+
+				var ms = [this.time(points[i].time).secondsTo('ms')];
+				ms.push(ms[0]);
+			}
+
+			points[i].ms = ms;
+
+			var point_channel = points[i].channel ? points[i].channel : channel;
+
+			if (!this.channels[point_channel]) {
+				console.error(point_channel + ' is not a valid channel');
+				continue;
+			}
+
+			if (this.timeline_data.points[point_channel] == undefined) {
+				this.timeline_data.points[point_channel] = {};
+			}
+
+			if (this.timeline_data.points[point_channel][ms[0]] == undefined) {
+				this.timeline_data.points[point_channel][ms[0]] = [];
+			}
+
+			this.timeline_data.points[point_channel][ms[0]].push(points[i]);
+		}
+
+		this.refreshTimeline();
+
+		return percent.length ? percent : false;
+	}
+
 
 
 	/**

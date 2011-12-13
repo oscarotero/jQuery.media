@@ -60,9 +60,9 @@
 						var ascii_frame = '';
 
 						for (var i = 0; i < total; i += 4) {
-							//effects.greyscale(frame.data, i);
-							//ascii_frame += effects.ascii(frame.data, i, width);
-							effects.chroma(frame.data, i);
+							effects.greyscale(frame.data, i);
+							ascii_frame += effects.ascii(frame.data, i, width);
+							//effects.chroma(frame.data, i);
 						}
 
 						context.putImageData(frame, 0, 0);
@@ -79,6 +79,9 @@
 				font-family: monospace;
 				font-size: 0.5em;
 				line-height: 0.6em;
+			}
+			body {
+				background: red;
 			}
 		</style>
 	</head>

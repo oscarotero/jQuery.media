@@ -79,29 +79,47 @@
 		this.setSettings(settings);
 
 		//Load data
-		var that = this;
-
-		$.get(this.$element.attr('src'), function (text) {
-			that.points = helpers.parseWebSRT(text);
-			that.setTimeline();
-
-			if (that.settings.enable) {
-				that.enable();
-			}
-
-			if ($.isFunction(that.settings.load)) {
-				$.proxy(that.settings.load, that)();
-			}
-		});
+		this.source(this.$element.attr('src'));
 	}
 
 	track.prototype = {
+		/**
+		 * function source ()
+		 *
+		 * Initialize the media timeline using the data
+		 */
+		source: function (source) {
+			if (!source) {
+				return this.$element.attr('src');
+			}
+
+			var that = this;
+
+			$.get(source, function (text) {
+				that.points = helpers.parseWebSRT(text);
+				that.setTimeline();
+
+				if (that.settings.enable) {
+					that.enable();
+				}
+
+				if ($.isFunction(that.settings.load)) {
+					$.proxy(that.settings.load, that)();
+				}
+			});
+		},
+
 		/**
 		 * function setTimeline ()
 		 *
 		 * Initialize the media timeline using the data
 		 */
 		setTimeline: function () {
+			//Empty previous channel
+			if (this.channel) {
+				this.media.removeChannel(this.channel);
+			}
+
 			//Channel name
 			var date = new Date;
 			this.channel = this.kind + date.getTime();
