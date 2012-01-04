@@ -1,5 +1,5 @@
 /**
- * $media (timeline module) jQuery plugin (v.1.1)
+ * $media (timeline module) jQuery plugin (v.1.2)
  *
  * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
  *
@@ -512,10 +512,6 @@
 
 		//Get tmp_timeline (from now to the end)
 		this.timeline_data.remaining_points = this.getPoints(this.time());
-
-		if (!this.timeline_data.remaining_points.length && !this.timeline_data.remaining_outpoints.length) {
-			return;
-		}
 
 		this.timelineTimeout();
 	}

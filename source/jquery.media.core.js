@@ -1,5 +1,5 @@
 /**
- * $media (core) jQuery plugin (v.1.1)
+ * $media (core) jQuery plugin (v.1.2)
  *
  * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
  *
@@ -682,100 +682,103 @@
 	 */
 	$media.prototype.bind = function (event, fn, one) {
 		var exists = this.$element.data('events');
-		exists = (exists && exists[event]) ? true : false;
+		var events = event.split(' ');
+		var length = events.length;
+
+		for (var i = 0; i < length; i++) {
+			if (exists && exists[events[i]]) {
+				continue;
+			}
+
+			//Media events
+			var that = this;
+
+			switch (events[i]) {
+
+				//TODO: Check fullscreen events in Firefox
+				case 'mediaFullScreen':
+					this.bind('mozfullscreenchange', function (e) {
+						this.trigger('mediaFullScreen', [true]);
+						this.isFullScreen = true;
+					});
+
+					$(document).bind('mozfullscreenchange', function (e) {
+						if ((document.mozFullScreen === false) && that.isFullScreen) {
+							that.trigger('mediaFullScreen', [false]);
+							that.isFullScreen = false;
+						}
+					});
+
+					this.bind('webkitfullscreenchange', function (e) {
+						this.trigger('mediaFullScreen', [document.webkitIsFullScreen]);
+						this.isFullScreen = true;
+					});
+					break;
+
+				case 'mediaEnd':
+					this.bind('ended', function () {
+						this.trigger('mediaEnd', [this.time()]);
+					});
+					break;
+				
+				case 'mediaPause':
+					this.bind('pause', function () {
+						this.trigger('mediaPause', [this.time()]);
+					});
+					break;
+
+				case 'mediaWaiting':
+					this.bind('waiting', function () {
+						this.trigger('mediaWaiting', [this.time()]);
+					});
+					break;
+				
+				case 'mediaPlay':
+					this.bind('play', function () {
+						this.trigger('mediaPlay', [this.time()]);
+					});
+					break;
+				
+				case 'mediaPlaying':
+					this.bind('timeupdate', function () {
+						if (this.playing()) {
+							this.trigger('mediaPlaying', [this.time()]);
+						}
+					});
+					break;
+				
+				case 'mediaSeek':
+				case 'mediaSeeking':
+					var seek_timeout;
+					var execute_seek = function () {
+						that.trigger('mediaSeek', [that.time()]);
+					}
+					this.bind('seeked seeking', function () {
+						clearTimeout(seek_timeout);
+						seek_timeout = setTimeout(execute_seek, 500);
+						this.trigger('mediaSeeking', [this.time()]);
+					});
+					break;
+				
+				case 'mediaVolume':
+				case 'mediaChangingVolume':
+					var volume_timeout;
+					var execute_volume = function () {
+						that.trigger('mediaVolume', [that.volume()]);
+					}
+					this.bind('volumechange', function () {
+						clearTimeout(volume_timeout);
+						volume_timeout = setTimeout(execute_volume, 500);
+						this.trigger('mediaChangingVolume', [this.volume()])
+					});
+					break;
+			}
+		}
 
 		if (one) {
 			this.$element.one(event, $.proxy(fn, this));
 		} else {
 			this.$element.bind(event, $.proxy(fn, this));
-		}
-
-		if (exists) {
-			return this;
-		}
-
-		//Media events
-		var that = this;
-
-		switch (event) {
-
-			//TODO: Check fullscreen events in Firefox
-			case 'mediaFullScreen':
-				this.bind('mozfullscreenchange', function (e) {
-					this.trigger('mediaFullScreen', [true]);
-					this.isFullScreen = true;
-				});
-
-				$(document).bind('mozfullscreenchange', function (e) {
-					if ((document.mozFullScreen === false) && that.isFullScreen) {
-						that.trigger('mediaFullScreen', [false]);
-						that.isFullScreen = false;
-					}
-				});
-
-				this.bind('webkitfullscreenchange', function (e) {
-					this.trigger('mediaFullScreen', [document.webkitIsFullScreen]);
-					this.isFullScreen = true;
-				});
-				break;
-
-			case 'mediaEnd':
-				this.bind('ended', function () {
-					this.trigger('mediaEnd', [this.time()]);
-				});
-				break;
-			
-			case 'mediaPause':
-				this.bind('pause', function () {
-					this.trigger('mediaPause', [this.time()]);
-				});
-				break;
-
-			case 'mediaWaiting':
-				this.bind('waiting', function () {
-					this.trigger('mediaWaiting', [this.time()]);
-				});
-				break;
-			
-			case 'mediaPlay':
-				this.bind('play', function () {
-					this.trigger('mediaPlay', [this.time()]);
-				});
-				break;
-			
-			case 'mediaPlaying':
-				this.bind('timeupdate', function () {
-					if (this.playing()) {
-						this.trigger('mediaPlaying', [this.time()]);
-					}
-				});
-				break;
-			
-			case 'mediaSeek':
-			case 'mediaSeeking':
-				var seek_timeout;
-				var execute_seek = function () {
-					that.trigger('mediaSeek', [that.time()]);
-				}
-				this.bind('seeked seeking', function () {
-					clearTimeout(seek_timeout);
-					seek_timeout = setTimeout(execute_seek, 500);
-					this.trigger('mediaSeeking', [this.time()]);
-				});
-				break;
-			
-			case 'mediaVolume':
-			case 'mediaChangingVolume':
-				var volume_timeout;
-				var execute_volume = function () {
-					that.trigger('mediaVolume', [that.volume()]);
-				}
-				this.bind('volumechange', function () {
-					clearTimeout(volume_timeout);
-					volume_timeout = setTimeout(execute_volume, 500);
-					this.trigger('mediaChangingVolume', [this.volume()])
-				});
-				break;
 		}
 
 		return this;
