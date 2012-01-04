@@ -21,8 +21,10 @@
 		return sync_ready;
 	}
 
-	var synchronize = function (media, time) {
-		$.each(media.sync, function (i, sync) {
+	var synchronize = function (event, time) {
+		var that = this;
+
+		$.each(that.sync, function (i, sync) {
 			if (sync.media.seeking()) {
 				return;
 			}
@@ -34,7 +36,7 @@
 				sync.media.seek(sync_offset + 0.1);
 			}
 
-			if (media.playing()) {
+			if (that.playing()) {
 				sync.media.play();
 			} else {
 				sync.media.pause();
@@ -55,28 +57,38 @@
 		}
 
 		this.sync = [];
-		this.syncing = 0;
 
 		this.sync.push({
 			media: media,
 			offset: offset
 		});
 
-		this.play(function (event, time) {
-			synchronize(this, time);
-		});
-
-		this.pause(function (event, time) {
-			synchronize(this, time);
-		});
-
-		this.playing(function (event, time) {
-			synchronize(this, time);
-		});
+		this.bind('mediaPlay mediaPause mediaPlaying', synchronize);
 
 		this.syncReady(function () {
-			synchronize(this, this.time());
+			$.proxy(synchronize, this)(null, this.time());
 		});
+
+		return this;
+	});
+
+	$media.extend('unSyncWith', function (media) {
+		if (!media) {
+			this.sync = [];
+		} else if ($.isArray(this.sync) && this.sync.length) {
+			for (var i = 0; i < this.sync.length; i++) {
+				if (this.sync[i].media.$element.is(media.$element)) {
+					this.sync.splice(i, 1);
+					break;
+				}
+			}
+		} else {
+			return this;
+		}
+
+		if (!this.sync.length) {
+			this.unbind('mediaPlay mediaPause mediaPlaying', synchronize);
+		}
 
 		return this;
 	});

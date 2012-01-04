@@ -30,6 +30,10 @@
 				video0.syncReady(function () {
 					this.play();
 				});
+
+				video0.timeline(5, function () {
+					this.unSyncWith(video1).unSyncWith(video2);
+				});
 			});
 		</script>
 	</head>
