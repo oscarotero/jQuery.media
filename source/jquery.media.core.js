@@ -207,7 +207,7 @@
 
 
 	/**
-	 * function sources ([sources])
+	 * function sources ([sources], [autoload])
 	 *
 	 * Get or set source values
 	 */
