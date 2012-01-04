@@ -684,14 +684,12 @@
 		var exists = this.$element.data('events');
 		var events = event.split(' ');
 		var length = events.length;
+		var that = this;
 
 		for (var i = 0; i < length; i++) {
 			if (exists && exists[events[i]]) {
 				continue;
 			}
-
-			//Media events
-			var that = this;
 
 			switch (events[i]) {
 

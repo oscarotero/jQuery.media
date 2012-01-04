@@ -1,4 +1,4 @@
-$media jQuery plugin (v.1.0)
+$media jQuery plugin (v.1.2)
 
 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
 
@@ -7,6 +7,7 @@ $media is a jQuery plugin that allows manage html5 video and audio elements: pro
 Available plugins:
 $media.tracks: allows synchronize webSrt files (subtitles, chapters, descriptions, etc) with video and audio elements
 $media.toCanvas: export the video to canvas and allowing pixel manipulation in real time
+$media.syncwith: allows synchronize two or more media elements
 
 $media is released under the GNU Affero GPL version 3.
 More information at http://www.gnu.org/licenses/agpl-3.0.html
