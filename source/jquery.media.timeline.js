@@ -1,5 +1,5 @@
 /**
- * $media (timeline module) jQuery plugin (v.1.2)
+ * $media (timeline module) jQuery plugin (v.1.2.1)
  *
  * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
  *
@@ -544,15 +544,11 @@
 			}
 		}
 
-		if (!this.timeline_data.remaining_points.length) {
-			return;
-		}
-
 		//Execute out functions
 		this.executeTimelineOutPoints(ms);
 
 		//Create other timeout
-		if (!this.playing() || this.element.seeking ||(!this.timeline_data.remaining_points.length && !this.timeline_data.remaining_outpoints.length)) {
+		if (!this.playing() || this.element.seeking || (!this.timeline_data.remaining_points.length && !this.timeline_data.remaining_outpoints.length)) {
 			return;
 		}
 
