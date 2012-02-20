@@ -54,10 +54,10 @@
 			return parse;
 		},
 		startPoint: function (point) {
-			$(this.settings.target).append('<div id="track-' + this.kind + '-' + this.channel + '-' + point.num + '">' + point.content + '</div>');
+			point.trackElement = $('<div>' + point.data.point.content + '</div>').appendTo(this.settings.target);
 		},
 		endPoint: function (point) {
-			$('#track-' + this.kind + '-' + this.channel + '-' + point.num).remove();
+			point.trackElement.remove();
 		}
 	}
 
@@ -77,6 +77,18 @@
 		};
 
 		this.setSettings(settings);
+
+		//Channel
+		if (settings.channel) {
+			if (typeof settings.channel === "object") {
+				this.channel = settings.channel;
+			} else {
+				this.channel = this.media.createChannel(settings.channel);
+			}
+		} else {
+			var date = new Date;
+			this.channel = this.media.createChannel(this.kind + date.getTime());
+		}
 
 		//Load data
 		this.source(this.$element.attr('src'));
@@ -117,32 +129,22 @@
 		setTimeline: function () {
 			//Empty previous channel
 			if (this.channel) {
-				this.media.removeChannel(this.channel);
-			}
-
-			//Channel name
-			var date = new Date;
-			this.channel = this.kind + date.getTime();
-
-			if (this.media.channels[this.channel]) {
-				return false;
+				this.channel.remove();
 			}
 
 			var that = this;
-			var timeline = [];
 
 			$.each(this.points, function (index, point) {
-				timeline.push({
+				that.channel.addPoint({
 					time: [point.start, point.end],
-					data: [point],
+					point: point,
 					fn: that.startPoint,
 					fn_out: that.endPoint,
 					proxy: that
-				});
+				}, false);
 			});
 
-			that.media.createChannel(this.channel);
-			that.media.timeline(timeline, this.channel);
+			that.channel.enable();
 		},
 
 
@@ -188,10 +190,7 @@
 		 * Enable the track
 		 */
 		enable: function () {
-			if (!this.media.enabledChannel(this.channel)) {
-				this.media.enableChannel(this.channel, true);
-				this.setSettings('enable', true);
-			}
+			this.channel.enable();
 
 			return this;
 		},
@@ -203,21 +202,18 @@
 		 * Disable the track
 		 */
 		disable: function () {
-			if (this.media.enabledChannel(this.channel)) {
-				this.media.enableChannel(this.channel, false);
-				this.setSettings('enable', false);
-			}
+			this.channel.disable();
 
 			return this;
 		},
 
 		
 		/**
-		 * function startPoint (ms, point)
+		 * function startPoint (point)
 		 *
 		 * The function executed when the media enter to a point
 		 */
-		startPoint: function (ms, point) {
+		startPoint: function (point) {
 			this.point = point.num;
 
 			$.proxy(this.settings.start, this)(point);
@@ -225,11 +221,11 @@
 
 		
 		/**
-		 * function endPoint (ms, point)
+		 * function endPoint (point)
 		 *
 		 * The function executed when the media leaves a point
 		 */
-		endPoint: function (ms, point) {
+		endPoint: function (point) {
 			$.proxy(this.settings.end, this)(point);
 		},
 

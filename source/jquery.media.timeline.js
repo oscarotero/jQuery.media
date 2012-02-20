@@ -100,13 +100,9 @@
 	/**
 	 * function disableChannel (channel)
 	 *
-	 * Get/set the enabled and disabled channels
+	 * Disable one, various or all channels
 	 */
 	$media.prototype.disableChannel = function (channel) {
-		if (channel == undefined) {
-			return this;
-		}
-
 		var refresh = false;
 
 		if (typeof channel == 'string') {
@@ -136,6 +132,19 @@
 					}
 				}
 			}
+		} else if (channel == undefined) {
+			for (k in this.channels) {
+				if (this.channels.hasOwnProperty(prop)) {
+					if (this.channels[k].enabled) {
+						if ($.isFunction(this.channels[k].disable)) {
+							$.proxy(this.channels[k].disable, this)(k);
+						}
+
+						this.channels[k].enabled = false;
+						refresh = true;
+					}
+				}
+			}
 		}
 
 		if (refresh) {
@@ -147,28 +156,21 @@
 
 
 	/**
-	 * function enableChannel (channel, [enable])
+	 * function enableChannel (channel)
 	 *
-	 * Get/set the enabled and disabled channels
+	 * Enable one, various or all channels
 	 */
-	$media.prototype.enableChannel = function (channel, enable) {
-		if (channel == undefined) {
-			return this;
-		}
-
-		enable = (enable === false) ? false : true;
+	$media.prototype.enableChannel = function (channel) {
 		var refresh = false;
 
 		if (typeof channel == 'string') {
 			if (this.channels[channel]) {
-				if (this.channels[channel].enabled != enable) {
-					if (enable && $.isFunction(this.channels[channel].enable)) {
+				if (!this.channels[channel].enabled) {
+					if ($.isFunction(this.channels[channel].enable)) {
 						$.proxy(this.channels[channel].enable, this)(channel);
-					} else if (!enable && $.isFunction(this.channels[channel].disable)) {
-						$.proxy(this.channels[channel].disable, this)(channel);
 					}
 
-					this.channels[channel].enabled = enable;
+					this.channels[channel].enabled = true;
 					refresh = true;
 				}
 			}
@@ -178,20 +180,48 @@
 
 			for (var k = 0; k < length; k++) {
 				if (this.channels[channel[k]]) {
-					if (this.channels[channel[k]].enabled != enable) {
-						if (enable && $.isFunction(this.channels[channel[k]].enable)) {
+					if (!this.channels[channel[k]].enabled) {
+						if ($.isFunction(this.channels[channel[k]].enable)) {
 							$.proxy(this.channels[channel[k]].enable, this)(channel[k]);
-						} else if (!enable && $.isFunction(this.channels[channel[k]].disable)) {
-							$.proxy(this.channels[channel[k]].disable, this)(channel[k]);
 						}
 
-						this.channels[channel[k]].enabled = enable;
+						this.channels[channel[k]].enabled = true;
 						refresh = true;
 					}
 				}
 			}
+		} else if (channel == undefined) {
+			for (k in this.channels) {
+				if (this.channels.hasOwnProperty(k)) {
+					if (!this.channels[k].enabled) {
+						if ($.isFunction(this.channels[k].enable)) {
+							$.proxy(this.channels[k].enable, this)(k);
+						}
 
-		} else if (typeof channel == 'object') {
+						this.channels[k].enabled = true;
+						refresh = true;
+					}
+				}
+			}
+		}
+
+		if (refresh) {
+			this.refreshTimeline();
+		}
+
+		return this;
+	}
+
+
+	/**
+	 * function enableDisableChannels (channel)
+	 *
+	 * Get/set the enabled and disabled channels
+	 */
+	$media.prototype.enableDisableChannels = function (channel) {
+		var refresh = false;
+
+		if (typeof channel == 'object') {
 			var length = channel.length;
 
 			for (var k = 0; k < length; k++) {
@@ -204,6 +234,7 @@
 						} else if (!enable && $.isFunction(this.channels[k].disable)) {
 							$.proxy(this.channels[k].disable, this)(k);
 						}
+
 						this.channels[k].enabled = enable;
 						refresh = true;
 					}

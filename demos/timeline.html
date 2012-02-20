@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>HTML5 Video Player</title>
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../source/jquery.media.core.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../source/jquery.media.timeline2.js" type="text/javascript" charset="utf-8"></script>
+
+		<script type="text/javascript">
+			$(document).ready(function () {
+				var video = $.media('#v1');
+				var myChannel = video.createChannel('myChannel');
+
+				myChannel.addPoint([
+					{
+						time: 3,
+						fn: function () {
+							console.log('ola');
+						}
+					},{
+						time: 5,
+						fn: function () {
+							console.log('adios');
+						}
+					}
+				]);
+
+				myChannel.enable();
+
+				myChannel.addPoint(1, function () {
+					console.log('comezo');
+				})
+			});
+		</script>
+	</head>
+
+	<body>
+		<div>
+			<button id="fullscreen">Fullscreen</button>
+
+			<video id="v1" src="files/snow.ogv" controls></video>
+		</div>
+	</body>
+</html>
