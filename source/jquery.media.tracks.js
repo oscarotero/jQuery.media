@@ -57,10 +57,10 @@
 
 			return parse;
 		},
-		inPoint: function (point) {
+		fn: function (point) {
 			point.trackElement = $('<div>' + point.data.point.content + '</div>').appendTo(this.settings.target);
 		},
-		outPoint: function (point) {
+		fn_out: function (point) {
 			point.trackElement.remove();
 		}
 	}
@@ -76,8 +76,8 @@
 
 		//Settings
 		this.settings = {
-			in: helpers.inPoint,
-			out: helpers.outPoint
+			fn: helpers.fn,
+			fn_out: helpers.fn_out
 		};
 
 		if (!settings.target) {
@@ -120,10 +120,16 @@
 
 				$.each(that.points, function (index, point) {
 					points.push({
+						time: point.in,
+						fn: that.updatePoint,
+						proxy:that
+					});
+
+					points.push({
 						time: [point.in, point.out],
 						point: point,
-						fn: that.inPoint,
-						fn_out: that.outPoint,
+						fn: that.settings.fn,
+						fn_out: that.settings.fn_out,
 						proxy: that
 					});
 				});
@@ -198,24 +204,12 @@
 
 		
 		/**
-		 * function inPoint (point)
+		 * function updatePoint (point)
 		 *
 		 * The function executed when the media enter to a point
 		 */
-		inPoint: function (point) {
+		updatePoint: function (point) {
 			this.point = point.num;
-
-			$.proxy(this.settings.in, this)(point);
-		},
-
-		
-		/**
-		 * function outPoint (point)
-		 *
-		 * The function executed when the media leaves a point
-		 */
-		outPoint: function (point) {
-			$.proxy(this.settings.out, this)(point);
 		},
 
 		
