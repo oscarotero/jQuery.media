@@ -78,16 +78,17 @@
 
 		//Settings
 		this.settings = {};
-
+		settings = settings || {};
+		
 		if (!settings.target) {
 			settings.target = $('<div class="track_' + this.kind + '"></div>').insertAfter(this.media.$element);
 		}
 
-		this.setSettings(settings);
+		$.extend(this.settings, settings);
 
 		//Channel
-		if (settings.channel) {
-			this.channel = this.media.getChannel(settings.channel, true);
+		if (this.settings.channel) {
+			this.channel = this.media.getChannel(this.settings.channel, true);
 		} else {
 			var date = new Date;
 			this.channel = this.media.createChannel(this.kind + date.getTime());
@@ -133,42 +134,6 @@
 					$.proxy(that.settings.load, that)();
 				}
 			});
-		},
-
-
-		/**
-		 * function getSettings (name)
-		 *
-		 * Get the track settings
-		 */
-		getSettings: function (name) {
-			if (name == undefined) {
-				return this.settings;
-			}
-
-			if (typeof name == 'string') {
-				return this.settings[name];
-			}
-		},
-
-
-		/**
-		 * function setSettings (name, value)
-		 *
-		 * Set the track settings
-		 */
-		setSettings: function (name, value) {
-			if (typeof name == 'string') {
-				this.settings[name] = value;
-				return this;
-			}
-
-			if (typeof name == 'object') {
-				$.extend(this.settings, name);
-				return this;
-			}
-
-			return this;
 		},
 
 
