@@ -274,46 +274,19 @@
 	};
 
 
+	$media.extend('getTrack', function (element, settings) {
+		var $element = $(element).eq(0);
 
-	//Track plugin
-	$media.plugins.tracks = function (media, settings) {
-		this.media = media;
-		this.settings = {};
+		if (!$element.is('track')) {
+			return false;
+		}
+
+		if ($.isFunction(settings)) {
+			settings = {load: settings};
+		}
 
 		settings = settings || {};
-		var kinds = ['subtitles', 'chapters', 'descriptions', 'captions'];
 
-		for (var i in kinds) {
-			this.settings[kinds[i]] = {};
-
-			if (settings[kinds[i]]) {
-				$.extend(this.settings[kinds[i]], settings[kinds[i]]);
-			}
-		}
-	}
-
-	$media.plugins.tracks.prototype = {
-
-		/**
-		 * function load (element, [settings])
-		 *
-		 * Loads a track from the video and returns the track object
-		 */
-		load: function (element, settings) {
-			var $element = $(element).eq(0);
-			var kind = $element.attr('kind');
-
-			if (!$element.is('track') || !this.settings[kind]) {
-				return false;
-			}
-
-			if ($.isFunction(settings)) {
-				settings = {load: settings};
-			}
-
-			settings = settings || {};
-
-			return new track($element.get(0), this.media, $.extend({}, this.settings[kind], settings));
-		}
-	}
+		return new track($element.get(0), this, settings);
+	});
 })(jQuery);

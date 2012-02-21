@@ -948,33 +948,6 @@
 	}
 
 
-	/**
-	 * function addPlugin (name, [config])
-	 *
-	 * Add a plugin to current $media instance
-	 */
-	$media.prototype.addPlugin = function (name, config) {
-		var plugins = name;
-
-		if (typeof plugins != 'object') {
-			plugins = {};
-			plugins[name] = config;
-		}
-
-		var that = this;
-
-		$.each(plugins, function (plugin_name, plugin_config) {
-			if (!$media.plugins[plugin_name]) {
-				console.error('The plugin "' + plugin_name + '" is not registered');
-				return false;
-			}
-
-			that[plugin_name] = new $media.plugins[plugin_name](that, plugin_config);
-		});
-
-		return this;
-	}
-
 
 	/**
 	 * function jQuery.media (selector, properties)

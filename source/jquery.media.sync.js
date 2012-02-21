@@ -48,85 +48,87 @@
 		});
 	}
 
-	$media.extend('syncWith', function (media, offset) {
-		offset = offset ? offset.toSeconds() : 0;
+	$media.extend({
+		syncWith: function (media, offset) {
+			offset = offset ? offset.toSeconds() : 0;
 
-		if ($.isArray(this.sync)) {
+			if ($.isArray(this.sync)) {
+				this.sync.push({
+					media: media,
+					offset: offset
+				});
+
+				return this;
+			}
+
+			this.sync = [];
+
 			this.sync.push({
 				media: media,
 				offset: offset
 			});
 
+			this.bind('mediaPlay mediaPause mediaPlaying', synchronize);
+
+			this.syncReady(function () {
+				$.proxy(synchronize, this)(null, this.time());
+			});
+
 			return this;
-		}
+		},
 
-		this.sync = [];
-
-		this.sync.push({
-			media: media,
-			offset: offset
-		});
-
-		this.bind('mediaPlay mediaPause mediaPlaying', synchronize);
-
-		this.syncReady(function () {
-			$.proxy(synchronize, this)(null, this.time());
-		});
-
-		return this;
-	});
-
-	$media.extend('unSyncWith', function (media) {
-		if (!media) {
-			this.sync = [];
-		} else if ($.isArray(this.sync) && this.sync.length) {
-			for (var i = 0; i < this.sync.length; i++) {
-				if (this.sync[i].media.$element.is(media.$element)) {
-					this.sync.splice(i, 1);
-					break;
+		unSyncWith: function (media) {
+			if (!media) {
+				this.sync = [];
+			} else if ($.isArray(this.sync) && this.sync.length) {
+				for (var i = 0; i < this.sync.length; i++) {
+					if (this.sync[i].media.$element.is(media.$element)) {
+						this.sync.splice(i, 1);
+						break;
+					}
 				}
-			}
-		} else {
-			return this;
-		}
-
-		if (!this.sync.length) {
-			this.unbind('mediaPlay mediaPause mediaPlaying', synchronize);
-		}
-
-		return this;
-	});
-
-	$media.extend('syncReady', function (state, fn) {
-		if (typeof state != 'number') {
-			fn = state;
-			state = 3;
-		}
-
-		var medias = [this];
-
-		$.each(this.sync, function (i, media) {
-			medias.push(media.media);
-		});
-
-		if (!$.isFunction(fn)) {
-			return syncReady(medias, state);
-		}
-
-		if (syncReady(medias, state)) {
-			$.proxy(fn, this)();
-		} else {
-			var that = this;
-			var ready = function () {
-				if (syncReady(medias, state)) {
-					clearInterval(interval_ready);
-					$.proxy(fn, that)();
-				}
+			} else {
+				return this;
 			}
 
-			var interval_ready = setInterval($.proxy(ready, that), 13);
-		}
+			if (!this.sync.length) {
+				this.unbind('mediaPlay mediaPause mediaPlaying', synchronize);
+			}
 
-		return this;
+			return this;
+		},
+
+		syncReady: function (state, fn) {
+			if (typeof state != 'number') {
+				fn = state;
+				state = 3;
+			}
+
+			var medias = [this];
+
+			$.each(this.sync, function (i, media) {
+				medias.push(media.media);
+			});
+
+			if (!$.isFunction(fn)) {
+				return syncReady(medias, state);
+			}
+
+			if (syncReady(medias, state)) {
+				$.proxy(fn, this)();
+			} else {
+				var that = this;
+				var ready = function () {
+					if (syncReady(medias, state)) {
+						clearInterval(interval_ready);
+						$.proxy(fn, that)();
+					}
+				}
+
+				var interval_ready = setInterval($.proxy(ready, that), 13);
+			}
+
+			return this;
+		}
 	});
 })(jQuery);

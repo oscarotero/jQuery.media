@@ -16,14 +16,13 @@
 
 			$(document).ready(function () {
 				video = $.media('video');
-				video.addPlugin('tracks');
 
 				//Load and unload the subtitles
 				$('#change_subtitles input:checkbox').click(function () {
 					var value = $(this).val();
 
 					if (!subtitles[value]) {
-						subtitles[value] = video.tracks.load(value);
+						subtitles[value] = video.getTrack(value);
 					}
 
 					if ($(this).prop('checked')) {
