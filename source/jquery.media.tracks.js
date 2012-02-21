@@ -58,6 +58,8 @@
 			return parse;
 		},
 		fn: function (point) {
+			this.point = point.num;
+
 			point.trackElement = $('<div>' + point.data.point.content + '</div>').appendTo(this.settings.target);
 		},
 		fn_out: function (point) {
@@ -75,10 +77,7 @@
 		this.point = false;
 
 		//Settings
-		this.settings = {
-			fn: helpers.fn,
-			fn_out: helpers.fn_out
-		};
+		this.settings = {};
 
 		if (!settings.target) {
 			settings.target = $('<div class="track_' + this.kind + '"></div>').insertAfter(this.media.$element);
@@ -120,16 +119,10 @@
 
 				$.each(that.points, function (index, point) {
 					points.push({
-						time: point.in,
-						fn: that.updatePoint,
-						proxy:that
-					});
-
-					points.push({
 						time: [point.in, point.out],
 						point: point,
-						fn: that.settings.fn,
-						fn_out: that.settings.fn_out,
+						fn: helpers.fn,
+						fn_out: helpers.fn_out,
 						proxy: that
 					});
 				});
@@ -200,16 +193,6 @@
 			this.channel.disable();
 
 			return this;
-		},
-
-		
-		/**
-		 * function updatePoint (point)
-		 *
-		 * The function executed when the media enter to a point
-		 */
-		updatePoint: function (point) {
-			this.point = point.num;
 		},
 
 		
