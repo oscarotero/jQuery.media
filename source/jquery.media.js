@@ -952,7 +952,7 @@
 	/**
 	 * function jQuery.media (selector, properties)
 	 *
-	 * Creates and returns a $media object
+	 * Creates and returns a new $media object
 	 */
 	jQuery.media = function (selector, properties) {
 		if (properties) {

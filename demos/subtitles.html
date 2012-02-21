@@ -17,6 +17,16 @@
 			$(document).ready(function () {
 				video = $.media('video');
 
+				var video2 = $.media('video');
+
+				var ola = video2.createChannel('ola');
+
+				ola.addPoint(3, function () {
+					console.log('ola, segundo 3');
+				});
+
+				ola.enable();
+
 				//Load and unload the subtitles
 				$('#change_subtitles input:checkbox').click(function () {
 					var value = $(this).val();
