@@ -6,9 +6,9 @@
 		<title>HTML5 Video Player</title>
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
-		<script src="../source/jquery.media.core.js" type="text/javascript" charset="utf-8"></script>
-		<script src="../source/jquery.media.timeline2.js" type="text/javascript" charset="utf-8"></script>
-		<script src="../source/plugins/tracks.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../source/jquery.media.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../source/jquery.media.timeline.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../source/jquery.media.tracks.js" type="text/javascript" charset="utf-8"></script>
 
 		<script type="text/javascript">
 			var video;
@@ -19,18 +19,17 @@
 				video.addPlugin('tracks');
 
 				//Load and unload the subtitles
-				$('#change_subtitles input:checkbox').change(function () {
+				$('#change_subtitles input:checkbox').click(function () {
 					var value = $(this).val();
 
 					if (!subtitles[value]) {
-						subtitles[value] = video.tracks.load($(this).val());
+						subtitles[value] = video.tracks.load(value);
+					}
+
+					if ($(this).prop('checked')) {
 						subtitles[value].enable();
 					} else {
-						if ($(this).is(':checked')) {
-							subtitles[value].enable();
-						} else {
-							subtitles[value].disable();
-						}
+						subtitles[value].disable();
 					}
 				});
 			});

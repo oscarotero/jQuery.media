@@ -6,7 +6,7 @@
 		<title>HTML5 Video Player</title>
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
-		<script src="../source/jquery.media.core.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../source/jquery.media.js" type="text/javascript" charset="utf-8"></script>
 
 		<script type="text/javascript">
 			$(document).ready(function () {
@@ -14,6 +14,10 @@
 
 				$('#fullscreen').click(function () {
 					video.fullScreen();
+				});
+
+				video.fullScreen(function (event, fullScreen) {
+					alert('fullScreen é: ' + fullScreen);
 				});
 			});
 		</script>

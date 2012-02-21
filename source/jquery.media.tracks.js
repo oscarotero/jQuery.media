@@ -1,7 +1,11 @@
 /**
- * $media.tracks plugin for jQuery.media plugin (beta)
+ * $media.tracks (2.0)
  *
- * 2011. Created by Oscar Otero (http://oscarotero.com)
+ * Require:
+ * $media
+ * $media.timeline
+ *
+ * 2012. Created by Oscar Otero (http://oscarotero.com)
  *
  * $media.tracks is released under the GNU Affero GPL version 3.
  * More information at http://www.gnu.org/licenses/agpl-3.0.html
@@ -76,15 +80,15 @@
 			end: helpers.endPoint
 		};
 
+		if (!settings.target) {
+			settings.target = $('<div class="track_' + this.kind + '"></div>').insertAfter(this.media.$element);
+		}
+
 		this.setSettings(settings);
 
 		//Channel
 		if (settings.channel) {
-			if (typeof settings.channel === "object") {
-				this.channel = settings.channel;
-			} else {
-				this.channel = this.media.createChannel(settings.channel);
-			}
+			this.channel = this.media.getChannel(settings.channel, true);
 		} else {
 			var date = new Date;
 			this.channel = this.media.createChannel(this.kind + date.getTime());
@@ -105,46 +109,31 @@
 				return this.$element.attr('src');
 			}
 
+			this.channel.removeAllPoints();
+
 			var that = this;
 
 			$.get(source, function (text) {
 				that.points = helpers.parseWebSRT(text);
-				that.setTimeline();
 
-				if (that.settings.enable) {
-					that.enable();
-				}
+				var points = [];
+
+				$.each(that.points, function (index, point) {
+					points.push({
+						time: [point.start, point.end],
+						point: point,
+						fn: that.startPoint,
+						fn_out: that.endPoint,
+						proxy: that
+					});
+				});
+
+				that.channel.addPoint(points);
 
 				if ($.isFunction(that.settings.load)) {
 					$.proxy(that.settings.load, that)();
 				}
 			});
-		},
-
-		/**
-		 * function setTimeline ()
-		 *
-		 * Initialize the media timeline using the data
-		 */
-		setTimeline: function () {
-			//Empty previous channel
-			if (this.channel) {
-				this.channel.remove();
-			}
-
-			var that = this;
-
-			$.each(this.points, function (index, point) {
-				that.channel.addPoint({
-					time: [point.start, point.end],
-					point: point,
-					fn: that.startPoint,
-					fn_out: that.endPoint,
-					proxy: that
-				}, false);
-			});
-
-			that.channel.enable();
 		},
 
 
@@ -299,10 +288,6 @@
 
 			if (settings[kinds[i]]) {
 				$.extend(this.settings[kinds[i]], settings[kinds[i]]);
-			}
-
-			if (!this.settings[kinds[i]].target) {
-				this.settings[kinds[i]].target = $('<div class="track_' + kinds[i] + '"></div>').insertAfter(this.media.$element);
 			}
 		}
 	}

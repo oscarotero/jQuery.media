@@ -1,9 +1,12 @@
 /**
- * $media (timeline module) jQuery plugin (v.1.2.1)
+ * $media.timeline (2.0)
  *
- * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+ * Require:
+ * $media
  *
- * $media is released under the GNU Affero GPL version 3.
+ * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+ *
+ * $media.timeline is released under the GNU Affero GPL version 3.
  * More information at http://www.gnu.org/licenses/agpl-3.0.html
  */
 
@@ -31,581 +34,545 @@
 		return sorted;
 	}
 
-	$media.prototype.channels = {
+	
+	//Channel class
+	var channel = function (settings) {
+		this.enabled = false;
+		this.points = {};
+		this.media = {};
+
+		if (typeof settings != 'object') {
+			settings = {};
+		}
+
+		this.settings = settings;
+	}
+
+
+	channel.prototype = {
+		
+		/**
+		 * function enable ([bool refreshTimeline])
+		 *
+		 * Enable the channel
+		 */
+		enable: function (refreshTimeline) {
+			if (!this.enabled) {
+				this.enabled = true;
+
+				if ($.isFunction(this.settings.enable)) {
+					$.proxy(this.settings.enable, this)(media);
+				}
+
+				if (refreshTimeline !== false) {
+					this.media.refreshTimeline();
+				}
+			}
+		},
+
+
+		/**
+		 * function disable ([bool refreshTimeline])
+		 *
+		 * Disable the channel
+		 */
+		disable: function (refreshTimeline) {
+			if (this.enabled) {
+				this.enabled = false;
+
+				if ($.isFunction(this.settings.disable)) {
+					$.proxy(this.settings.disable, this)(media);
+				}
+
+				if (refreshTimeline !== false) {
+					this.media.refreshTimeline();
+				}
+			}
+		},
+
+
+		/**
+		 * function isEnabled ()
+		 *
+		 * Returns if the channel is enabled
+		 */
+		isEnabled: function () {
+			return this.enabled;
+		},
+
+
+		/**
+		 * function addPoint (time, function, [bool refreshTimeline])
+		 * function addPoint (object point, [bool refreshTimeline])
+		 * function addPoint (array points, [bool refreshTimeline])
+		 *
+		 * Adds one or more points to the channel
+		 */
+		addPoint: function (time, fn, refreshTimeline) {
+			if ($.isArray(time)) {
+				var points = time;
+				refreshTimeline = fn;
+			} else if (typeof time == 'object') {
+				var points = [time];
+				refreshTimeline = fn;
+			} else if ($.isFunction(fn)) {
+				var points = [{
+					time: time,
+					fn: fn
+				}];
+			}
+
+			var percent = [];
+			var totaltime = this.media.totalTime();
+
+			for (var i = 0, length = points.length; i < length; i++) {
+				if (!totaltime && ('' + ($.isArray(points[i].time) ? points[i].time.join() : points[i].time)).indexOf('%') !== -1) {
+					percent.push(points[i]);
+					continue;
+				}
+
+				var p = new point(this, points[i], totaltime);
+
+				if (this.points[p.start] == undefined) {
+					this.points[p.start] = [p];
+				} else {
+					this.points[p.start].push(p);
+				}
+			}
+
+			if (percent.length) {
+				var that = this;
+
+				this.totalTime(function () {
+					that.addPoint(percent);
+				});
+			}
+
+			if (this.enabled && refreshTimeline !== false) {
+				this.media.refreshTimeline();
+			}
+
+			return this;
+		},
+
+
+		/**
+		 * function removeAllPoints ([bool refreshTimeline])
+		 *
+		 * Removes all points from the channel
+		 */
+		removeAllPoints: function (refreshTimeline) {
+			this.points = {};
+
+			if (this.enabled && refreshTimeline !== false) {
+				this.media.refreshTimeline();
+			}
+
+			return this;
+		},
+
+
+		/**
+		 * function getPoints ()
+		 *
+		 * Returns the points from the channel
+		 */
+		getPoints: function () {
+			if (!this.enabled) {
+				return {};
+			}
+
+			return this.points;
+		},
+
+
+		/**
+		 * function remove ([bool refreshTimeline])
+		 *
+		 * Removes the channel
+		 */
+		remove: function (refreshTimeline) {
+			this.points = {};
+
+			if (this.enabled) {
+				this.enabled = false;
+
+				if (refreshTimeline !== false) {
+					this.media.refreshTimeline();
+				}
+			}
+
+			if ($.isFunction(this.settings.remove)) {
+				$.proxy(this.settings.remove, this)();
+			}
+		}
+	}
+
+
+	//Point class
+	var point = function (channel, settings) {
+		this.channel = channel;
+		this.data = settings;
+
+		if ($.isArray(settings.time)) {
+			this.start = this.channel.media.time(settings.time[0]).secondsTo('ms');
+			this.end = this.channel.media.time(settings.time[1]).secondsTo('ms');
+		} else {
+			this.start = this.channel.media.time(settings.time).secondsTo('ms');
+			this.end = this.start;
+		}
+
+		if (!$.isFunction(settings.fn)) {
+			console.error('There is not function to execute in this point');
+		} else if (!settings.proxy) {
+			settings.proxy = this.channel.media;
+		}
+
+		if (settings.fn_out && !$.isFunction(settings.fn_out)) {
+			console.error('There out function is not valid');
+			settings.fn_out = false;
+		}
+	}
+
+	point.prototype = {
+		execute: function () {
+			if (this.waiting) {
+				return false;
+			}
+
+			this.data.fn.call(this.data.proxy, this);
+
+			if (this.data.fn_out) {
+				this.waiting = true;
+			}
+
+			return true;
+		},
+
+		executeOut: function () {
+			if (!this.waiting || !this.data.fn_out) {
+				return false;
+			}
+
+			this.data.fn_out.call(this.data.proxy, this);
+			this.waiting = false;
+		}
+	};
+
+
+
+	//Extends $media class
+	$media.extend({
+		channels: {},
 		timeline: {
-			enabled: true
-		}
-	};
-
-	$media.prototype.timeline_data = {
-		points: [],
-		active_points: [],
-		remaining_outpoints: [],
-		remaining_points: [],
-		timeout: false
-	};
-
-
-	/**
-	 * function clearTimeline ()
-	 *
-	 * Removes all timeline data
-	 */
-	$media.prototype.clearTimeline = function () {
-		this.timeline_data = {
 			points: [],
-			active_points: [],
-			remaining_outpoints: [],
-			remaining_points: []
-		};
-	}
+			inPoints: [],
+			outPoints: [],
+			timeout: false
+		},
 
 
-	/**
-	 * function createChannel (channel, [options])
-	 *
-	 * Create a new channel
-	 */
-	$media.prototype.createChannel = function (channel, options) {
-		if (!channel || this.channels[channel]) {
-			return false;
-		}
-
-		if (typeof options != 'object') {
-			options = {enabled: options ? true : false}
-		}
-
-		this.channels[channel] = options;
-	}
-
-
-	/**
-	 * function removeChannel (channel)
-	 *
-	 * Remove a channel
-	 */
-	$media.prototype.removeChannel = function (channel) {
-		if (!channel || !this.channels[channel]) {
-			return false;
-		}
-
-		if ($.isFunction(this.channels[channel].remove)) {
-			$.proxy(this.channels[channel].remove, this)(channel);
-		}
-
-		delete this.channels[channel];
-	}
-
-
-	/**
-	 * function disableChannel (channel)
-	 *
-	 * Disable one, various or all channels
-	 */
-	$media.prototype.disableChannel = function (channel) {
-		var refresh = false;
-
-		if (typeof channel == 'string') {
-			if (this.channels[channel]) {
-				if (this.channels[channel].enabled) {
-					if ($.isFunction(this.channels[channel].disable)) {
-						$.proxy(this.channels[channel].disable, this)(channel);
-					}
-
-					this.channels[channel].enabled = false;
-					refresh = true;
-				}
+		/**
+		 * function setChannel (name, channel)
+		 *
+		 * Set an existing channel
+		 */
+		setChannel: function (name, channel) {
+			if (this.channels[name]) {
+				this.removeChannel(name);
 			}
 
-		} else if ($.isArray(channel)) {
-			var length = channel.length;
+			channel.media = this;
+			this.channels[name] = channel;
 
-			for (var k = 0; k < length; k++) {
-				if (this.channels[channel[k]]) {
-					if (this.channels[channel[k]].enabled) {
-						if ($.isFunction(this.channels[channel[k]].disable)) {
-							$.proxy(this.channels[channel[k]].disable, this)(channel[k]);
+			if (this.timeline.timeout === false) {
+				this.timeline.timeout = 0;
+
+				this.bind('mediaPlay mediaSeek', function() {
+					this.executeTimeline();
+				}).seeking(function(event, time) {
+					var length = this.timeline.outPoints.length;
+
+					if (length) {
+						var ms = time.secondsTo('ms');
+
+						for (var k = 0; k < length; k++) {
+							var point = this.timeline.outPoints[k];
+
+							if (point && (ms < point.start || ms > point.end || !point.channel.isEnabled())) {
+								point.executeOut();
+								this.timeline.outPoints.splice(k, 1);
+							}
 						}
-
-						this.channels[channel[k]].enabled = false;
-						refresh = true;
 					}
-				}
-			}
-		} else if (channel == undefined) {
-			for (k in this.channels) {
-				if (this.channels.hasOwnProperty(prop)) {
-					if (this.channels[k].enabled) {
-						if ($.isFunction(this.channels[k].disable)) {
-							$.proxy(this.channels[k].disable, this)(k);
-						}
-
-						this.channels[k].enabled = false;
-						refresh = true;
-					}
-				}
-			}
-		}
-
-		if (refresh) {
-			this.refreshTimeline();
-		}
-
-		return this;
-	}
-
-
-	/**
-	 * function enableChannel (channel)
-	 *
-	 * Enable one, various or all channels
-	 */
-	$media.prototype.enableChannel = function (channel) {
-		var refresh = false;
-
-		if (typeof channel == 'string') {
-			if (this.channels[channel]) {
-				if (!this.channels[channel].enabled) {
-					if ($.isFunction(this.channels[channel].enable)) {
-						$.proxy(this.channels[channel].enable, this)(channel);
-					}
-
-					this.channels[channel].enabled = true;
-					refresh = true;
-				}
+				});
 			}
 
-		} else if ($.isArray(channel)) {
-			var length = channel.length;
-
-			for (var k = 0; k < length; k++) {
-				if (this.channels[channel[k]]) {
-					if (!this.channels[channel[k]].enabled) {
-						if ($.isFunction(this.channels[channel[k]].enable)) {
-							$.proxy(this.channels[channel[k]].enable, this)(channel[k]);
-						}
-
-						this.channels[channel[k]].enabled = true;
-						refresh = true;
-					}
-				}
+			if (channel.isEnabled()) {
+				this.refreshTimeline();
 			}
-		} else if (channel == undefined) {
-			for (k in this.channels) {
-				if (this.channels.hasOwnProperty(k)) {
-					if (!this.channels[k].enabled) {
-						if ($.isFunction(this.channels[k].enable)) {
-							$.proxy(this.channels[k].enable, this)(k);
-						}
+		},
 
-						this.channels[k].enabled = true;
-						refresh = true;
-					}
-				}
+
+		/**
+		 * function createChannel (name, [options])
+		 *
+		 * Create a new channel
+		 */
+		createChannel: function (name, options) {
+			this.setChannel(name, new channel(options));
+
+			return this.channels[name];
+		},
+
+
+		/**
+		 * function getChannel (name, [createIfNotExists], [options])
+		 *
+		 * Gets a channel
+		 */
+		getChannel: function (name, createIfNotExists, options) {
+			if (this.channels[name]) {
+				return this.channels[name];
+			} else if (createIfNotExists === true) {
+				return this.createChannel(name, options);
 			}
-		}
-
-		if (refresh) {
-			this.refreshTimeline();
-		}
-
-		return this;
-	}
+		},
 
 
-	/**
-	 * function enableDisableChannels (channel)
-	 *
-	 * Get/set the enabled and disabled channels
-	 */
-	$media.prototype.enableDisableChannels = function (channel) {
-		var refresh = false;
+		/**
+		 * function existsChannel (name)
+		 *
+		 * Returns if a channel exists
+		 */
+		existsChannel: function (name) {
+			return this.channels[name] ? true : false;
+		},
 
-		if (typeof channel == 'object') {
-			var length = channel.length;
 
-			for (var k = 0; k < length; k++) {
-				if (this.channels[k]) {
-					var enable = channel[k] ? true : false;
-					
-					if (this.channels[k].enabled != enable) {
-						if (enable && $.isFunction(this.channels[k].enable)) {
-							$.proxy(this.channels[k].enable, this)(k);
-						} else if (!enable && $.isFunction(this.channels[k].disable)) {
-							$.proxy(this.channels[k].disable, this)(k);
-						}
-
-						this.channels[k].enabled = enable;
-						refresh = true;
-					}
-				}
+		/**
+		 * function removeChannel (name)
+		 *
+		 * Remove a channel
+		 */
+		removeChannel: function (name) {
+			if (!name || !this.channels[name]) {
+				return false;
 			}
-		}
 
-		if (refresh) {
-			this.refreshTimeline();
-		}
+			this.channels[name].remove();
 
-		return this;
-	}
-	
-	
-	/**
-	 * function enabledChannel (channel)
-	 *
-	 * Return true if the channel is enabled
-	 */
-	$media.prototype.enabledChannel = function (channel) {
-		if (!this.channels[channel] || !this.channels[channel].enabled) {
-			return false;
-		}
-
-		return true;
-	}
+			delete this.channels[name];
+		},
 
 
-	/**
-	 * function timeline (time, fn)
-	 * function timeline (time)
-	 *
-	 * Insert a function in media timeline
-	 */
-	$media.prototype.timeline = function (time, fn, channel) {
-		if (this.timeline_data.timeout === false) {
-			this.timeline_data.timeout = 0;
+		/**
+		 * function removeAllChannels ()
+		 *
+		 * Remove all channel
+		 */
+		removeAllChannels: function () {
+			for (var name in this.channels) {
+				this.channels[name].remove(false);
+			}
 
-			//Timeline functions
-			this.bind('mediaPlay mediaSeek', function() {
-				this.executeTimeline();
-			});
-			this.seeking(function(event, time) {
-				this.executeTimelineOutPoints(time.secondsTo('ms'));
-			});
-		}
-
-		var points = [];
-
-		if ($.isArray(time)) {
-			points = time;
-			channel = fn;
-		} else if (typeof time == 'object') {
-			points = [time];
-			channel = fn;
-		} else if ($.isFunction(fn)) {
-			points[0] = {
-				time: time,
-				fn: fn
+			this.timeline = {
+				points: [],
+				inPoints: []
 			};
-		}
 
-		channel = channel ? channel : 'timeline';
-
-		var percent = this.addPointsToTimeline(points, channel);
-
-		if (percent) {
-			this.totalTime(function () {
-				this.addPointsToTimeline(percent, channel);
-			});
-		}
-
-		return this;
-	}
+			this.channels = {};
+			this.executeTimeline();
+		},
 
 
-	/**
-	 * function addPointsToTimeline (array points, string channel)
-	 *
-	 * Adds points to this.timeline_data.points array and refresh the Timeline
-	 */
-	$media.prototype.addPointsToTimeline = function (points, channel) {
-		var length = points.length;
+		/**
+		 * function enableDisableChannels (object channels)
+		 *
+		 * Enables and disables various channels
+		 */
+		enableDisableChannels: function (channels) {
+			var refresh = false;
 
-		if (!length) {
-			console.error('There is nothing to add to timeline');
-			return false;
-		}
+			for (var k = 0, lenght = channels.length; k < length; k++) {
+				if (this.channels[k]) {
+					var channel = this.channels[k];
 
-		var percent = [];
-		var totaltime = this.totalTime();
+					if (channels[k]) {
+						if (!channel.isEnabled()) {
+							channel.enable(false);
+							refresh = true;
+						}
+					} else {
+						if (channel.isEnabled()) {
+							channel.disable(false);
+							refresh = true;
+						}
+					}
+				}
+			}
 
-		for (var i = 0; i < length; i++) {
-			if ($.isArray(points[i].time)) {
-				points[i].time[0] = '' + points[i].time[0];
-				points[i].time[1] = '' + points[i].time[1];
+			if (refresh) {
+				this.refreshTimeline();
+			}
 
-				if (!totaltime && (points[i].time[0].indexOf('%') !== -1 || points[i].time[1].indexOf('%') !== -1)) {
-					percent.push(points[i]);
+			return this;
+		},
+
+
+		/**
+		 * function refreshTimeline ()
+		 *
+		 * Set the points array
+		 */
+		refreshTimeline: function () {
+			this.timeline.points = [];
+
+			var points = {};
+
+			for (name in this.channels) {
+				var channel = this.channels[name];
+
+				if (!channel.isEnabled()) {
 					continue;
 				}
 
-				var ms = [
-					this.time(points[i].time[0]).secondsTo('ms'),
-					this.time(points[i].time[1]).secondsTo('ms')
-				];
-			} else {
-				points[i].time = '' + points[i].time;
+				var channelPoints = channel.getPoints();
 
-				if (!totaltime && points[i].time.indexOf('%') !== -1) {
-					percent.push(points[i]);
-					continue;
+				for (ms in channelPoints) {
+					if (points[ms] == undefined) {
+						points[ms] = [];
+					}
+
+					var length = channelPoints[ms].length;
+
+					for (var p = 0; p < length; p++) {
+						points[ms].push(channelPoints[ms][p]);
+					}
 				}
-
-				var ms = [this.time(points[i].time).secondsTo('ms')];
-				ms.push(ms[0]);
 			}
 
-			points[i].ms = ms;
+			points = sortObject(points);
 
-			var point_channel = points[i].channel ? points[i].channel : channel;
-
-			if (!this.channels[point_channel]) {
-				console.error(point_channel + ' is not a valid channel');
-				continue;
-			}
-
-			if (this.timeline_data.points[point_channel] == undefined) {
-				this.timeline_data.points[point_channel] = {};
-			}
-
-			if (this.timeline_data.points[point_channel][ms[0]] == undefined) {
-				this.timeline_data.points[point_channel][ms[0]] = [];
-			}
-
-			this.timeline_data.points[point_channel][ms[0]].push(points[i]);
-		}
-
-		this.refreshTimeline();
-
-		return percent.length ? percent : false;
-	}
-
-
-
-	/**
-	 * function refreshTimeline ()
-	 *
-	 * Set the active_timeline_points array
-	 */
-	$media.prototype.refreshTimeline = function () {
-		this.timeline_data.active_points = [];
-		var active_points = {};
-
-		for (channel in this.channels) {
-			if (!this.channels[channel].enabled) {
-				continue;
-			}
-
-			for (ms in this.timeline_data.points[channel]) {
-				if (active_points[ms] == undefined) {
-					active_points[ms] = [];
-				}
-
-				var length = this.timeline_data.points[channel][ms].length;
+			for (ms in points) {
+				var length = points[ms].length;
 
 				for (var p = 0; p < length; p++) {
-					var point = this.timeline_data.points[channel][ms][p];
-					point.channel = channel;
-					active_points[ms].push(point);
-				}
-			}
-		}
-
-		active_points = sortObject(active_points);
-
-		for (ms in active_points) {
-			var length = active_points[ms].length;
-
-			for (var p = 0; p < length; p++) {
-				this.timeline_data.active_points.push(active_points[ms][p]);
-			}
-		}
-
-		this.executeTimeline();
-	}
-
-
-	/**
-	 * function getPoints (second, [channels], [length])
-	 *
-	 * Get the timeline points from/to any time
-	 */
-	$media.prototype.getPoints = function (second, reverse, channels, offset, length) {
-		if (second == undefined) {
-			second = this.time();
-		}
-
-		var ms = second.secondsTo('ms');
-		var active_timeline_points = [];
-
-		if (channels) {
-			if (!$.isArray(channels)) {
-				channels = [channels];
-			}
-
-			var length = this.timeline_data.active_points.length;
-
-			for (var k = 0; k < length; k++) {
-				if ($.inArray(this.timeline_data.active_points[k].channel, channels) != -1) {
-					active_timeline_points.push(this.timeline_data.active_points[k]);
-				}
-			}
-		} else {
-			$.merge(active_timeline_points, this.timeline_data.active_points);
-		}
-
-		if (!active_timeline_points.length) {
-			return [];
-		}
-
-		var returned_points = [];
-
-		if (reverse) {
-			var length = active_timeline_points.length;
-
-			for (var k = 0; k < length; k++) {
-				if (ms > active_timeline_points[k].ms[1]) {
-					returned_points.push(active_timeline_points[k]);
+					this.timeline.points.push(points[ms][p]);
 				}
 			}
 
-			returned_points.reverse();
-		} else {
-			var length = active_timeline_points.length;
+			this.executeTimeline();
+		},
 
-			for (var k = 0; k < length; k++) {
-				if (ms < active_timeline_points[k].ms[1]) {
-					returned_points.push(active_timeline_points[k]);
+
+		/**
+		 * function getPoints (from)
+		 *
+		 * Get the timeline points from any time to the end
+		 */
+		getPoints: function (from) {
+			if (from == undefined) {
+				from = 0;
+			}
+
+			from = from.secondsTo('ms');
+
+			var points = [];
+
+			for (var k = 0, length = this.timeline.points.length; k < length; k++) {
+				if (from < this.timeline.points[k].end) {
+					points.push(this.timeline.points[k]);
 				}
 			}
-		}
 
-		if (typeof offset != 'number') {
-			return returned_points;
-		}
-
-		if (typeof length == 'number') {
-			return returned_points.slice(offset, offset + length);
-		}
-
-		return returned_points.slice(offset);
-	}
+			return points;
+		},
 
 
-	//Execute out functions
-	$media.prototype.executeTimelineOutPoints = function (ms) {
-		if (!this.timeline_data.remaining_outpoints.length) {
-			return;
-		}
 
-		var length = this.timeline_data.remaining_outpoints.length;
-
-		for (var s = 0; s < length; s++) {
-			if (this.timeline_data.remaining_outpoints[s] && (ms < this.timeline_data.remaining_outpoints[s].ms[0] || ms > this.timeline_data.remaining_outpoints[s].ms[1] || !this.channels[this.timeline_data.remaining_outpoints[s].channel].enabled)) {
-				this.executeTimelinePoint(this.timeline_data.remaining_outpoints[s], 'fn_out');
-				this.timeline_data.remaining_outpoints[s].waiting = false;
-				this.timeline_data.remaining_outpoints.splice(s, 1);
+		/**
+		 * function executeTimeline ()
+		 *
+		 * Execute the timeline functions
+		 */
+		executeTimeline: function () {
+			if (!this.timeline.points.length && !this.timeline.inPoints.length && !this.timeline.outPoints.length) {
+				return;
 			}
-		}
-	}
+
+			this.timeline.inPoints = this.getPoints(this.time());
+
+			this.timelineTimeout();
+		},
 
 
-	$media.prototype.executeTimelinePoint = function (point, fn) {
-		if (!fn) {
-			fn = 'fn';
-		}
 
-		if (!$.isFunction(point[fn])) {
-			console.error('There is not function to execute in timeline');
-			return false;
-		}
+		/**
+		 * function timelineTimeout ()
+		 *
+		 * Function to execute on timeOut
+		 */
+		timelineTimeout: function () {
+			if (!this.timeline.inPoints.length && !this.timeline.outPoints.length) {
+				return;
+			}
 
-		if (!$.isArray(point.data)) {
-			point.data = (point.data == undefined) ? [] : [point.data];
-		}
+			//Execute functions
+			var ms = this.time().secondsTo('ms');
+			var total_ms = this.totalTime().secondsTo('ms');
 
-		if (!point.proxy) {
-			point.proxy = this;
-		}
+			while (this.timeline.inPoints && this.timeline.inPoints[0] && this.timeline.inPoints[0].start <= ms && this.timeline.inPoints[0].start < total_ms) {
+				var point = this.timeline.inPoints.shift();
 
-		point[fn].apply(point.proxy, $.merge([point.ms[0]], point.data));
-	}
-
-
-	/**
-	 * function executeTimeline ()
-	 *
-	 * Execute the timeline functions
-	 */
-	$media.prototype.executeTimeline = function () {
-		if (!this.timeline_data.active_points.length && !this.timeline_data.remaining_points.length && !this.timeline_data.remaining_outpoints.length) {
-			return;
-		}
-
-		//Get tmp_timeline (from now to the end)
-		this.timeline_data.remaining_points = this.getPoints(this.time());
-
-		this.timelineTimeout();
-	}
-
-
-	/**
-	 * function timelineTimeout ()
-	 *
-	 * Function to execute on timeOut
-	 */
-	$media.prototype.timelineTimeout = function () {
-		if (!this.timeline_data.remaining_points.length && !this.timeline_data.remaining_outpoints.length) {
-			return;
-		}
-
-		//Execute functions
-		var ms = this.time().secondsTo('ms');
-		var total_ms = this.totalTime().secondsTo('ms');
-
-		while (this.timeline_data.remaining_points && this.timeline_data.remaining_points[0] && this.timeline_data.remaining_points[0].ms[0] <= ms && this.timeline_data.remaining_points[0].ms[0] < total_ms) {
-			var point = this.timeline_data.remaining_points.shift();
-
-			if (!point.waiting) {
-				this.executeTimelinePoint(point);
-
-				if ($.isFunction(point.fn_out)) {
-					point.waiting = true;
-					this.timeline_data.remaining_outpoints.push(point);
+				if (point.execute() && point.waiting) {
+					this.timeline.outPoints.push(point);
 				}
 			}
-		}
 
-		//Execute out functions
-		this.executeTimelineOutPoints(ms);
+			//Execute out functions
+			var length = this.timeline.outPoints.length;
 
-		//Create other timeout
-		if (!this.playing() || this.element.seeking || (!this.timeline_data.remaining_points.length && !this.timeline_data.remaining_outpoints.length)) {
-			return;
-		}
+			if (length) {
+				for (var k = 0; k < length; k++) {
+					var point = this.timeline.outPoints[k];
 
-		var new_ms = 0;
-
-		if (this.timeline_data.remaining_points[0]) {
-			new_ms = this.timeline_data.remaining_points[0].ms[0];
-		}
-
-		if (this.timeline_data.remaining_outpoints.length) {
-			var length = this.timeline_data.remaining_outpoints.length;
-
-			for (var n = 0; n < length; n++) {
-				if (!new_ms || this.timeline_data.remaining_outpoints[n].ms[1] < new_ms) {
-					new_ms = this.timeline_data.remaining_outpoints[n].ms[1];
+					if (point && (ms < point.start || ms > point.end || !point.channel.isEnabled())) {
+						point.executeOut();
+						this.timeline.outPoints.splice(k, 1);
+					}
 				}
 			}
-		}
-		
-		new_ms = (new_ms - ms) + 10;
+			
+			//Create other timeout
+			if (!this.playing() || this.element.seeking || (!this.timeline.inPoints.length && !this.timeline.outPoints.length)) {
+				return;
+			}
 
-		if (new_ms < 20) {
-			new_ms = 20;
-		}
+			var new_ms = 0;
 
-		clearTimeout(this.timeline_data.timeout);
-		this.timeline_data.timeout = setTimeout($.proxy(this.timelineTimeout, this), new_ms);
-	}
+			if (this.timeline.inPoints[0]) {
+				new_ms = this.timeline.inPoints[0].start;
+			}
+
+			var length = this.timeline.outPoints.length;
+
+			if (length) {
+				for (var k = 0; k < length; k++) {
+					if (!new_ms || this.timeline.outPoints[k].end < new_ms) {
+						new_ms = this.timeline.outPoints[k].end;
+					}
+				}
+			}
+			
+			new_ms = new_ms - ms;
+
+			if (new_ms < 20) {
+				new_ms = 20;
+			}
+
+			clearTimeout(this.timeline.timeout);
+			this.timeline.timeout = setTimeout($.proxy(this.timelineTimeout, this), new_ms);
+		}
+	});
 })(jQuery);

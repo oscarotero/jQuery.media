@@ -1,7 +1,10 @@
 /**
- * $media.toCanvas jQuery plugin (beta)
+ * $media.toCanvas (1.0)
  *
- * 2011. Created by Oscar Otero (http://oscarotero.com)
+ * Require:
+ * $media
+ *
+ * 2012. Created by Oscar Otero (http://oscarotero.com)
  *
  * $media.toCanvas is released under the GNU Affero GPL version 3.
  * More information at http://www.gnu.org/licenses/agpl-3.0.html

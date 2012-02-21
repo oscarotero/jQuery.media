@@ -1,7 +1,7 @@
 /**
- * $media (core) jQuery plugin (v.1.2)
+ * $media jQuery plugin (v.1.3)
  *
- * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+ * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
  *
  * $media is released under the GNU Affero GPL version 3.
  * More information at http://www.gnu.org/licenses/agpl-3.0.html
@@ -22,7 +22,6 @@
 	window.$media = function (element) {
 		this.element = element;
 		this.$element = $(element);
-		this.isFullScreen = false;
 
 		if (this.$element.is('video')) {
 			this.type = 'video';
@@ -693,23 +692,21 @@
 
 			switch (events[i]) {
 
-				//TODO: Check fullscreen events in Firefox
 				case 'mediaFullScreen':
-					this.bind('mozfullscreenchange', function (e) {
-						this.trigger('mediaFullScreen', [true]);
-						this.isFullScreen = true;
-					});
-
 					$(document).bind('mozfullscreenchange', function (e) {
-						if ((document.mozFullScreen === false) && that.isFullScreen) {
-							that.trigger('mediaFullScreen', [false]);
-							that.isFullScreen = false;
+						if (document.mozFullScreenElement && that.$element.is(document.mozFullScreenElement)) {
+							that.$element.data('fullScreen', true);
+						} else if (that.$element.data('fullScreen')) {
+							that.$element.data('fullScreen', false);
+						} else {
+							return;
 						}
+
+						that.trigger('mediaFullScreen', [that.$element.data('fullScreen')]);
 					});
 
 					this.bind('webkitfullscreenchange', function (e) {
 						this.trigger('mediaFullScreen', [document.webkitIsFullScreen]);
-						this.isFullScreen = true;
 					});
 					break;
 
