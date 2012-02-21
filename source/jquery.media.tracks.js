@@ -48,8 +48,8 @@
 				parse.push({
 					num: num++,
 					id: id,
-					start: time[1],
-					end: time[2],
+					in: time[1],
+					out: time[2],
 					settings: settings,
 					content: lines.join('<br>')
 				});
@@ -57,10 +57,10 @@
 
 			return parse;
 		},
-		startPoint: function (point) {
+		inPoint: function (point) {
 			point.trackElement = $('<div>' + point.data.point.content + '</div>').appendTo(this.settings.target);
 		},
-		endPoint: function (point) {
+		outPoint: function (point) {
 			point.trackElement.remove();
 		}
 	}
@@ -76,8 +76,8 @@
 
 		//Settings
 		this.settings = {
-			start: helpers.startPoint,
-			end: helpers.endPoint
+			in: helpers.inPoint,
+			out: helpers.outPoint
 		};
 
 		if (!settings.target) {
@@ -120,10 +120,10 @@
 
 				$.each(that.points, function (index, point) {
 					points.push({
-						time: [point.start, point.end],
+						time: [point.in, point.out],
 						point: point,
-						fn: that.startPoint,
-						fn_out: that.endPoint,
+						fn: that.inPoint,
+						fn_out: that.outPoint,
 						proxy: that
 					});
 				});
@@ -198,24 +198,24 @@
 
 		
 		/**
-		 * function startPoint (point)
+		 * function inPoint (point)
 		 *
 		 * The function executed when the media enter to a point
 		 */
-		startPoint: function (point) {
+		inPoint: function (point) {
 			this.point = point.num;
 
-			$.proxy(this.settings.start, this)(point);
+			$.proxy(this.settings.in, this)(point);
 		},
 
 		
 		/**
-		 * function endPoint (point)
+		 * function outPoint (point)
 		 *
 		 * The function executed when the media leaves a point
 		 */
-		endPoint: function (point) {
-			$.proxy(this.settings.end, this)(point);
+		outPoint: function (point) {
+			$.proxy(this.settings.out, this)(point);
 		},
 
 		
@@ -265,7 +265,7 @@
 			var point = this.getPoint(position);
 
 			if (point) {
-				this.media.seek(point.start);
+				this.media.seek(point.in);
 				this.point = point.num;
 			}
 
