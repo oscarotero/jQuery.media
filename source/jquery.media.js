@@ -37,9 +37,6 @@
 	}
 
 
-	$media.plugins = {};
-
-
 	/**
 	 * function fragment ([fragment])
 	 *

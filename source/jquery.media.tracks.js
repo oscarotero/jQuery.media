@@ -1,5 +1,5 @@
 /**
- * $media.tracks (2.0)
+ * $media.tracks (2.1)
  *
  * Require:
  * $media
@@ -57,178 +57,68 @@
 
 			return parse;
 		},
-		fn: function (point) {
-			this.point = point.num;
 
-			point.trackElement = $('<div>' + point.data.point.content + '</div>').appendTo(this.settings.target);
+		fn: function (media, timeline) {
+			if (!timeline.settings.target) {
+				timeline.settings.target = $('<div class="track_' + timeline.settings.track.attr('kind') + '"></div>').insertAfter(media.$element);
+			}
+
+			this.trackElement = $('<div>' + this.settings.point.content + '</div>').appendTo(timeline.settings.target);
 		},
-		fn_out: function (point) {
-			point.trackElement.remove();
+
+		fn_out: function (media, point) {
+			this.trackElement.remove();
 		}
 	}
 
+	$media.getTimelineFromTrack = function (track, settings) {
+		var track = $(track);
 
-	//Track class constructor
-	var track = function (element, media, settings) {
-		this.media = media;
-		this.element = element;
-		this.$element = $(element);
-		this.kind = this.$element.attr('kind');
-		this.point = false;
-
-		//Settings
-		this.settings = {};
-		settings = settings || {};
-		
-		if (!settings.target) {
-			settings.target = $('<div class="track_' + this.kind + '"></div>').insertAfter(this.media.$element);
-		}
-
-		$.extend(this.settings, settings);
-
-		//Channel
-		if (this.settings.channel) {
-			this.channel = this.media.getChannel(this.settings.channel, true);
-		} else {
-			var date = new Date;
-			this.channel = this.media.createChannel(this.kind + date.getTime());
-		}
-
-		//Load data
-		this.source(this.$element.attr('src'));
-	}
-
-	track.prototype = {
-		/**
-		 * function source ()
-		 *
-		 * Initialize the media timeline using the data
-		 */
-		source: function (source) {
-			if (!source) {
-				return this.$element.attr('src');
-			}
-
-			this.channel.removeAllPoints();
-
-			var that = this;
-
-			$.get(source, function (text) {
-				that.points = helpers.parseWebSRT(text);
-
-				var points = [];
-
-				$.each(that.points, function (index, point) {
-					points.push({
-						time: [point.in, point.out],
-						point: point,
-						fn: helpers.fn,
-						fn_out: helpers.fn_out,
-						proxy: that
-					});
-				});
-
-				that.channel.addPoint(points);
-
-				if ($.isFunction(that.settings.load)) {
-					$.proxy(that.settings.load, that)();
-				}
-			});
-		},
-
-
-		/**
-		 * function enable ()
-		 *
-		 * Enable the track
-		 */
-		enable: function () {
-			this.channel.enable();
-
-			return this;
-		},
-
-		
-		/**
-		 * function disable ()
-		 *
-		 * Disable the track
-		 */
-		disable: function () {
-			this.channel.disable();
-
-			return this;
-		},
-
-		
-		/**
-		 * function getPoint ([position])
-		 *
-		 * Get the current point or another one
-		 */
-		getPoint: function (position) {
-			if (position == undefined) {
-				return this.points[this.point];
-			}
-
-			if (typeof position == 'string' && (position.indexOf('+') === 0 || position.indexOf('-') === 0)) {
-				var string = position;
-
-				position = parseInt(string.substr(1), 10);
-
-				if (string.indexOf('-') === 0) {
-					position = -position;
-				}
-			}
-
-			if (typeof position == 'number') {
-				position += this.point;
-				return this.points[position];
-			}
-
-			if (typeof position == 'string') {
-				for (var i in this.points) {
-					if (this.points[i].id == position) {
-						return this.points[i];
-					}
-				}
-			}
-
+		if (!track.length) {
 			return false;
-		},
-
-		
-		/**
-		 * function seek ([position])
-		 *
-		 * Seek to a point
-		 */
-		seek: function (position) {
-			var point = this.getPoint(position);
-
-			if (point) {
-				this.media.seek(point.in);
-				this.point = point.num;
-			}
-
-			return this;
 		}
+
+		var timeline = new $media.timeline();
+
+		timeline.settings.track = track;
+
+		$.get(track.attr('src'), function (text) {
+			var result = helpers.parseWebSRT(text);
+			var points = [];
+
+			$.each(result, function (index, point) {
+				points.push({
+					time: [point.in, point.out],
+					fn: helpers.fn,
+					fn_out: helpers.fn_out,
+					point: point
+				});
+			});
+
+			timeline.addPoint(points);
+
+			if ($.isFunction(timeline.settings.load)) {
+				$.proxy(timeline.settings.load, timeline)();
+			}
+		});
+
+		return timeline;
 	};
 
 
-	$media.extend('getTrack', function (element, settings) {
-		var $element = $(element).eq(0);
+	$media.extend('getTimelineFromTrack', function (track, settings, name) {
+		var timeline = $media.getTimelineFromTrack(track, settings);
 
-		if (!$element.is('track')) {
+		if (!timeline) {
 			return false;
 		}
 
-		if ($.isFunction(settings)) {
-			settings = {load: settings};
+		if (!name) {
+			name = $.now() + timeline.settings.track.attr('kind');
 		}
 
-		settings = settings || {};
+		this.setTimeline(name, timeline);
 
-		return new track($element.get(0), this, settings);
+		return timeline;
 	});
 })(jQuery);
