@@ -97,6 +97,8 @@
 
 		executeOut: function () {
 			if (!this.waiting || !this.settings.fn_out) {
+				this.waiting = false;
+
 				return false;
 			}
 
@@ -118,12 +120,18 @@
 		}
 
 		this.settings = settings;
+
+		if (!$.isArray(this.settings.points)) {
+			this.settings.points = [];
+		}
 	};
 
 
 	window.$media.timeline.prototype = {
-		setMedia: function (media, name) {
+		setMedia: function (name, media) {
 			media.setTimeline(name, this);
+
+			return this;
 		},
 
 		getMedia: function () {
@@ -138,6 +146,8 @@
 				this.media = false;
 				this.name = null;
 			}
+
+			return this;
 		},
 
 		/**
@@ -157,6 +167,8 @@
 					this.media.refreshTimeline();
 				}
 			}
+
+			return this;
 		},
 
 
@@ -177,6 +189,8 @@
 					this.media.refreshTimeline();
 				}
 			}
+
+			return this;
 		},
 
 
@@ -196,7 +210,7 @@
 		 * Adds one or more points to the timeline
 		 */
 		applyPointsToMedia: function (points) {
-			if (!this.media) {
+			if (!this.media || !points || !points.length) {
 				return;
 			}
 
@@ -259,9 +273,8 @@
 
 			for (var i = 0, length = points.length; i < length; i++) {
 				points[i] = new $media.point(points[i], this);
+				this.settings.points.push(points[i]);
 			}
-
-			$.extend(this.settings.points, points);
 
 			this.applyPointsToMedia(points);
 
@@ -309,7 +322,7 @@
 			timeline.media = this;
 			timeline.name = name;
 			timeline.points = {};
-			timeline.applyPointsToMedia(this, false);
+			timeline.applyPointsToMedia(timeline.settings.points);
 
 			this.timelines[name] = timeline;
 
@@ -339,6 +352,8 @@
 					}
 				});
 			}
+
+			return this;
 		},
 
 
@@ -386,6 +401,8 @@
 			delete this.timelines[name];
 
 			this.refreshTimeline();
+
+			return this;
 		},
 
 
@@ -463,6 +480,8 @@
 			}
 
 			this.executeTimeline();
+
+			return this;
 		},
 
 
@@ -504,6 +523,8 @@
 			this.timeline.inPoints = this.getPoints(this.time());
 
 			this.timelineTimeout();
+
+			return this;
 		},
 
 
