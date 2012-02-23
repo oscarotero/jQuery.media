@@ -33,6 +33,10 @@
 					{
 						time: 2,
 						fn: function () {
+							if (this.count > 1) {
+								return;
+							}
+
 							console.log('estamos no segundo 2');
 
 							timeline2.setMedia('segundo-video', video);
@@ -40,6 +44,7 @@
 					},{
 						time: [3, '00:04'],
 						fn: function () {
+							this.disable();
 							console.log('estamos no segundo 3 a 4');
 						}
 					},{

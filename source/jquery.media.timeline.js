@@ -43,6 +43,8 @@
 
 		this.settings = settings;
 		this.timeline = timeline;
+		this.count = 0;
+		this.enabled = true;
 
 		if (!$.isFunction(settings.fn)) {
 			console.error('There is not function to execute in this point');
@@ -77,14 +79,24 @@
 			}
 		},
 
+		enable: function () {
+			this.enabled = true;
+		},
+
+		disable: function () {
+			this.enabled = false;
+		},
+
 		isEnabled: function () {
-			return (this.timeline && this.timeline.isEnabled()) ? true : false;
+			return (this.enabled && this.timeline && this.timeline.isEnabled()) ? true : false;
 		},
 
 		execute: function () {
-			if (this.waiting) {
+			if (this.waiting || !this.enabled) {
 				return false;
 			}
+
+			this.count++;
 
 			this.settings.fn.call(this, this.timeline.media, this.timeline);
 
@@ -500,7 +512,7 @@
 			var points = [];
 
 			for (var k = 0, length = this.timeline.points.length; k < length; k++) {
-				if (from < this.timeline.points[k].end) {
+				if (from < this.timeline.points[k].end && this.timeline.points[k].isEnabled()) {
 					points.push(this.timeline.points[k]);
 				}
 			}
