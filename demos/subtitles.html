@@ -22,7 +22,11 @@
 					var value = $(this).val();
 
 					if (!subtitles[value]) {
-						subtitles[value] = video.getTimelineFromTrack(value);
+						subtitles[value] = video.getTimelineFromTrack(value, {
+							load: function (media) {
+								media.play();
+							}
+						});
 					}
 
 					if ($(this).prop('checked')) {

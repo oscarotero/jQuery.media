@@ -97,8 +97,8 @@
 
 			timeline.addPoint(points);
 
-			if ($.isFunction(timeline.settings.load)) {
-				$.proxy(timeline.settings.load, timeline)();
+			if ($.isFunction(settings.load)) {
+				$.proxy(settings.load, timeline)(timeline.media);
 			}
 		});
 
