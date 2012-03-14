@@ -140,28 +140,6 @@
 
 
 	window.$media.timeline.prototype = {
-		setMedia: function (name, media) {
-			media.setTimeline(name, this);
-
-			return this;
-		},
-
-		getMedia: function () {
-			return this.media;
-		},
-
-		removeMedia: function () {
-			if (this.name && this.media) {
-				this.media.removeTimeline(this.name)
-			} else {
-				this.points = {};
-				this.media = false;
-				this.name = null;
-			}
-
-			return this;
-		},
-
 		/**
 		 * function enable ([bool refreshMedia])
 		 *
