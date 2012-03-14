@@ -73,6 +73,7 @@
 
 	$media.getTimelineFromTrack = function (track, settings) {
 		var track = $(track);
+		var settings = settings || {};
 
 		if (!track.length) {
 			return false;
