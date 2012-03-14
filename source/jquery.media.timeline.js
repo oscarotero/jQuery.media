@@ -36,7 +36,7 @@
 
 
 	//Point class
-	window.$media.point = function (settings, timeline) {
+	window.$media.Point = function (settings, timeline) {
 		if (typeof settings != 'object') {
 			settings = {};
 		}
@@ -64,7 +64,7 @@
 		}
 	};
 
-	window.$media.point.prototype = {
+	window.$media.Point.prototype = {
 		updateRelativeTime: function () {
 			if (!this.timeline || !this.timeline.media) {
 				return;
@@ -122,7 +122,7 @@
 
 	
 	//Timeline class
-	window.$media.timeline = function (settings) {
+	window.$media.Timeline = function (settings) {
 		this.enabled = false;
 		this.points = {};
 		this.media = false;
@@ -139,7 +139,7 @@
 	};
 
 
-	window.$media.timeline.prototype = {
+	window.$media.Timeline.prototype = {
 		/**
 		 * function enable ([bool refreshMedia])
 		 *
@@ -262,7 +262,7 @@
 			}
 
 			for (var i = 0, length = points.length; i < length; i++) {
-				points[i] = new $media.point(points[i], this);
+				points[i] = new $media.Point(points[i], this);
 				this.settings.points.push(points[i]);
 			}
 
@@ -290,14 +290,6 @@
 
 	//Extends $media class
 	$media.extend({
-		timelines: {},
-		timeline: {
-			points: [],
-			inPoints: [],
-			outPoints: [],
-			timeout: false
-		},
-
 
 		/**
 		 * function setTimeline (name, timeline)
@@ -305,7 +297,7 @@
 		 * Join a timeline object
 		 */
 		setTimeline: function (name, timeline) {
-			if (this.timelines[name]) {
+			if (this.timelines && this.timelines[name]) {
 				this.removeTimeline(name);
 			}
 
@@ -314,14 +306,14 @@
 			timeline.points = {};
 			timeline.applyPointsToMedia(timeline.settings.points);
 
-			this.timelines[name] = timeline;
-
-			if (timeline.isEnabled()) {
-				this.refreshTimeline();
-			}
-
-			if (this.timeline.timeout === false) {
-				this.timeline.timeout = 0;
+			if (!this.timeline || !this.timelines) {
+				this.timelines = {};
+				this.timeline = {
+					points: [],
+					inPoints: [],
+					outPoints: [],
+					timeout: 0
+				};
 
 				this.bind('mediaPlay mediaSeek', function() {
 					this.executeTimeline();
@@ -343,6 +335,12 @@
 				});
 			}
 
+			this.timelines[name] = timeline;
+
+			if (timeline.isEnabled()) {
+				this.refreshTimeline();
+			}
+
 			return this;
 		},
 
@@ -353,11 +351,11 @@
 		 * Gets a timeline
 		 */
 		getTimeline: function (name, createIfNotExists, options) {
-			if (name && !this.timelines[name] && createIfNotExists === true) {
-				this.setTimeline(name, new $media.timeline(options));
+			if (name && (!this.timelines || !this.timelines[name]) && createIfNotExists === true) {
+				this.setTimeline(name, new $media.Timeline(options));
+			} else if (this.timelines) {
+				return this.timelines[name];;
 			}
-
-			return this.timelines[name];
 		},
 
 

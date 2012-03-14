@@ -79,7 +79,7 @@
 			return false;
 		}
 
-		var timeline = new $media.timeline();
+		var timeline = new $media.Timeline();
 
 		timeline.settings.track = track;
 
