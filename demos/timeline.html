@@ -11,13 +11,13 @@
 
 		<script type="text/javascript">
 			var video;
-			var timeline1;
-			var timeline2;
+			var timeline1 = new $media.timeline();
+			var timeline2 = new $media.timeline();
 
 			$(document).ready(function () {
 				video = $.media('video');
 
-				timeline2 = new $media.timeline();
+				video.setTimeline('primer-video', timeline1);
 
 				timeline2.addPoint(5, function () {
 					console.log('timeline2: estamos no segundo 5');
@@ -26,8 +26,6 @@
 				}).enable();
 
 				video.play();
-
-				timeline1 = video.getTimeline('timeline1', true);
 
 				timeline1.addPoint([
 					{

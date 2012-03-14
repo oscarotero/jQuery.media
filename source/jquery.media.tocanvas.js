@@ -1,5 +1,5 @@
 /**
- * $media.toCanvas (1.0)
+ * $media.toCanvas (1.1)
  *
  * Require:
  * $media
@@ -53,5 +53,21 @@
 		});
 
 		return this;
+	});
+
+	$media.extend('getScreenShot', function (format) {
+		var canvas = $('<canvas></canvas>').get(0);
+
+		var width = canvas.width = this.width(true);
+		var height = canvas.height = this.height(true);
+
+		canvas.getContext('2d').drawImage(this.element, 0, 0, width, height);
+
+		if (format === 'canvas') {
+			return canvas;
+		} else {
+			return canvas.toDataURL("image/png");
+		}
+		
 	});
 })(jQuery);
