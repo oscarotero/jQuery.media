@@ -1,5 +1,5 @@
 /**
- * $media.sync (1.0)
+ * $media.sync (1.1)
  *
  * Require:
  * $media
@@ -52,7 +52,7 @@
 		syncWith: function (media, offset) {
 			offset = offset ? offset.toSeconds() : 0;
 
-			if ($.isArray(this.sync)) {
+			if ($.isArray(this.sync) && this.sync.length) {
 				this.sync.push({
 					media: media,
 					offset: offset
