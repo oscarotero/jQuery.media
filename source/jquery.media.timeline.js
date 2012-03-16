@@ -527,19 +527,10 @@
 				return;
 			}
 
-			//Execute functions
 			var ms = this.time().secondsTo('ms');
 			var total_ms = this.totalTime().secondsTo('ms');
 
-			while (this.timeline.inPoints && this.timeline.inPoints[0] && this.timeline.inPoints[0].start <= ms && this.timeline.inPoints[0].start < total_ms) {
-				var point = this.timeline.inPoints.shift();
-
-				if (point.execute() && point.waiting) {
-					this.timeline.outPoints.push(point);
-				}
-			}
-
-			//Execute out functions
+			//Execute "out" functions
 			var length = this.timeline.outPoints.length;
 
 			if (length) {
@@ -552,7 +543,16 @@
 					}
 				}
 			}
-			
+
+			//Execute "in" functions
+			while (this.timeline.inPoints && this.timeline.inPoints[0] && this.timeline.inPoints[0].start <= ms && this.timeline.inPoints[0].start < total_ms) {
+				var point = this.timeline.inPoints.shift();
+
+				if (point.execute() && point.waiting) {
+					this.timeline.outPoints.push(point);
+				}
+			}
+
 			//Create other timeout
 			if (!this.playing() || this.element.seeking || (!this.timeline.inPoints.length && !this.timeline.outPoints.length)) {
 				return;
