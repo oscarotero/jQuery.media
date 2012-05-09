@@ -353,8 +353,10 @@
 		getTimeline: function (name, createIfNotExists, options) {
 			if (name && (!this.timelines || !this.timelines[name]) && createIfNotExists === true) {
 				this.setTimeline(name, new $media.Timeline(options));
-			} else if (this.timelines) {
-				return this.timelines[name];;
+			}
+
+			if (this.timelines) {
+				return this.timelines[name];
 			}
 		},
 
@@ -488,7 +490,7 @@
 			var points = [];
 
 			for (var k = 0, length = this.timeline.points.length; k < length; k++) {
-				if (from < this.timeline.points[k].end && this.timeline.points[k].isEnabled()) {
+				if (from <= this.timeline.points[k].end && this.timeline.points[k].isEnabled()) {
 					points.push(this.timeline.points[k]);
 				}
 			}
