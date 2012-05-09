@@ -1,5 +1,5 @@
 /**
- * $media.timeline (2.1)
+ * $media.timeline (2.2)
  *
  * Require:
  * $media
