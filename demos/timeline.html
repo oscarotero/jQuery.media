@@ -11,50 +11,44 @@
 
 		<script type="text/javascript">
 			var video;
-			var timeline1 = new $media.Timeline();
-			var timeline2 = new $media.Timeline();
 
 			$(document).ready(function () {
 				video = $.media('video');
 
-				video.setTimeline('primer-video', timeline1);
+				video.setTimeline('first', {
+					enabled: true,
+					points: [
+						{
+							time: 2,
+							fn: function (point, timeline) {
+								console.log('estamos no segundo 2');
 
-				timeline2.addPoint(5, function () {
-					console.log('timeline2: estamos no segundo 5');
-				}).addPoint(4, function () {
-					console.log('timeline2: estamos no segundo 4');
-				}).enable();
-
-				video.play();
-
-				timeline1.addPoint([
-					{
-						time: 2,
-						fn: function () {
-							if (this.count > 1) {
-								return;
+								this.setTimeline('second', {
+									points: {
+										time: 5,
+										fn: function () {
+											console.log('metido o non timeline dentro doutro');
+										}
+									}
+								});
 							}
-
-							console.log('estamos no segundo 2');
-
-							video.setTimeline('segundo-video', timeline2);
+						},{
+							time: [3, '00:04'],
+							fn: function () {
+								console.log('estamos no segundo 3 a 4');
+								this.enableTimeline('second');
+							}
+						},{
+							time: [5, 6],
+							fn: function () {
+								console.log('estamos no segundo 5 a 6');
+							},
+							fn_out: function () {
+								console.log('xa non estamos entre o 5 e 6');
+							}
 						}
-					},{
-						time: [3, '00:04'],
-						fn: function () {
-							this.disable();
-							console.log('estamos no segundo 3 a 4');
-						}
-					},{
-						time: [5, 6],
-						fn: function () {
-							console.log('estamos no segundo 5 a 6');
-						},
-						fn_out: function () {
-							console.log('xa non estamos entre o 5 e 6');
-						}
-					}
-				]).enable();
+					]
+				});
 			});
 		</script>
 	</head>

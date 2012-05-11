@@ -13,6 +13,7 @@
 
 
 (function($) {
+	'use strict';
 
 	//Helpers
 	var helpers = {
@@ -46,44 +47,47 @@
 				}
 
 				parse.push({
-					num: num++,
-					id: id,
-					in: time[1],
-					out: time[2],
-					settings: settings,
-					content: lines.join('<br>')
+					'num': num++,
+					'id': id,
+					'in': time[1],
+					'out': time[2],
+					'settings': settings,
+					'content': lines.join('<br>')
 				});
 			});
 
 			return parse;
 		},
 
-		fn: function (media, timeline) {
-			if (!timeline.settings.target) {
-				timeline.settings.target = $('<div class="track_' + timeline.settings.track.attr('kind') + '"></div>').insertAfter(media.$element);
+		fn: function (dataPoint, dataTimeline) {
+			if (!dataTimeline.target) {
+				dataTimeline.target = $('<div class="track_' + dataTimeline.track.attr('kind') + '"></div>').insertAfter(this.$element);
 			}
 
-			this.trackElement = $('<div>' + this.settings.point.content + '</div>').appendTo(timeline.settings.target);
+			dataPoint.trackElement = $('<div>' + dataPoint.content + '</div>').appendTo(dataTimeline.target);
 		},
 
-		fn_out: function (media, point) {
-			this.trackElement.remove();
+		fn_out: function (dataPoint, dataTimeline) {
+			dataPoint.trackElement.remove();
 		}
 	}
 
-	$media.getTimelineFromTrack = function (track, settings) {
-		var track = $(track);
-		var settings = settings || {};
 
-		if (!track.length) {
+	$media.extend('setTimelineFromTrack', function (name, options) {
+		options = options || {};
+		options.data = options.data || {};
+
+		options.data.track = $(options.track);
+
+		if (!options.data.track.length) {
 			return false;
 		}
 
-		var timeline = new $media.Timeline();
+		this.setTimeline(name, options);
 
-		timeline.settings.track = track;
+		var media = this;
 
-		$.get(track.attr('src'), function (text) {
+		$.get(options.data.track.attr('src'), function (text) {
 			var result = helpers.parseWebSRT(text);
 			var points = [];
 
@@ -92,34 +96,13 @@
 					time: [point.in, point.out],
 					fn: helpers.fn,
 					fn_out: helpers.fn_out,
-					point: point
+					data: point
 				});
 			});
 
-			timeline.addPoint(points);
-
-			if ($.isFunction(settings.load)) {
-				$.proxy(settings.load, timeline)(timeline.media);
-			}
+			media.setTimelinePoints(name, points);
 		});
 
-		return timeline;
-	};
-
-
-	$media.extend('getTimelineFromTrack', function (track, settings, name) {
-		var timeline = $media.getTimelineFromTrack(track, settings);
-
-		if (!timeline) {
-			return false;
-		}
-
-		if (!name) {
-			name = $.now() + timeline.settings.track.attr('kind');
-		}
-
-		this.setTimeline(name, timeline);
-
-		return timeline;
+		return this;
 	});
 })(jQuery);

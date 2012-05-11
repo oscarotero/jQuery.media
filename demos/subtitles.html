@@ -12,7 +12,6 @@
 
 		<script type="text/javascript">
 			var video;
-			var subtitles = {};
 
 			$(document).ready(function () {
 				video = $.media('video');
@@ -21,18 +20,16 @@
 				$('#change_subtitles input:checkbox').click(function () {
 					var value = $(this).val();
 
-					if (!subtitles[value]) {
-						subtitles[value] = video.getTimelineFromTrack(value, {
-							load: function (media) {
-								media.play();
-							}
+					if (!video.timelineExists(value)) {
+						video.setTimelineFromTrack(value, {
+							track: value
 						});
 					}
 
 					if ($(this).prop('checked')) {
-						subtitles[value].enable();
+						video.enableTimeline(value);
 					} else {
-						subtitles[value].disable();
+						video.disableTimeline(value);
 					}
 				});
 			});

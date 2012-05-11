@@ -9,6 +9,7 @@
 
 
 (function($) {
+	'use strict';
 
 	//Detect device
 	var device = navigator.userAgent.toLowerCase();

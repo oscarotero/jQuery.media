@@ -11,6 +11,8 @@
  */
 
 (function ($) {
+	'use strict';
+	
 	var timerCallback = function (media, settings, width, height) {
 		if (!media.playing()) {
 			return false;

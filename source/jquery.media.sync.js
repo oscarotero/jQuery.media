@@ -12,6 +12,8 @@
 
 
 (function ($) {
+	'use strict';
+
 	var syncReady = function (medias, state) {
 		var sync_ready = true;
 
