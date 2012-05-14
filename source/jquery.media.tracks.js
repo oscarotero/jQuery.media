@@ -1,5 +1,5 @@
 /**
- * $media.tracks (2.1)
+ * $media.tracks (2.1.1)
  *
  * Require:
  * $media
@@ -23,7 +23,7 @@
 			var num = 0;
 
 			$.each(pieces, function (index, piece) {
-				var lines = piece.split("\n");
+				var lines = $.trim(piece).split("\n");
 				var id = '';
 
 				if (lines[0].indexOf(' --> ') == -1) {

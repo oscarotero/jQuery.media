@@ -170,20 +170,6 @@
 			this.savePoints(media, newPoints);
 
 			return this;
-		},
-
-
-		/**
-		 * function getPoints ()
-		 *
-		 * Returns the points from the timeline
-		 */
-		getPoints: function () {
-			if (!this.enabled) {
-				return {};
-			}
-
-			return this.points;
 		}
 	}
 
@@ -392,7 +378,7 @@
 					continue;
 				}
 
-				var timelinePoints = timeline.getPoints();
+				var timelinePoints = timeline.points;
 
 				for (var ms in timelinePoints) {
 					if (points[ms] == undefined) {
