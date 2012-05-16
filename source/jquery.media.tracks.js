@@ -1,5 +1,5 @@
 /**
- * $media.tracks (2.1.1)
+ * $media.tracks (2.1.2)
  *
  * Require:
  * $media
@@ -93,7 +93,7 @@
 
 			$.each(result, function (index, point) {
 				points.push({
-					time: [point.in, point.out],
+					time: [point['in'], point['out']],
 					fn: helpers.fn,
 					fn_out: helpers.fn_out,
 					data: point
