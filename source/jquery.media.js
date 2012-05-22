@@ -1,5 +1,5 @@
 /**
- * $media jQuery plugin (v.1.3)
+ * $media jQuery plugin (v.1.3.1)
  *
  * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
  *
@@ -986,7 +986,7 @@
 	 * Creates a video element and returns a $media object with it
 	 */
 	jQuery.mediaVideo = function (properties) {
-		if (typeof properties == 'string') {
+		if (typeof properties == 'string' || $.isArray(properties)) {
 			properties = {src: properties};
 		}
 
@@ -1000,7 +1000,7 @@
 	 * Creates an audio element and returns a $media object with it
 	 */
 	jQuery.mediaAudio = function (properties) {
-		if (typeof properties == 'string') {
+		if (typeof properties == 'string' || $.isArray(properties)) {
 			properties = {src: properties};
 		}
 
