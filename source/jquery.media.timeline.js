@@ -1,5 +1,5 @@
 /**
- * $media.timeline (2.2)
+ * $media.timeline (2.2.1)
  *
  * Require:
  * $media
@@ -145,8 +145,8 @@
 			if (percent.length) {
 				var that = this;
 
-				this.media.totalTime(function () {
-					that.savePoints(percent);
+				media.totalTime(function () {
+					that.savePoints(this, percent);
 				});
 			}
 
