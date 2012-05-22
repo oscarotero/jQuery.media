@@ -147,7 +147,15 @@
 
 				media.totalTime(function () {
 					that.savePoints(this, percent);
+
+					if (that.enabled) {
+						this.refreshTimeline();
+					}
 				});
+			}
+
+			if (this.enabled) {
+				media.refreshTimeline();
 			}
 
 			return this;
@@ -247,10 +255,6 @@
 
 			timeline.addPoints(this, points);
 
-			if (timeline.enabled) {
-				this.refreshTimeline();
-			}
-
 			return this;
 		},
 
@@ -287,7 +291,10 @@
 			}
 
 			this.timelines[name].enabled = true;
-			this.refreshTimeline();
+			
+			if (!$.isEmptyObject(this.timelines[name].points)) {
+				this.refreshTimeline();
+			}
 
 			return this;
 		},
@@ -304,7 +311,10 @@
 			}
 
 			this.timelines[name].enabled = false;
-			this.refreshTimeline();
+
+			if (!$.isEmptyObject(this.timelines[name].points)) {
+				this.refreshTimeline();
+			}
 
 			return this;
 		},
@@ -351,7 +361,6 @@
 			return true;
 		},
 
-
 		timelineIsEnabled: function (name) {
 			if (this.timelineExists(name) && this.timelines[name].enabled) {
 				return true;
@@ -367,26 +376,26 @@
 		 * Set the points array
 		 */
 		refreshTimeline: function () {
+			var points = {}, name, timeline, timelinePoints, ms, k, point, length;
+
 			this.timeline.points = [];
 
-			var points = {};
-
-			for (var name in this.timelines) {
-				var timeline = this.timelines[name];
+			for (name in this.timelines) {
+				timeline = this.timelines[name];
 
 				if (!timeline.enabled) {
 					continue;
 				}
 
-				var timelinePoints = timeline.points;
+				timelinePoints = timeline.points;
 
-				for (var ms in timelinePoints) {
+				for (ms in timelinePoints) {
 					if (points[ms] == undefined) {
 						points[ms] = [];
 					}
 
-					for (var k = 0, length = timelinePoints[ms].length; k < length; k++) {
-						var point = timelinePoints[ms][k];
+					for (k = 0, length = timelinePoints[ms].length; k < length; k++) {
+						point = timelinePoints[ms][k];
 						point.timelineName = name;
 						points[ms].push(point);
 					}
@@ -396,7 +405,7 @@
 			points = sortObject(points);
 
 			for (ms in points) {
-				for (var k = 0, length = points[ms].length; k < length; k++) {
+				for (k = 0, length = points[ms].length; k < length; k++) {
 					this.timeline.points.push(points[ms][k]);
 				}
 			}
