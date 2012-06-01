@@ -10,9 +10,6 @@ jquery.media.tracks: allows synchronize webSrt files (subtitles, chapters, descr
 jquery.media.tocanvas: export the video to canvas and allowing pixel manipulation in real time
 jquery.media.sync: allows synchronize two or more media elements
 
-jQuery.media is released under the GNU Affero GPL version 3.
-More information at http://www.gnu.org/licenses/agpl-3.0.html
-
 Example:
 
 //Create a media element
@@ -28,3 +25,6 @@ video.play(function () {
 video.play(); //Plays the video (and trigger the play event)
 
 More info and examples in http://idc.anavallasuiza.com/project/jquerymedia/
+
+jQuery.media is released under the GNU Affero GPL version 3.
+More information at http://www.gnu.org/licenses/agpl-3.0.html
