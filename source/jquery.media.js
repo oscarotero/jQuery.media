@@ -34,6 +34,28 @@
 
 
 	/**
+	 * function get ()
+	 *
+	 * Returns the html media element
+	 */
+	$media.prototype.get = function () {
+		return this.element;
+	}
+
+
+
+	/**
+	 * function jQuery ()
+	 *
+	 * Returns the jquery object
+	 */
+	$media.prototype.jQuery = function () {
+		return this.$element;
+	}
+
+
+
+	/**
 	 * function canPlay ([source])
 	 *
 	 * Check if the browser can play the media
