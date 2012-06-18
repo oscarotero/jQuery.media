@@ -81,7 +81,7 @@
 					timeout: 0
 				};
 
-				this.bind('timeupdate', function(event) {
+				this.on('timeupdate', function(event) {
 					this.executeTweens(this.time().secondsTo('ms'));
 				});
 			}

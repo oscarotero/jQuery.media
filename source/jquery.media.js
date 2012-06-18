@@ -29,104 +29,8 @@
 		} else if (this.$element.is('audio')) {
 			this.type = 'audio';
 		}
-
-		//Update fragment
-		this.totalTime(function () {
-			var source = this.source();
-			this.fragment((source.substring(source.lastIndexOf('#') + 1)).toLowerCase());	
-		});
 	}
 
-
-	/**
-	 * function fragment ([fragment])
-	 *
-	 * Get/Set the current fragment
-	 */
-	$media.prototype.fragment = function (fragment) {
-		//Getter
-		if (fragment == undefined) {
-			return this.$element.data('fragments');
-		}
-
-		//Setter
-		var fragments = {};
-
-		if (typeof fragment == 'string') {
-			var variables = fragment.split('&');
-			var fragment = {};
-
-			$.each(variables, function (k, variable) {
-				variable = variable.split('=', 2);
-				fragment[variable[0]] = variable[1];
-			});
-		}
-
-		if (typeof fragment != 'object') {
-			console.error('The specified fragment is not valid');
-			return this;
-		}
-
-		$.each(fragment, function (name, value) {
-			switch (name) {
-				case 't':
-					if (typeof value == 'string') {
-						var format = value.match(/^(npt|smpte)/gi);
-						var times = value.replace(/^(npt:|smpte[^:]+:)/, '').split(',', 2);
-
-						fragments.t = {
-							format: format ? format[0] : 'npt',
-							start: times[0].toSeconds(),
-							end: times[1].toSeconds()
-						};
-					} else {
-						fragments.t = value;
-
-						if (!fragments.t.format) {
-							fragments.t.format = 'npt';
-						}
-					}
-					break;
-
-				case 'track':
-				case 'id':
-					fragments.track = value;
-					break;
-
-				case 'xywh':
-					if (typeof value == 'string') {
-						var format = value.match(/^(pixel|percent)/gi);
-						var dimmensions = value.replace(/^(pixel:|percent:)/, '').split(',', 4);
-
-						fragments.xywh = {
-							format: format ? format[0] : 'pixel',
-							x: dimmensions[0],
-							y: dimmensions[1],
-							w: dimmensions[2],
-							h: dimmensions[3]
-						};
-					} else {
-						fragments.xywh = value;
-
-						if (!fragments.xywh.format) {
-							fragments.xywh.format = 'pixel';
-						}
-					}
-					break;
-			}
-		});
-
-		//Go to start point
-		if (fragments.t) {
-			this.totalTime(function () {
-				this.seek(fragments.t.start);
-			});
-		}
-
-		this.$element.data('fragments', fragments);
-
-		return this;
-	}
 
 
 	/**
@@ -259,12 +163,6 @@
 			this.element.load();
 		}
 
-		//Update fragment
-		this.totalTime(function () {
-			var source = this.source();
-			this.fragment((source.substring(source.lastIndexOf('#') + 1)).toLowerCase());	
-		});
-
 		return this;
 	}
 
@@ -356,14 +254,14 @@
 
 
 	/**
-	 * function play (fn, [one])
+	 * function play (fn)
 	 * function play ()
 	 *
 	 * Plays media or bind a function to play event
 	 */
-	$media.prototype.play = function (fn, one) {
+	$media.prototype.play = function (fn) {
 		if ($.isFunction(fn)) {
-			this.bind('mediaPlay', fn, one);
+			this.on('play', fn);
 		} else if (this.element.paused) {
 			this.element.play();
 		}
@@ -373,16 +271,16 @@
 
 
 	/**
-	 * function fullScreen (fn, [one])
+	 * function fullScreen (fn)
 	 * function fullScreen (bool)
 	 * function fullScreen ()
 	 *
 	 * Toggles fullscreen mode or binds a function to fullscreen event
 	 * This method works only in webkit and mozilla platforms
 	 */
-	$media.prototype.fullScreen = function (fn, one) {
+	$media.prototype.fullScreen = function (fn) {
 		if ($.isFunction(fn)) {
-			this.bind('mediaFullScreen', fn, one);
+			this.on('fullScreen', fn);
 			return this;
 		}
 
@@ -411,14 +309,14 @@
 
 
 	/**
-	 * function playing (fn, [one])
+	 * function playing (fn)
 	 * function playing ()
 	 *
 	 * Return if the media is playing or bind a function to playing event
 	 */
-	$media.prototype.playing = function (fn, one) {
+	$media.prototype.playing = function (fn) {
 		if ($.isFunction(fn)) {
-			this.bind('mediaPlaying', fn, one);
+			this.on('playing', fn);
 
 			return this;
 		}
@@ -428,14 +326,14 @@
 
 
 	/**
-	 * function waiting (fn, [one])
+	 * function waiting (fn)
 	 * function waiting ()
 	 *
 	 * Return if the media is waiting or bind a function to waiting event
 	 */
-	$media.prototype.waiting = function (fn, one) {
+	$media.prototype.waiting = function (fn) {
 		if ($.isFunction(fn)) {
-			this.bind('mediaWaiting', fn, one);
+			this.on('waiting', fn);
 
 			return this;
 		}
@@ -445,14 +343,14 @@
 
 
 	/**
-	 * function pause (fn, [one])
+	 * function pause (fn)
 	 * function pause ()
 	 *
 	 * Pauses media or bind a function to pause event
 	 */
-	$media.prototype.pause = function (fn, one) {
+	$media.prototype.pause = function (fn) {
 		if ($.isFunction(fn)) {
-			this.bind('mediaPause', fn, one);
+			this.on('pause', fn);
 		} else if (!this.element.paused) {
 			this.element.pause();
 		}
@@ -462,14 +360,14 @@
 
 
 	/**
-	 * function playPause (fn, [one])
+	 * function playPause (fn)
 	 * function playPause ()
 	 *
 	 * Play the media if it's paused or pause if it's playing media or bind a function to playPause event
 	 */
-	$media.prototype.playPause = function (fn, one) {
+	$media.prototype.playPause = function (fn) {
 		if ($.isFunction(fn)) {
-			this.bind('mediaPlayPause', fn, one);
+			this.on('playPause', fn);
 		} else {
 			if (this.element.paused) {
 				this.play();
@@ -477,7 +375,7 @@
 				this.pause();
 			}
 
-			this.trigger('mediaPlayPause', [this.time(), this.element.paused]);
+			this.trigger('playPause', [this.element.paused]);
 		}
 
 		return this;
@@ -485,18 +383,18 @@
 
 
 	/**
-	 * function stop (fn, [one])
+	 * function stop (fn)
 	 * function stop ()
 	 *
 	 * Stops media (pause and go to start) or bind a function to stop event
 	 */
-	$media.prototype.stop = function (fn, one) {
+	$media.prototype.stop = function (fn) {
 		if ($.isFunction(fn)) {
-			this.bind('mediaStop', fn, one);
+			this.on('stop', fn);
 		} else {
 			this.pause().reload();
 
-			this.trigger('mediaStop', [this.time()]);
+			this.trigger('stop');
 		}
 
 		return this;
@@ -504,14 +402,14 @@
 
 
 	/**
-	 * function end (fn, [one])
+	 * function end (fn)
 	 * function end ()
 	 *
 	 * Goes to the end of the media or bind a function to end event
 	 */
-	$media.prototype.end = function (fn, one) {
+	$media.prototype.end = function (fn) {
 		if ($.isFunction(fn)) {
-			this.bind('mediaEnd', fn, one);
+			this.bind('end', fn, one);
 		} else {
 			this.pause().seek(this.element.duration);
 		}
@@ -528,11 +426,11 @@
 	 */
 	$media.prototype.remove = function (fn) {
 		if ($.isFunction(fn)) {
-			this.bind('mediaRemove', fn);
+			this.on('remove', fn);
 			return this;
 		}
 
-		this.trigger('mediaRemove');
+		this.trigger('remove');
 
 		this.$element.remove();
 
@@ -545,17 +443,17 @@
 
 
 	/**
-	 * function seek (fn, [one])
+	 * function seek (fn)
 	 * function seek (time)
 	 *
 	 * Seek for specific point of media or bind a function to seek event
 	 */
-	$media.prototype.seek = function (fn, one) {
+	$media.prototype.seek = function (fn) {
 		if ($.isFunction(fn)) {
-			this.bind('mediaSeek', fn, one);
+			this.on('seek', fn);
 		} else {
 			this.ready(1, function () {
-				var time = this.seekPoint(fn) || this.time(fn);
+				var time = this.time(fn);
 
 				if (this.element.currentTime != time) {
 					this.element.currentTime = time;
@@ -568,34 +466,13 @@
 
 
 	/**
-	 * function seekPoint (name, [value])
-	 * function seekPoint (name)
-	 *
-	 * Get/Set a seek point with a name
-	 */
-	$media.prototype.seekPoint = function (name, value) {
-		var seek_points = this.$element.data('seek_points') || {};
-
-		if (value == undefined) {
-			return seek_points[name];
-		}
-
-		seek_points[name] = this.time(value);
-
-		this.$element.data('seek_points', seek_points);
-
-		return this;
-	}
-
-
-	/**
-	 * function seeking (fn, [one])
+	 * function seeking (fn)
 	 *
 	 * Bind a function to seeking event or trigger the event
 	 */
-	$media.prototype.seeking = function (fn, one) {
+	$media.prototype.seeking = function (fn) {
 		if ($.isFunction(fn)) {
-			this.bind('mediaSeeking', fn, one);
+			this.on('seeking', fn);
 
 			return this;
 		}
@@ -605,25 +482,25 @@
 
 
 	/**
-	 * function volume (fn, [one])
+	 * function volume (fn)
 	 * function volume (vol)
 	 * function volume ()
 	 *
-	 * Set a volume value of media, bind a function to volume event or return the current value (in 0-100 range)
+	 * Set a volume value of media, bind a function to volume event or return the current value (in 1-0 range)
 	 */
-	$media.prototype.volume = function (fn, one) {
+	$media.prototype.volume = function (fn) {
 		if (device == 'ios') {
 			return this;
 		}
 
 		if (fn == undefined) {
-			return Math.round(this.element.volume * 100);
+			return this.element.volume;
 		}
 
 		if ($.isFunction(fn)) {
-			this.bind('mediaVolume', fn, one);
+			this.on('volume', fn);
 		} else {
-			this.element.volume = parseInt(fn)/100;
+			this.element.volume = fn;
 		}
 
 		return this;
@@ -631,33 +508,19 @@
 
 
 	/**
-	 * function changingVolume (fn, [one])
-	 *
-	 * Bind a function to changingVolume event
-	 */
-	$media.prototype.changingVolume = function (fn, one) {
-		if ($.isFunction(fn)) {
-			this.bind('mediaChangingVolume', fn, one);
-		}
-
-		return this;
-	}
-
-
-	/**
-	 * function mute (fn, [one])
+	 * function mute (fn)
 	 * function mute (mute)
 	 * function mute ()
 	 *
 	 * Mute or unmute the media or bind a function to mute event
 	 */
-	$media.prototype.mute = function (fn, one) {
+	$media.prototype.mute = function (fn) {
 		if (device == 'ios') {
 			return this;
 		}
 
 		if ($.isFunction(fn)) {
-			this.bind('mediaMute', fn, one);
+			this.bind('mute', fn, one);
 		} else {
 			if (typeof fn == 'boolean') {
 				this.element.muted = fn;
@@ -665,7 +528,7 @@
 				this.element.muted = this.element.muted ? false : true;
 			}
 
-			this.trigger('mediaMute', [this.element.muted]);
+			this.trigger('mute', [this.element.muted]);
 		}
 
 		return this;
@@ -673,105 +536,69 @@
 
 
 	/**
-	 * function bind (event, fn, [one])
+	 * function on (event, fn)
 	 *
 	 * Bind a function to specific event
 	 */
-	$media.prototype.bind = function (event, fn, one) {
-		var exists = this.$element.data('events');
+	$media.prototype.on = function (event, fn) {
+		var registeredEvents = this.$element.data('events') || {};
 		var events = event.split(' ');
-		var length = events.length;
-		var that = this;
 
-		for (var i = 0; i < length; i++) {
-			if (exists && exists[events[i]]) {
-				continue;
-			}
+		fn = $.proxy(fn, this);
 
+		for (var i = 0, length = events.length; i < length; i++) {
 			switch (events[i]) {
+				case 'fullScreen':
+					if (!registeredEvents[events[i]]) {
+						var that = this;
 
-				case 'mediaFullScreen':
-					$(document).bind('mozfullscreenchange', function (e) {
-						if (document.mozFullScreenElement && that.$element.is(document.mozFullScreenElement)) {
-							that.$element.data('fullScreen', true);
-						} else if (that.$element.data('fullScreen')) {
-							that.$element.data('fullScreen', false);
-						} else {
-							return;
-						}
+						$(document).on('mozfullscreenchange', function (e) {
+							if (document.mozFullScreenElement && that.$element.is(document.mozFullScreenElement)) {
+								that.$element.data('fullScreen', true);
+							} else if (that.$element.data('fullScreen')) {
+								that.$element.data('fullScreen', false);
+							} else {
+								return;
+							}
 
-						that.trigger('mediaFullScreen', [that.$element.data('fullScreen')]);
-					});
+							that.trigger('fullScreen', [that.$element.data('fullScreen')]);
+						});
 
-					this.bind('webkitfullscreenchange', function (e) {
-						this.trigger('mediaFullScreen', [document.webkitIsFullScreen]);
-					});
-					break;
-
-				case 'mediaEnd':
-					this.bind('ended', function () {
-						this.trigger('mediaEnd', [this.time()]);
-					});
-					break;
-				
-				case 'mediaPause':
-					this.bind('pause', function () {
-						this.trigger('mediaPause', [this.time()]);
-					});
-					break;
-
-				case 'mediaWaiting':
-					this.bind('waiting', function () {
-						this.trigger('mediaWaiting', [this.time()]);
-					});
-					break;
-				
-				case 'mediaPlay':
-					this.bind('play', function () {
-						this.trigger('mediaPlay', [this.time()]);
-					});
-					break;
-				
-				case 'mediaPlaying':
-					this.bind('timeupdate', function () {
-						if (this.playing()) {
-							this.trigger('mediaPlaying', [this.time()]);
-						}
-					});
-					break;
-				
-				case 'mediaSeek':
-				case 'mediaSeeking':
-					var seek_timeout;
-					var execute_seek = function () {
-						that.trigger('mediaSeek', [that.time()]);
+						this.on('webkitfullscreenchange', function (e) {
+							this.trigger('fullScreen', [document.webkitIsFullScreen]);
+						});
 					}
-					this.bind('seeked seeking', function () {
-						clearTimeout(seek_timeout);
-						seek_timeout = setTimeout(execute_seek, 500);
-						this.trigger('mediaSeeking', [this.time()]);
-					});
+
+					this.$element.bind('fullScreen', fn);
+					break;
+
+				case 'end':
+					this.$element.bind('ended', fn);
+					break;
+
+				case 'playing':
+					if (!registeredEvents[events[i]]) {
+						this.$element.on('timeupdate', function () {
+							if (!this.paused && !this.ended) {
+								this.trigger('playing');
+							}
+						});
+					}
+
+					this.$element.bind('playing', fn);
 					break;
 				
-				case 'mediaVolume':
-				case 'mediaChangingVolume':
-					var volume_timeout;
-					var execute_volume = function () {
-						that.trigger('mediaVolume', [that.volume()]);
-					}
-					this.bind('volumechange', function () {
-						clearTimeout(volume_timeout);
-						volume_timeout = setTimeout(execute_volume, 500);
-						this.trigger('mediaChangingVolume', [this.volume()])
-					});
+				case 'seek':
+					this.$element.bind('seeked', fn);
 					break;
+
+				case 'volume':
+					this.$element.bind('volumechange', fn);
+					break;
+
+				default:
+					this.$element.bind(events[i], fn);
 			}
-		}
-
-		if (one) {
-			this.$element.one(event, $.proxy(fn, this));
-		} else {
-			this.$element.bind(event, $.proxy(fn, this));
 		}
 
 		return this;
@@ -780,11 +607,11 @@
 
 
 	/**
-	 * function unbind (event, fn)
+	 * function off (event, fn)
 	 *
 	 * Unbind a function to specific event
 	 */
-	$media.prototype.unbind = function (event, fn) {
+	$media.prototype.off = function (event, fn) {
 		if (fn) {
 			this.$element.unbind(event, $.proxy(fn, this));
 		} else {

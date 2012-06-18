@@ -203,7 +203,7 @@
 					timeout: 0
 				};
 
-				this.bind('mediaPlay mediaSeek', function() {
+				this.on('play seeked', function() {
 					this.startTimeline();
 				}).seeking(function(event, time) {
 					var length = this.timeline.outPoints.length;

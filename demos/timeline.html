@@ -17,7 +17,7 @@
 				var log = $('#log');
 
 				video.setTimeline('first', {
-					enabled: true,
+					enabled: false,
 					points: [
 						{
 							time: 2,
@@ -49,11 +49,7 @@
 							}
 						}
 					]
-				});
-
-				video.bind('timeupdate', function () {
-					log.append('timeupdate');
-				});
+				}).play();
 			});
 		</script>
 	</head>

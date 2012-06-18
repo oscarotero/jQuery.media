@@ -70,7 +70,7 @@
 				offset: offset
 			});
 
-			this.bind('mediaPlay mediaPause mediaPlaying', synchronize);
+			this.on('play pause playing', synchronize);
 
 			this.syncReady(function () {
 				$.proxy(synchronize, this)(null, this.time());
@@ -94,7 +94,7 @@
 			}
 
 			if (!this.sync.length) {
-				this.unbind('mediaPlay mediaPause mediaPlaying', synchronize);
+				this.off('play pause playing', synchronize);
 			}
 
 			return this;
