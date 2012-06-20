@@ -1,12 +1,12 @@
 /**
- * $media.timeline (2.2.1)
+ * $media.tween (2.2.1)
  *
  * Require:
  * $media
  *
  * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
  *
- * $media.timeline is released under the GNU Affero GPL version 3.
+ * $media.tween is released under the GNU Affero GPL version 3.
  * More information at http://www.gnu.org/licenses/agpl-3.0.html
  */
 
@@ -24,8 +24,6 @@
 		this.status = 'out';
 		this.in = settings.in;
 		this.out = settings.out;
-
-		this.restore();
 	};
 
 
@@ -65,6 +63,11 @@
 			var point = this.getPoint(ms);
 
 			if (point) {
+				this.target.css({
+					left: point.coords[0] +'%',
+					top: point.coords[1] + '%'
+				});
+
 				if (this.status === 'out') {
 					this.status = 'in';
 					this.target.show();
@@ -74,27 +77,14 @@
 					};
 				}
 
-				this.target.css({
-					left: point.coords[0] +'%',
-					top: point.coords[1] + '%'
-				});
-
 			} else if (this.status === 'in') {
-				this.restore();
+				this.status = 'out';
+				this.target.hide();
 
 				if ($.isFunction(this.out)) {
 					this.out.call(media, [this]);
 				};
 			}
-		},
-
-		restore: function () {
-			this.status = 'out';
-
-			this.target.hide().css({
-				left: this.points[0].coords[0] +'%',
-				top: this.points[0].coords[1] + '%'
-			});
 		}
 	}
 

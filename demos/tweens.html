@@ -71,7 +71,7 @@
 						});
 					}
 
-					$('<textarea></textarea>').val(JSON.stringify(tweens)).insertAfter(this);
+					$('<textarea></textarea>').val(JSON.stringify(tweens, null, '\t')).insertAfter(this).select();
 				});
 				/*
 				$.getJSON('files/tweens.json', function (data) {
