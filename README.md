@@ -1,7 +1,9 @@
 jQuery.media plugin
 ===================
 
-2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+Released under the GNU Affero GPL version 3.
+More information at http://www.gnu.org/licenses/agpl-3.0.html
 
 jQuery.media is a jQuery plugin that allows manage html5 video and audio elements: properties, events, etc.
 
@@ -139,6 +141,3 @@ $('<img>').attr('src', screenshot).appendTo('#my-video');
 ```
 
 More info and examples in http://idc.anavallasuiza.com/project/jquerymedia/
-
-jQuery.media is released under the GNU Affero GPL version 3.
-More information at http://www.gnu.org/licenses/agpl-3.0.html
