@@ -58,7 +58,7 @@
 			this.time = [this.time, this.time];
 		}
 
-		this.relative = (this.time.join().indexOf('%') !== -1) ? false : true;
+		this.relative = (this.time.join().indexOf('%') === -1) ? false : true;
 	};
 
 	window.$media.Point.prototype = {
