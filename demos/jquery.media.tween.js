@@ -1,12 +1,12 @@
 /**
- * $media.timeline (2.2.1)
+ * $media.tween (2.2.1)
  *
  * Require:
  * $media
  *
  * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
  *
- * $media.timeline is released under the GNU Affero GPL version 3.
+ * $media.tween is released under the GNU Affero GPL version 3.
  * More information at http://www.gnu.org/licenses/agpl-3.0.html
  */
 
@@ -16,49 +16,74 @@
 
 	//Tweens class
 	window.$media.Tween = function (settings) {
-		this.target = $(settings.target);
 		this.points = settings.points;
+		this.target = $(settings.target).hide();
 		this.enabled = false;
-		this.lastPos = 0;
+		this.currentPos = 0;
+		this.lastPos = this.points.length - 1;
+		this.status = 'out';
+		this.in = settings.in;
+		this.out = settings.out;
 	};
 
 
 	window.$media.Tween.prototype = {
 		/**
-		 * function move (time)
+		 * function move (ms)
 		 *
 		 * Adds one or more points to the timeline
 		 */
-		getPoint: function (time) {
-			if (this.enabled === false) {
+		getPoint: function (ms) {
+			if ((this.enabled === false) || (this.points[0].ms > ms) || (this.points[this.lastPos].ms < ms)) {
+				this.currentPos = 0;
 				return false;
+			}
+
+			if (this.points[this.currentPos].ms > ms) {
+				this.currentPos = 0;
 			}
 
 			var point;
 
-			for (var length = this.points.length; this.lastPos < length; this.lastPos++) {
-				if (time > this.points[this.lastPos].time) {
-					point = this.points[this.lastPos];
-				} else {
-					return point;
-				}
+			while (this.points[this.currentPos] && this.points[this.currentPos].ms <= ms) {
+				point = this.points[this.currentPos];
+				this.currentPos++;
+			}
+
+			if (point) {
+				this.currentPos--;
+				return point;
 			}
 
 			return false;
 		},
 
-		refresh: function () {
-			this.lastPos = 0;
-		},
-
-		execute: function (time) {
-			var point = this.getPoint(time);
+		execute: function (media) {
+			var ms = media.time().secondsTo('ms');
+			var point = this.getPoint(ms);
 
 			if (point) {
 				this.target.css({
-					top: point.coords[0] +'%',
-					left: point.coords[1] + '%'
+					left: point.coords[0] +'%',
+					top: point.coords[1] + '%'
 				});
+
+				if (this.status === 'out') {
+					this.status = 'in';
+					this.target.show();
+
+					if ($.isFunction(this.in)) {
+						this.in.call(media, [this]);
+					};
+				}
+
+			} else if (this.status === 'in') {
+				this.status = 'out';
+				this.target.hide();
+
+				if ($.isFunction(this.out)) {
+					this.out.call(media, [this]);
+				};
 			}
 		}
 	}
@@ -74,15 +99,11 @@
 		 * Gets a timeline
 		 */
 		setTween: function (name, tween) {
-			if (!this.tween || !this.tweens) {
+			if (!this.tweens) {
 				this.tweens = {};
-				this.tween = {
-					points: [],
-					timeout: 0
-				};
 
-				this.on('timeupdate', function(event) {
-					this.executeTweens(this.time().secondsTo('ms'));
+				this.on('timeupdate', function() {
+					this.executeTweens();
 				});
 			}
 
@@ -123,7 +144,6 @@
 			}
 
 			this.tweens[name].enabled = true;
-			this.tweens[name].refresh();
 
 			return this;
 		},
@@ -151,26 +171,17 @@
 		 *
 		 * Enables and disables various timelines
 		 */
-		enableDisableTimelines: function (tweens) {
+		enableDisableTweens: function (tweens) {
 			if (!tweens || !this.tweens) {
 				return this;
 			}
 
 			for (var name in tweens) {
-				var timeline = this.timelines[name];
-
-				if (timeline) {
-					var enable = timelines[name] ? true : false;
-
-					if (timeline.enabled !== enable) {
-						timeline.enabled = enable;
-						refresh = true;
-					}
+				if (tweens[name]) {
+					this.enableTween(name);
+				} else {
+					this.disableTween(name);
 				}
-			}
-
-			if (refresh) {
-				this.refreshTimeline();
 			}
 
 			return this;
@@ -178,7 +189,7 @@
 		
 
 		tweenExists: function (name) {
-			if (!name || !this.tweens || !this.tweens[name]) {
+			if ((name === undefined) || !this.tweens || !this.tweens[name]) {
 				return false;
 			}
 
@@ -217,13 +228,13 @@
 		 *
 		 * Function to execute on timeOut
 		 */
-		executeTweens: function (ms) {
+		executeTweens: function () {
 			if (!this.tweens) {
 				return;
 			}
 
 			for (var name in this.tweens) {
-				this.tweens[name].execute(ms);
+				this.tweens[name].execute(this);
 			}
 		}
 	});

@@ -8,46 +8,124 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
 		<script src="../source/jquery.media.js" type="text/javascript" charset="utf-8"></script>
 		<script src="jquery.media.tween.js" type="text/javascript" charset="utf-8"></script>
+		<script src="jquery.media.tween.capture.js" type="text/javascript" charset="utf-8"></script>
 
 		<script type="text/javascript">
 			var video;
 
 			$(document).ready(function () {
 				video = $.media('#video');
+				var time;
 
-				$.getJSON('files/tweens.json', function (data) {
-					video.setTween('ola', data.point1);
-					video.enableTween('ola');
-					video.seek('1:27').play();
+				$('body').bind('keydown', function (e) {
+					if (e.keyCode === 13) {
+
+						if (video.captureTweenStarted()) {
+							video.captureTweenStop(function (points) {
+								var tweenName = prompt('Nome do tween')
+								
+								if (!tweenName) {
+									return;
+								}
+
+								video.setTween(tweenName, {
+									enabled: true,
+									points: points,
+									target: $('<div>' + tweenName + '</div>').appendTo('#contenedor'),
+									out: function () {
+										if (this.tweens[tweenName].confirmed) {
+											return;
+										}
+
+										this.pause();
+
+										if (!confirm('Manter este tween?')) {
+											this.removeTween(tweenName);
+										} else {
+											this.tweens[tweenName].confirmed = true;
+											$('#captures').append('<li data-name="' + tweenName + '" data-time="' + points[0].ms + '">' + tweenName + '</li>')
+										}
+									}
+								}).seek(time).play();
+							});
+						} else {
+							time = video.time();
+							video.captureTweenStart();
+						}
+					}
 				});
+
+				$('#captures').delegate('li', 'click', function () {
+					var tempo = $(this).data('time') / 1000;
+					video.seek(tempo).play();
+				});
+
+				$('#get-tweens').click(function () {
+					var tweens = {};
+
+					if (video.tweens) {
+						$.each(video.tweens, function (name, value) {
+							tweens[name] = {
+								points: value.points
+							};
+						});
+					}
+
+					$('<textarea></textarea>').val(JSON.stringify(tweens, null, '\t')).insertAfter(this).select();
+				});
+				/*
+				$.getJSON('files/tweens.json', function (data) {
+					$.each(data, function (key, value) {
+						var tween = {
+							enabled: true,
+							points: value,
+							target: $('<div>Pirolas: ' + key + '</div>').appendTo('#contenedor')
+						};
+						video.setTween(key, tween);
+					});
+				});
+*/
 			});
 		</script>
 
 		<style type="text/css">
-			#info {
-				position: absolute;
-				transition: all 0.3s ease;
-				-moz-transition: all 0.3s ease;
-
-				background: white;
-			}
 			#contenedor {
 				position: relative;
 				float: left;
+			}
+
+			#contenedor > div {
+				transition: all 0.3s linear;
+				-moz-transition: all 0.3s linear;
+
+				position: absolute;
+				background: white;
+				padding: 5px;
+				border: solid 1px black;
+			}
+			#captures li {
+				cursor: pointer;
+				display: inline-block;
+				padding: 3px 9px;
+				background: #ddd;
 			}
 		</style>
 	</head>
 
 	<body>
-		<div>
-			<div id="contenedor">
-				<video id="video" poster="http://anavallasuiza.com/share/utopikus/video/utopikus.jpg" controls>
-					<source src="http://anavallasuiza.com/share/utopikus/video/utopikus.mp4" type="video/mp4">
-					<source src="http://anavallasuiza.com/share/utopikus/video/utopikus.ogv" type="video/ogg">
-				</video>
+		<div id="panel">
+			<p>Pulsa &lt;Enter&gt; para comezar unha captura e para finalizala</p>
+			<p>Capturas gardadas:</p>
+			<ul id="captures">
+			</ul>
+			<button id="get-tweens">Damelo todo</button>
+		</div>
 
-				<div id="info">pirolas</div>
-			</div>
+		<div id="contenedor">
+			<video id="video" poster="http://anavallasuiza.com/share/utopikus/video/utopikus.jpg" controls>
+				<source src="http://anavallasuiza.com/share/utopikus/video/utopikus.mp4" type="video/mp4">
+				<source src="http://anavallasuiza.com/share/utopikus/video/utopikus.ogv" type="video/ogg">
+			</video>
 		</div>
 	</body>
 </html>
