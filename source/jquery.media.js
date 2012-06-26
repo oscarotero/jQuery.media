@@ -8,7 +8,7 @@
  */
 
 
-(function($) {
+(function ($) {
 	'use strict';
 
 	//Detect device
@@ -29,7 +29,7 @@
 		} else if (this.$element.is('audio')) {
 			this.type = 'audio';
 		}
-	}
+	};
 
 
 
@@ -38,9 +38,9 @@
 	 *
 	 * Returns the html media element
 	 */
-	$media.prototype.get = function () {
+	window.$media.prototype.get = function () {
 		return this.element;
-	}
+	};
 
 
 
@@ -49,9 +49,9 @@
 	 *
 	 * Returns the jquery object
 	 */
-	$media.prototype.jQuery = function () {
+	window.$media.prototype.jQuery = function () {
 		return this.$element;
-	}
+	};
 
 
 
@@ -60,12 +60,14 @@
 	 *
 	 * Check if the browser can play the media
 	 */
-	$media.prototype.canPlay = function (source) {
+	window.$media.prototype.canPlay = function (source) {
+		var length, result, r, i;
+
 		if (!(this.element.canPlayType)) {
 			return false;
 		}
 
-		if (source == undefined) {
+		if (source === undefined) {
 			if (this.source()) {
 				source = this.source();
 				return this.canPlay((source.substring(source.lastIndexOf('.') + 1)).toLowerCase().split('#', 2)[0]);
@@ -73,33 +75,31 @@
 
 			source = this.sources();
 
-			var length = source.length;
-			var result = 0;
+			length = source.length;
+			result = 0;
 
-			for (var i = 0; i < length; i++) {
-				var r = this.canPlay((source[i].substring(source[i].lastIndexOf('.') + 1)).toLowerCase().split('#', 2)[0]);
+			for (i = 0; i < length; i++) {
+				r = this.canPlay((source[i].substring(source[i].lastIndexOf('.') + 1)).toLowerCase().split('#', 2)[0]);
 				result = (r > result) ? r : result;
 			}
 
 			return result;
 		}
 
-		var type = source;
-
-		if (/^[a-z0-9]+$/i.test(type)) {
-			type = this.mimeType(type);
+		if (/^[a-z0-9]+$/i.test(source)) {
+			source = this.mimeType(source);
 		}
 
-		switch (this.element.canPlayType(type)) {
+		switch (this.element.canPlayType(source)) {
 			case 'probably':
-			return 2;
-			
+				return 2;
+
 			case 'maybe':
-			return 1;
+				return 1;
 		}
 
 		return 0;
-	}
+	};
 
 
 	/**
@@ -107,26 +107,26 @@
 	 *
 	 * Get the source type
 	 */
-	$media.prototype.mimeType = function (ext) {
+	window.$media.prototype.mimeType = function (ext) {
 		switch (ext) {
 			case 'mp4':
 			case 'acc':
-			return this.type + '/mp4';
+				return this.type + '/mp4';
 
 			case 'ogg':
 			case 'ogv':
-			return this.type + '/ogg';
+				return this.type + '/ogg';
 
 			case 'webm':
-			return this.type + '/webm';
+				return this.type + '/webm';
 
 			case 'mp3':
-			return this.type + '/mpeg';
+				return this.type + '/mpeg';
 
 			case 'wav':
-			return this.type + '/wav';
+				return this.type + '/wav';
 		}
-	}
+	};
 
 
 	/**
@@ -134,11 +134,11 @@
 	 *
 	 * Get or set source values
 	 */
-	$media.prototype.sources = function (sources, autoload) {
+	window.$media.prototype.sources = function (sources, autoload) {
 		var $media = this.$element;
 
 		//Getter
-		if (sources == undefined) {
+		if (sources === undefined) {
 			var src = [];
 
 			if ($media.attr('src')) {
@@ -155,7 +155,7 @@
 		//Setter
 		$media.find('source').remove();
 
-		if (typeof sources == 'string') {
+		if (typeof sources === 'string') {
 			$media.attr('src', sources);
 		} else {
 			if (!$.isArray(sources)) {
@@ -167,7 +167,7 @@
 			var that = this;
 
 			$.each(sources, function (k, source) {
-				if (typeof source != 'object') {
+				if (typeof source !== 'object') {
 					source = {src: source};
 				}
 
@@ -186,7 +186,7 @@
 		}
 
 		return this;
-	}
+	};
 
 
 	/**
@@ -194,9 +194,9 @@
 	 *
 	 * Get the current source value
 	 */
-	$media.prototype.source = function () {
+	window.$media.prototype.source = function () {
 		return this.element.currentSrc;
-	}
+	};
 
 
 	/**
@@ -204,19 +204,19 @@
 	 *
 	 * Get or set media attributes
 	 */
-	$media.prototype.attr = function (name, value) {
-		if (name == 'src' || name == 'sources') {
+	window.$media.prototype.attr = function (name, value) {
+		if (name === 'src' || name === 'sources') {
 			return this.sources(value);
 		}
 
-		if (value == undefined) {
+		if (value === undefined) {
 			return this.$element.attr(name);
 		}
 
 		this.$element.attr(name, value);
 
 		return this;
-	}
+	};
 
 
 	/**
@@ -224,15 +224,15 @@
 	 *
 	 * Get or set media properties
 	 */
-	$media.prototype.prop = function (name, value) {
-		if (value == undefined) {
+	window.$media.prototype.prop = function (name, value) {
+		if (value === undefined) {
 			return this.$element.prop(name);
 		}
 
 		this.$element.prop(name, value);
 
 		return this;
-	}
+	};
 
 
 	/**
@@ -240,19 +240,19 @@
 	 *
 	 * Get or set the width value
 	 */
-	$media.prototype.width = function (videoWidth) {
+	window.$media.prototype.width = function (videoWidth) {
 		if (videoWidth === true) {
 			return this.element.videoWidth;
 		}
 
-		if (videoWidth == undefined) {
+		if (videoWidth === undefined) {
 			return this.$element.width();
 		}
 
 		this.$element.width(videoWidth);
 
 		return this;
-	}
+	};
 
 
 	/**
@@ -260,19 +260,19 @@
 	 *
 	 * Get or set the height value
 	 */
-	$media.prototype.height = function (videoHeight) {
+	window.$media.prototype.height = function (videoHeight) {
 		if (videoHeight === true) {
 			return this.element.videoHeight;
 		}
 
-		if (videoHeight == undefined) {
+		if (videoHeight === undefined) {
 			return this.$element.height();
 		}
 
 		this.$element.height(videoHeight);
 
 		return this;
-	}
+	};
 
 
 	/**
@@ -281,7 +281,7 @@
 	 *
 	 * Plays media or bind a function to play event
 	 */
-	$media.prototype.play = function (fn) {
+	window.$media.prototype.play = function (fn) {
 		if ($.isFunction(fn)) {
 			this.on('play', fn);
 		} else if (this.element.paused) {
@@ -289,7 +289,7 @@
 		}
 
 		return this;
-	}
+	};
 
 
 	/**
@@ -300,7 +300,7 @@
 	 * Toggles fullscreen mode or binds a function to fullscreen event
 	 * This method works only in webkit and mozilla platforms
 	 */
-	$media.prototype.fullScreen = function (fn) {
+	window.$media.prototype.fullScreen = function (fn) {
 		if ($.isFunction(fn)) {
 			this.on('fullScreen', fn);
 			return this;
@@ -327,7 +327,7 @@
 		}
 
 		return this;
-	}
+	};
 
 
 	/**
@@ -336,7 +336,7 @@
 	 *
 	 * Return if the media is playing or bind a function to playing event
 	 */
-	$media.prototype.playing = function (fn) {
+	window.$media.prototype.playing = function (fn) {
 		if ($.isFunction(fn)) {
 			this.on('playing', fn);
 
@@ -344,7 +344,7 @@
 		}
 
 		return (this.element.paused || this.element.ended) ? false : true;
-	}
+	};
 
 
 	/**
@@ -353,7 +353,7 @@
 	 *
 	 * Return if the media is waiting or bind a function to waiting event
 	 */
-	$media.prototype.waiting = function (fn) {
+	window.$media.prototype.waiting = function (fn) {
 		if ($.isFunction(fn)) {
 			this.on('waiting', fn);
 
@@ -361,7 +361,7 @@
 		}
 
 		return (this.element.readyState > 2) ? false : true;
-	}
+	};
 
 
 	/**
@@ -370,7 +370,7 @@
 	 *
 	 * Pauses media or bind a function to pause event
 	 */
-	$media.prototype.pause = function (fn) {
+	window.$media.prototype.pause = function (fn) {
 		if ($.isFunction(fn)) {
 			this.on('pause', fn);
 		} else if (!this.element.paused) {
@@ -378,7 +378,7 @@
 		}
 
 		return this;
-	}
+	};
 
 
 	/**
@@ -387,7 +387,7 @@
 	 *
 	 * Play the media if it's paused or pause if it's playing media or bind a function to playPause event
 	 */
-	$media.prototype.playPause = function (fn) {
+	window.$media.prototype.playPause = function (fn) {
 		if ($.isFunction(fn)) {
 			this.on('playPause', fn);
 		} else {
@@ -401,7 +401,7 @@
 		}
 
 		return this;
-	}
+	};
 
 
 	/**
@@ -410,7 +410,7 @@
 	 *
 	 * Stops media (pause and go to start) or bind a function to stop event
 	 */
-	$media.prototype.stop = function (fn) {
+	window.$media.prototype.stop = function (fn) {
 		if ($.isFunction(fn)) {
 			this.on('stop', fn);
 		} else {
@@ -420,7 +420,7 @@
 		}
 
 		return this;
-	}
+	};
 
 
 	/**
@@ -429,15 +429,15 @@
 	 *
 	 * Goes to the end of the media or bind a function to end event
 	 */
-	$media.prototype.end = function (fn) {
+	window.$media.prototype.end = function (fn) {
 		if ($.isFunction(fn)) {
-			this.bind('end', fn, one);
+			this.bind('end', fn);
 		} else {
 			this.pause().seek(this.element.duration);
 		}
 
 		return this;
-	}
+	};
 
 
 	/**
@@ -446,7 +446,7 @@
 	 *
 	 * Removes the video/audio element or bind a function to remove event
 	 */
-	$media.prototype.remove = function (fn) {
+	window.$media.prototype.remove = function (fn) {
 		if ($.isFunction(fn)) {
 			this.on('remove', fn);
 			return this;
@@ -456,12 +456,12 @@
 
 		this.$element.remove();
 
-		for (prop in this) {
+		for (var prop in this) {
 			if (this.hasOwnProperty(prop)) {
 				this[prop] = {};
 			}
 		}
-	}
+	};
 
 
 	/**
@@ -470,21 +470,21 @@
 	 *
 	 * Seek for specific point of media or bind a function to seek event
 	 */
-	$media.prototype.seek = function (fn) {
+	window.$media.prototype.seek = function (fn) {
 		if ($.isFunction(fn)) {
 			this.on('seek', fn);
 		} else {
 			this.ready(1, function () {
 				var time = this.time(fn);
 
-				if (this.element.currentTime != time) {
+				if (this.element.currentTime !== time) {
 					this.element.currentTime = time;
 				}
 			});
 		}
 
 		return this;
-	}
+	};
 
 
 	/**
@@ -492,7 +492,7 @@
 	 *
 	 * Bind a function to seeking event or trigger the event
 	 */
-	$media.prototype.seeking = function (fn) {
+	window.$media.prototype.seeking = function (fn) {
 		if ($.isFunction(fn)) {
 			this.on('seeking', fn);
 
@@ -500,7 +500,7 @@
 		}
 
 		return this.element.seeking;
-	}
+	};
 
 
 	/**
@@ -510,12 +510,12 @@
 	 *
 	 * Set a volume value of media, bind a function to volume event or return the current value (in 1-0 range)
 	 */
-	$media.prototype.volume = function (fn) {
-		if (device == 'ios') {
+	window.$media.prototype.volume = function (fn) {
+		if (device === 'ios') {
 			return this;
 		}
 
-		if (fn == undefined) {
+		if (fn === undefined) {
 			return this.element.volume;
 		}
 
@@ -526,7 +526,7 @@
 		}
 
 		return this;
-	}
+	};
 
 
 	/**
@@ -536,15 +536,15 @@
 	 *
 	 * Mute or unmute the media or bind a function to mute event
 	 */
-	$media.prototype.mute = function (fn) {
-		if (device == 'ios') {
+	window.$media.prototype.mute = function (fn) {
+		if (device === 'ios') {
 			return this;
 		}
 
 		if ($.isFunction(fn)) {
 			this.bind('mute', fn, one);
 		} else {
-			if (typeof fn == 'boolean') {
+			if (typeof fn === 'boolean') {
 				this.element.muted = fn;
 			} else {
 				this.element.muted = this.element.muted ? false : true;
@@ -554,7 +554,7 @@
 		}
 
 		return this;
-	}
+	};
 
 
 	/**
@@ -562,13 +562,12 @@
 	 *
 	 * Bind a function to specific event
 	 */
-	$media.prototype.on = function (event, fn) {
-		var registeredEvents = this.$element.data('events') || {};
-		var events = event.split(' ');
+	window.$media.prototype.on = function (event, fn) {
+		var registeredEvents = this.$element.data('events') || {}, events = event.split(' '), i;
 
 		fn = $.proxy(fn, this);
 
-		for (var i = 0, length = events.length; i < length; i++) {
+		for (i = 0, length = events.length; i < length; i++) {
 			switch (events[i]) {
 				case 'fullScreen':
 					if (!registeredEvents[events[i]]) {
@@ -609,7 +608,7 @@
 
 					this.$element.bind('playing', fn);
 					break;
-				
+
 				case 'seek':
 					this.$element.bind('seeked', fn);
 					break;
@@ -624,7 +623,7 @@
 		}
 
 		return this;
-	}
+	};
 
 
 
@@ -633,7 +632,7 @@
 	 *
 	 * Unbind a function to specific event
 	 */
-	$media.prototype.off = function (event, fn) {
+	window.$media.prototype.off = function (event, fn) {
 		if (fn) {
 			this.$element.unbind(event, $.proxy(fn, this));
 		} else {
@@ -641,7 +640,7 @@
 		}
 
 		return this;
-	}
+	};
 
 
 	/**
@@ -649,11 +648,11 @@
 	 *
 	 * Trigger an event
 	 */
-	$media.prototype.trigger = function (event, data) {
+	window.$media.prototype.trigger = function (event, data) {
 		this.$element.trigger(event, data);
 
 		return this;
-	}
+	};
 
 
 	/**
@@ -661,8 +660,8 @@
 	 *
 	 * Return the current time of the media in time or a specific point
 	 */
-	$media.prototype.time = function (time) {
-		if (time == undefined) {
+	window.$media.prototype.time = function (time) {
+		if (time === undefined) {
 			return this.element.currentTime.toSeconds();
 		}
 
@@ -681,12 +680,12 @@
 				sum = -sum;
 			}
 
-			if (time.indexOf('%') == -1) {
+			if (time.indexOf('%') === -1) {
 				int_time = sum + this.element.currentTime.toSeconds();
 			} else {
 				int_time = Math.round((this.totalTime() / 100) * parseInt(sum)) + this.element.currentTime.toSeconds();
 			}
-		} else if (time.indexOf('%') != -1) {
+		} else if (time.indexOf('%') !== -1) {
 			int_time = Math.round((this.totalTime() / 100) * time.toSeconds());
 		} else {
 			int_time = time.toSeconds();
@@ -699,7 +698,7 @@
 		}
 
 		return int_time;
-	}
+	};
 
 
 	/**
@@ -707,15 +706,15 @@
 	 *
 	 * Return the media duration in seconds
 	 */
-	$media.prototype.totalTime = function (fn) {
+	window.$media.prototype.totalTime = function (fn) {
 		if (!$.isFunction(fn)) {
 			return this.element.duration.toSeconds();
 		}
-		
+
 		return this.ready(1, function () {
 			$.proxy(fn, this)(this.element.duration.toSeconds());
 		});
-	}
+	};
 
 
 	/**
@@ -724,8 +723,8 @@
 	 *
 	 * Return if the video is ready to play
 	 */
-	$media.prototype.ready = function (state, fn) {
-		if (typeof state != 'number') {
+	window.$media.prototype.ready = function (state, fn) {
+		if (typeof state !== 'number') {
 			fn = state;
 			state = 3;
 		}
@@ -739,12 +738,12 @@
 		} else {
 			var that = this;
 			setTimeout(function () {
-				that.ready(state, fn)
+				that.ready(state, fn);
 			}, 13);
 		}
 
 		return this;
-	}
+	};
 
 
 	/**
@@ -752,11 +751,11 @@
 	 *
 	 * Reload the video
 	 */
-	$media.prototype.reload = function () {
+	window.$media.prototype.reload = function () {
 		this.sources(this.sources());
 
 		return this;
-	}
+	};
 
 
 	/**
@@ -765,15 +764,15 @@
 	 *
 	 * Extends $media with other functions
 	 */
-	$media.prototype.extend = function (name, value) {
-		if (typeof name != 'object') {
+	window.$media.prototype.extend = function (name, value) {
+		if (typeof name !== 'object') {
 			var k = name;
 			name = {};
 			name[k] = value;
 		}
 
 		$.extend(this, name);
-	}
+	};
 
 
 	/**
@@ -782,8 +781,8 @@
 	 *
 	 * Extends $media with other functions
 	 */
-	$media.extend = function (name, value) {
-		if (typeof name != 'object') {
+	window.$media.extend = function (name, value) {
+		if (typeof name !== 'object') {
 			var k = name;
 			name = {};
 			name[k] = value;
@@ -792,7 +791,7 @@
 		$.each(name, function (k, v) {
 			$media.prototype[k] = v;
 		});
-	}
+	};
 
 
 
@@ -826,7 +825,7 @@
 		}
 
 		return new $media(selector.get(0));
-	}
+	};
 
 
 	/**
@@ -840,7 +839,7 @@
 		}
 
 		return $.media('<video>', properties);
-	}
+	};
 
 
 	/**
@@ -854,7 +853,8 @@
 		}
 
 		return $.media('<audio>', properties);
-	}
+	};
+
 })(jQuery);
 
 
@@ -864,19 +864,19 @@
  * Convert any number to seconds
  */
 String.prototype.toSeconds = function () {
-	var time = this;
+	var time = this, ms;
 
 	if (/^([0-9]{1,2}:)?[0-9]{1,2}:[0-9]{1,2}(\.[0-9]+)?(,[0-9]+)?$/.test(time)) {
 		time = time.split(':', 3);
 
-		if (time.length == 3) {
-			var ms = time[2].split(',', 2);
-			ms[1] = ms[1] ? ms[1] : 0;
+		if (time.length === 3) {
+			ms = time[2].split(',', 2);
+			ms[1] = ms[1] || 0;
 
 			return ((((parseInt(time[0], 10) * 3600) + (parseInt(time[1], 10) * 60) + parseFloat(ms[0])) * 1000) + parseInt(ms[1], 10)) / 1000;
 		}
 
-		var ms = time[1].split(',', 1);
+		ms = time[1].split(',', 1);
 		ms[1] = ms[1] ? ms[1] : 0;
 
 		return ((((parseInt(time[0], 10) * 60) + parseFloat(ms[0])) * 1000) + parseInt(ms[1], 10)) / 1000;
