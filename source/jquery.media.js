@@ -78,7 +78,7 @@
 			length = source.length;
 			result = 0;
 
-			for (i = 0; i < length; i++) {
+			for (i = 0; i < length; ++i) {
 				r = this.canPlay((source[i].substring(source[i].lastIndexOf('.') + 1)).toLowerCase().split('#', 2)[0]);
 				result = (r > result) ? r : result;
 			}
@@ -456,7 +456,9 @@
 
 		this.$element.remove();
 
-		for (var prop in this) {
+		var prop;
+
+		for (prop in this) {
 			if (this.hasOwnProperty(prop)) {
 				this[prop] = {};
 			}
@@ -542,7 +544,7 @@
 		}
 
 		if ($.isFunction(fn)) {
-			this.bind('mute', fn, one);
+			this.bind('mute', fn);
 		} else {
 			if (typeof fn === 'boolean') {
 				this.element.muted = fn;
@@ -563,11 +565,11 @@
 	 * Bind a function to specific event
 	 */
 	window.$media.prototype.on = function (event, fn) {
-		var registeredEvents = this.$element.data('events') || {}, events = event.split(' '), i;
+		var registeredEvents = this.$element.data('events') || {}, events = event.split(' '), i, length = events.length;
 
 		fn = $.proxy(fn, this);
 
-		for (i = 0, length = events.length; i < length; i++) {
+		for (i = 0; i < length; i++) {
 			switch (events[i]) {
 				case 'fullScreen':
 					if (!registeredEvents[events[i]]) {
@@ -665,7 +667,7 @@
 			return this.element.currentTime.toSeconds();
 		}
 
-		if (isNaN(parseInt(time))) {
+		if (isNaN(parseInt(time, 10))) {
 			return 0;
 		}
 
@@ -683,7 +685,7 @@
 			if (time.indexOf('%') === -1) {
 				int_time = sum + this.element.currentTime.toSeconds();
 			} else {
-				int_time = Math.round((this.totalTime() / 100) * parseInt(sum)) + this.element.currentTime.toSeconds();
+				int_time = Math.round((this.totalTime() / 100) * parseInt(sum, 10)) + this.element.currentTime.toSeconds();
 			}
 		} else if (time.indexOf('%') !== -1) {
 			int_time = Math.round((this.totalTime() / 100) * time.toSeconds());
@@ -789,7 +791,7 @@
 		}
 
 		$.each(name, function (k, v) {
-			$media.prototype[k] = v;
+			window.$media.prototype[k] = v;
 		});
 	};
 
@@ -800,16 +802,18 @@
 	 *
 	 * Creates and returns a new $media object
 	 */
-	jQuery.media = function (selector, properties) {
+	$.media = function (selector, properties) {
 		if (properties) {
+			var src;
+
 			if (properties.src) {
-				var src = properties.src;
+				src = properties.src;
 				delete(properties.src);
 			}
 
 			selector = $(selector, properties);
 
-			var media = new $media(selector.get(0));
+			var media = new window.$media(selector.get(0));
 
 			if (src) {
 				media.sources(src);
@@ -824,7 +828,7 @@
 			selector = selector.find('video, audio');
 		}
 
-		return new $media(selector.get(0));
+		return new window.$media(selector.get(0));
 	};
 
 
@@ -833,8 +837,8 @@
 	 *
 	 * Creates a video element and returns a $media object with it
 	 */
-	jQuery.mediaVideo = function (properties) {
-		if (typeof properties == 'string' || $.isArray(properties)) {
+	$.mediaVideo = function (properties) {
+		if (typeof properties === 'string' || $.isArray(properties)) {
 			properties = {src: properties};
 		}
 
@@ -847,15 +851,15 @@
 	 *
 	 * Creates an audio element and returns a $media object with it
 	 */
-	jQuery.mediaAudio = function (properties) {
-		if (typeof properties == 'string' || $.isArray(properties)) {
+	$.mediaAudio = function (properties) {
+		if (typeof properties === 'string' || $.isArray(properties)) {
 			properties = {src: properties};
 		}
 
 		return $.media('<audio>', properties);
 	};
 
-})(jQuery);
+})(window.jQuery);
 
 
 /**
@@ -864,6 +868,8 @@
  * Convert any number to seconds
  */
 String.prototype.toSeconds = function () {
+	'use strict';
+
 	var time = this, ms;
 
 	if (/^([0-9]{1,2}:)?[0-9]{1,2}:[0-9]{1,2}(\.[0-9]+)?(,[0-9]+)?$/.test(time)) {
@@ -877,13 +883,13 @@ String.prototype.toSeconds = function () {
 		}
 
 		ms = time[1].split(',', 1);
-		ms[1] = ms[1] ? ms[1] : 0;
+		ms[1] = ms[1] || 0;
 
 		return ((((parseInt(time[0], 10) * 60) + parseFloat(ms[0])) * 1000) + parseInt(ms[1], 10)) / 1000;
 	}
 
 	return parseFloat(time).toSeconds();
-}
+};
 
 
 /**
@@ -892,8 +898,10 @@ String.prototype.toSeconds = function () {
  * Convert a seconds time value to any other time format
  */
 String.prototype.secondsTo = function (outputFormat) {
+	'use strict';
+
 	return this.toSeconds().secondsTo(outputFormat);
-}
+};
 
 
 /**
@@ -902,8 +910,10 @@ String.prototype.secondsTo = function (outputFormat) {
  * Convert any number to seconds
  */
 Number.prototype.toSeconds = function () {
+	'use strict';
+
 	return Math.round(this * 1000) / 1000;
-}
+};
 
 
 /**
@@ -912,6 +922,8 @@ Number.prototype.toSeconds = function () {
  * Convert a seconds time value to any other time format
  */
 Number.prototype.secondsTo = function (outputFormat) {
+	'use strict';
+
 	var time = this;
 
 	switch (outputFormat) {
@@ -923,7 +935,7 @@ Number.prototype.secondsTo = function (outputFormat) {
 		case 'hh:mm:ss.ms':
 			var hh = '';
 
-			if (outputFormat != 'mm:ss') {
+			if (outputFormat !== 'mm:ss') {
 				hh = Math.floor(time / 3600);
 				time = time - (hh * 3600);
 				hh += ':';
@@ -936,7 +948,7 @@ Number.prototype.secondsTo = function (outputFormat) {
 
 			var ss = time;
 
-			if (outputFormat == 'hh:mm:ss') {
+			if (outputFormat === 'hh:mm:ss') {
 				ss = Math.round(ss);
 			}
 			ss = (ss < 10) ? ("0" + ss) : ss;

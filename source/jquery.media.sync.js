@@ -25,7 +25,7 @@
 		});
 
 		return sync_ready;
-	}
+	};
 
 	var synchronize = function (event, time) {
 		var that = this;
@@ -48,9 +48,9 @@
 				sync.media.pause();
 			}
 		});
-	}
+	};
 
-	$media.extend({
+	window.$media.extend({
 		syncWith: function (media, offset) {
 			offset = offset ? offset.toSeconds() : 0;
 
@@ -83,7 +83,9 @@
 			if (!media) {
 				this.sync = [];
 			} else if ($.isArray(this.sync) && this.sync.length) {
-				for (var i = 0; i < this.sync.length; i++) {
+				var i;
+				
+				for (i = 0; i < this.sync.length; i++) {
 					if (this.sync[i].media.$element.is(media.$element)) {
 						this.sync.splice(i, 1);
 						break;
@@ -101,7 +103,7 @@
 		},
 
 		syncReady: function (state, fn) {
-			if (typeof state != 'number') {
+			if (typeof state !== 'number') {
 				fn = state;
 				state = 3;
 			}
@@ -119,15 +121,16 @@
 			if (syncReady(medias, state)) {
 				$.proxy(fn, this)();
 			} else {
-				var that = this;
+				var that = this, interval_ready;
+
 				var ready = function () {
 					if (syncReady(medias, state)) {
 						clearInterval(interval_ready);
 						$.proxy(fn, that)();
 					}
-				}
+				};
 
-				var interval_ready = setInterval($.proxy(ready, that), 13);
+				interval_ready = setInterval($.proxy(ready, that), 13);
 			}
 
 			return this;

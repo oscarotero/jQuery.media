@@ -29,12 +29,12 @@
 		}, (settings.fps ? (1000/settings.fps) : 0));
 	};
 
-	$media.extend('toCanvas', function (canvas, settings) {
+	window.$media.extend('toCanvas', function (canvas, settings) {
 		settings = settings || {};
 		this.$canvas = $(canvas);
 
 		if (this.$canvas.data('toCanvas')) {
-			console.error('The canvas just have a video related');
+			$.error('The canvas just have a video related');
 			return this;
 		}
 
@@ -72,4 +72,4 @@
 		}
 		
 	});
-})(jQuery);
+})(window.jQuery);

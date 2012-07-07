@@ -1,13 +1,12 @@
 /**
- * $media.tracks (2.1)
+ * $media.tween (0.1.0)
  *
  * Require:
  * $media
- * $media.timeline
  *
- * 2012. Created by Oscar Otero (http://oscarotero.com)
+ * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
  *
- * $media.tracks is released under the GNU Affero GPL version 3.
+ * $media.tween is released under the GNU Affero GPL version 3.
  * More information at http://www.gnu.org/licenses/agpl-3.0.html
  */
 
@@ -15,108 +14,269 @@
 (function($) {
 	'use strict';
 
-	//Helpers
-	var helpers = {
-		parseWebSRT: function (text) {
-			var pieces = $.trim(text).replace(/\r/gm, "").split("\n\n");
-			var parse = [];
-			var num = 0;
+	//Tweens class
+	window.$media.Tween = function (name, settings) {
+		this.name = name;
+		this.points = settings.points;
+		this.target = $(settings.target).hide();
+		this.enabled = false;
+		this.currentPos = 0;
+		this.lastPos = this.points.length - 1;
+		this.status = 'out';
+		this["in"] = settings["in"];
+		this.out = settings.out;
+		this.statusChange = settings.statusChange;
+		this.create = settings.create;
+		this.destroy = settings.destroy;
+	};
 
-			$.each(pieces, function (index, piece) {
-				var lines = piece.split("\n");
-				var id = '';
 
-				if (lines[0].indexOf(' --> ') == -1) {
-					id = $.trim(lines.shift());
-				}
+	window.$media.Tween.prototype = {
+		executeDestroy: function (media) {
+			if ($.isFunction(this.destroy)) {
+				this.destroy.call(media, this);
+			}
+		},
 
-				var line = $.trim(lines.shift());
-				var time = line.match(/^([0-9:\.,]+) --> ([0-9:\.,]+)(.*)?$/);
-				var settings = $.trim(time[3]);
+		executeCreate: function (media) {
+			if ($.isFunction(this.create)) {
+				this.create.call(media, this);
+			}
+		},
 
-				if (settings) {
-					var settings_array = settings.split(' ');
-					settings = {};
+		/**
+		 * function move (ms)
+		 *
+		 * Adds one or more points to the tween
+		 */
+		getPoint: function (ms) {
+			if ((this.enabled === false) || (this.points[0].ms > ms) || (this.points[this.lastPos].ms < ms)) {
+				this.currentPos = 0;
+				return false;
+			}
 
-					for (s in settings_array) {
-						var s = settings_array[s].split(':', 2);
+			if (this.points[this.currentPos].ms > ms) {
+				this.currentPos = 0;
+			}
 
-						s[0] = $.trim(s[0]);
-						settings[s[0]] = $.trim(s[1]);
+			var point;
+
+			while (this.points[this.currentPos] && this.points[this.currentPos].ms <= ms) {
+				point = this.points[this.currentPos];
+				this.currentPos++;
+			}
+
+			if (point) {
+				this.currentPos--;
+				return point;
+			}
+
+			return false;
+		},
+
+		execute: function (media) {
+			var ms = media.time().secondsTo('ms');
+			var point = this.getPoint(ms);
+
+			if (point) {
+				this.target.css({
+					left: point.coords[0] +'%',
+					top: point.coords[1] + '%'
+				}, {
+					duration: 200,
+					queue: false
+				});
+
+				if (this.status === 'out') {
+					this.status = 'in';
+					this.target.show();
+
+					if ($.isFunction(this["in"])) {
+						this["in"].call(media, this);
 					}
 				}
 
-				parse.push({
-					'num': num++,
-					'id': id,
-					'in': time[1],
-					'out': time[2],
-					'settings': settings,
-					'content': lines.join('<br>')
+				if (point.status && (point.status !== this.status)) {
+					this.status = point.status;
+
+					if ($.isFunction(this.statusChange)) {
+						this.statusChange.call(media, this);
+					}
+				}
+
+			} else if (this.status !== 'out') {
+				this.status = 'out';
+				this.target.hide();
+
+				if ($.isFunction(this.out)) {
+					this.out.call(media, this);
+				}
+			}
+		}
+	};
+
+
+
+	//Extends $media class
+	window.$media.extend({
+
+		/**
+		 * function setTween (name, [tween])
+		 *
+		 * Gets a tween
+		 */
+		setTween: function (name, tween) {
+			if (!this.tweens) {
+				this.tweens = {};
+
+				this.on('play seek', function () {
+					this.executeTweens();
 				});
-			});
-
-			return parse;
-		},
-
-		fn: function (dataPoint, dataTimeline) {
-			if (!dataTimeline.target) {
-				dataTimeline.target = $('<div class="track_' + dataTimeline.track.attr('kind') + '"></div>').insertAfter(this.$element);
 			}
 
-			dataPoint.trackElement = $('<div>' + dataPoint.content + '</div>').appendTo(dataTimeline.target);
+			this.tweens[name] = new window.$media.Tween(name, tween);
+
+			this.tweens[name].executeCreate(this);
+
+			if (tween.enabled) {
+				this.enableTween(name);
+			}
+
+			return this;
 		},
 
-		fn_out: function (dataPoint, dataTimeline) {
-			dataPoint.trackElement.remove();
-		}
-	}
+
+		/**
+		 * function removeTween (name)
+		 *
+		 * Remove a tween
+		 */
+		removeTween: function (name) {
+			if (!this.tweenExists(name)) {
+				return this;
+			}
+
+			this.tweens[name].executeDestroy(this);
+
+			delete this.tweens[name];
+
+			return this;
+		},
 
 
-	$media.extend('setTimelineFromTweens', function (name, options) {
-		options = options || {};
-		options.data = options.data || {};
+		/**
+		 * function enableDisableTweens (object tweens)
+		 *
+		 * Enables and disables various tweens
+		 */
+		enableTween: function (name) {
+			if (!this.tweenExists(name) || this.tweenIsEnabled(name)) {
+				return this;
+			}
 
-		options.data.target = $(options.target);
+			this.tweens[name].enabled = true;
 
-		if (!options.data.target.length) {
+			return this;
+		},
+
+
+		/**
+		 * function enableDisableTweens (object tweens)
+		 *
+		 * Enables and disables various tweens
+		 */
+		disableTween: function (name) {
+			if (!this.tweenIsEnabled(name)) {
+				return this;
+			}
+
+			this.tweens[name].enabled = false;
+
+			return this;
+		},
+
+
+
+		/**
+		 * function enableDisableTweens (object tweens)
+		 *
+		 * Enables and disables various tweens
+		 */
+		enableDisableTweens: function (tweens) {
+			if (!tweens || !this.tweens) {
+				return this;
+			}
+
+			var name;
+
+			for (name in tweens) {
+				if (tweens[name]) {
+					this.enableTween(name);
+				} else {
+					this.disableTween(name);
+				}
+			}
+
+			return this;
+		},
+		
+
+		tweenExists: function (name) {
+			if ((name === undefined) || !this.tweens || !this.tweens[name]) {
+				return false;
+			}
+
+			return true;
+		},
+
+		tweenIsEnabled: function (name) {
+			if (this.tweenExists(name) && this.tweens[name].enabled) {
+				return true;
+			}
+
 			return false;
-		}
+		},
 
-		this.setTimeline(name, options);
 
-		var points = options.points;
-
-		var moveTo = function (event, time) {
-			if (!points[0]) {
+		/**
+		 * function refreshTween ()
+		 *
+		 * Set the points array
+		 */
+		refreshTweens: function () {
+			if (!this.tweens) {
 				return;
 			}
 
-			do {
-				var point = points.shift();
-			} while (point.time < time);
+			var name;
 
-			if (point)
+			for (name in this.tweens) {
+				this.tweens[name].refresh();
+			}
+
+			return this;
+		},
+
+
+		/**
+		 * function tweenTimeout ()
+		 *
+		 * Function to execute on timeOut
+		 */
+		executeTweens: function () {
+			if (!this.tweens) {
+				return;
+			}
+
+			var name;
+
+			for (name in this.tweens) {
+				this.tweens[name].execute(this);
+			}
+
+			if (this.playing()) {
+				this.tweensTimeout = setTimeout($.proxy(this, 'executeTweens'), 200);
+			}
 		}
-
-		this.playing(moveTo);
-
-		$.get(options.data.track.attr('src'), function (text) {
-			var result = helpers.parseWebSRT(text);
-			var points = [];
-
-			$.each(result, function (index, point) {
-				points.push({
-					time: [point.in, point.out],
-					fn: helpers.fn,
-					fn_out: helpers.fn_out,
-					data: point
-				});
-			});
-
-			media.setTimelinePoints(name, points);
-		});
-
-		return this;
 	});
-})(jQuery);
+})(window.jQuery);

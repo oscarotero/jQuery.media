@@ -26,7 +26,7 @@
 				var lines = $.trim(piece).split("\n");
 				var id = '';
 
-				if (lines[0].indexOf(' --> ') == -1) {
+				if (lines[0].indexOf(' --> ') === -1) {
 					id = $.trim(lines.shift());
 				}
 
@@ -35,11 +35,11 @@
 				var settings = $.trim(time[3]);
 
 				if (settings) {
-					var settings_array = settings.split(' ');
+					var settings_array = settings.split(' '), s;
 					settings = {};
 
 					for (s in settings_array) {
-						var s = settings_array[s].split(':', 2);
+						s = settings_array[s].split(':', 2);
 
 						s[0] = $.trim(s[0]);
 						settings[s[0]] = $.trim(s[1]);
@@ -70,10 +70,10 @@
 		fn_out: function (dataPoint, dataTimeline) {
 			dataPoint.trackElement.remove();
 		}
-	}
+	};
 
 
-	$media.extend('setTimelineFromTrack', function (name, options) {
+	window.$media.extend('setTimelineFromTrack', function (name, options) {
 		options = options || {};
 		options.data = options.data || {};
 
@@ -93,7 +93,7 @@
 
 			$.each(result, function (index, point) {
 				points.push({
-					time: [point['in'], point['out']],
+					time: [point['in'], point.out],
 					fn: helpers.fn,
 					fn_out: helpers.fn_out,
 					data: point
