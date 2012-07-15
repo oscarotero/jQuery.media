@@ -35,14 +35,14 @@
 				var settings = $.trim(time[3]);
 
 				if (settings) {
-					var settings_array = settings.split(' '), s;
+					var settings_array = settings.split(' '), setting;
 					settings = {};
 
-					for (s in settings_array) {
-						s = settings_array[s].split(':', 2);
+					for (var s, length = settings_array; s < length; s++) {
+						setting = settings_array[s].split(':', 2);
 
-						s[0] = $.trim(s[0]);
-						settings[s[0]] = $.trim(s[1]);
+						setting[0] = $.trim(setting[0]);
+						settings[setting[0]] = $.trim(setting[1]);
 					}
 				}
 

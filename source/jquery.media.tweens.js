@@ -251,7 +251,9 @@
 			var name;
 
 			for (name in this.tweens) {
-				this.tweens[name].refresh();
+				if (this.tweens.hasOwnProperty(name)) {
+					this.tweens[name].refresh();
+				}
 			}
 
 			return this;
@@ -271,7 +273,9 @@
 			var name;
 
 			for (name in this.tweens) {
-				this.tweens[name].execute(this);
+				if (this.tweens.hasOwnProperty(name)) {
+					this.tweens[name].execute(this);
+				}
 			}
 
 			if (this.playing()) {

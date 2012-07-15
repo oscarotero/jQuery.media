@@ -57,7 +57,7 @@
 		return this;
 	});
 
-	$media.extend('getScreenShot', function (format) {
+	window.$media.extend('getScreenShot', function (format) {
 		var canvas = $('<canvas></canvas>').get(0);
 
 		var width = canvas.width = this.width(true);

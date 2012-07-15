@@ -1,5 +1,5 @@
 /**
- * $media jQuery plugin (v.1.3.1)
+ * $media jQuery plugin (v.1.3.2)
  *
  * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
  *
@@ -130,15 +130,19 @@
 
 
 	/**
-	 * function sources ([sources], [autoload])
+	 * function source ([source], [autoload])
 	 *
 	 * Get or set source values
 	 */
-	window.$media.prototype.sources = function (sources, autoload) {
+	window.$media.prototype.source = function (sources, autoload) {
 		var $media = this.$element;
 
 		//Getter
 		if (sources === undefined) {
+			return this.element.currentSrc;
+		}
+
+		if (sources === true) {
 			var src = [];
 
 			if ($media.attr('src')) {
@@ -151,7 +155,7 @@
 
 			return src;
 		}
-
+		
 		//Setter
 		$media.find('source').remove();
 
@@ -188,15 +192,6 @@
 		return this;
 	};
 
-
-	/**
-	 * function source ()
-	 *
-	 * Get the current source value
-	 */
-	window.$media.prototype.source = function () {
-		return this.element.currentSrc;
-	};
 
 
 	/**
@@ -565,7 +560,7 @@
 	 * Bind a function to specific event
 	 */
 	window.$media.prototype.on = function (event, fn) {
-		var registeredEvents = this.$element.data('events') || {}, events = event.split(' '), i, length = events.length;
+		var registeredEvents = this.$element.data('events') || {}, events = event.split(' '), i, length = events.length, that = this;
 
 		fn = $.proxy(fn, this);
 
@@ -573,8 +568,6 @@
 			switch (events[i]) {
 				case 'fullScreen':
 					if (!registeredEvents[events[i]]) {
-						var that = this;
-
 						$(document).on('mozfullscreenchange', function (e) {
 							if (document.mozFullScreenElement && that.$element.is(document.mozFullScreenElement)) {
 								that.$element.data('fullScreen', true);
@@ -602,8 +595,8 @@
 				case 'playing':
 					if (!registeredEvents[events[i]]) {
 						this.$element.on('timeupdate', function () {
-							if (!this.paused && !this.ended) {
-								this.trigger('playing');
+							if (!that.paused && !that.ended) {
+								that.trigger('playing');
 							}
 						});
 					}
