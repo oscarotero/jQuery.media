@@ -809,7 +809,7 @@
 			var media = new window.$media(selector.get(0));
 
 			if (src) {
-				media.sources(src);
+				media.source(src);
 			}
 
 			return media;
