@@ -1,5 +1,5 @@
 /**
- * $media.timeline (2.2.1)
+ * $media.timeline (2.2.2)
  *
  * Require:
  * $media
@@ -11,7 +11,7 @@
  */
 
 
-(function($) {
+(function ($) {
 	'use strict';
 
 	//sort object
@@ -28,12 +28,12 @@
 			return a - b;
 		});
 
-		for (key = 0; key < keys.length; key++) {
+		for (key = 0; key < keys.length; ++key) {
 			sorted[keys[key]] = o[keys[key]];
 		}
 
 		return sorted;
-	}
+	};
 
 
 	//Point class
@@ -45,13 +45,13 @@
 		if ($.isFunction(settings.fn)) {
 			this.fn = settings.fn;
 		} else {
-			console.error('fn is not a valid function');
+			$.error('fn is not a valid function');
 		}
 
 		if ($.isFunction(settings.fn_out)) {
 			this.fn_out = settings.fn_out;
 		} else if (settings.fn_out) {
-			console.error('fn_out is not a valid function');
+			$.error('fn_out is not a valid function');
 		}
 
 		if (!$.isArray(this.time)) {
@@ -102,7 +102,7 @@
 		}
 	};
 
-	
+
 	//Timeline class
 	window.$media.Timeline = function (data) {
 		this.data = data || {};
@@ -122,11 +122,10 @@
 				return;
 			}
 
-			var percent = [];
-			var totaltime = media.totalTime();
+			var percent = [], totaltime = media.totalTime(), i, length, point;
 
-			for (var i = 0, length = points.length; i < length; i++) {
-				var point = points[i];
+			for (i = 0, length = points.length; i < length; ++i) {
+				point = points[i];
 
 				if (!totaltime && point.relative === true) {
 					percent.push(point);
@@ -135,7 +134,7 @@
 
 				point.updateTime(media);
 
-				if (this.points[point.start] == undefined) {
+				if (this.points[point.start] === undefined) {
 					this.points[point.start] = [point];
 				} else {
 					this.points[point.start].push(point);
@@ -169,22 +168,22 @@
 		 * Adds one or more points to the timeline
 		 */
 		addPoints: function (media, points) {
-			var newPoints = [];
+			var newPoints = [], i, length = points.length;
 
-			for (var i = 0, length = points.length; i < length; i++) {
-				newPoints.push(new $media.Point(points[i]));
+			for (i = 0; i < length; ++i) {
+				newPoints.push(new window.$media.Point(points[i]));
 			}
 
 			this.savePoints(media, newPoints);
 
 			return this;
 		}
-	}
+	};
 
 
 
 	//Extends $media class
-	$media.extend({
+	window.$media.extend({
 
 		/**
 		 * function setTimeline (name, [options])
@@ -203,15 +202,15 @@
 					timeout: 0
 				};
 
-				this.on('play seeked', function() {
+				this.on('play seeked', function () {
 					this.startTimeline();
-				}).seeking(function(event, time) {
+				}).seeking(function (event, time) {
 					var length = this.timeline.outPoints.length;
 
 					if (length) {
-						var ms = time.secondsTo('ms');
+						var ms = time.secondsTo('ms'), k;
 
-						for (var k = 0; k < length; k++) {
+						for (k = 0; k < length; k++) {
 							var point = this.timeline.outPoints[k];
 
 							if (point && (ms < point.start || ms > point.end)) {
@@ -223,7 +222,7 @@
 				});
 			}
 
-			this.timelines[name] = new $media.Timeline(options.data);
+			this.timelines[name] = new window.$media.Timeline(options.data);
 
 			if (options.points) {
 				this.setTimelinePoints(name, options.points);
@@ -331,17 +330,19 @@
 				return this;
 			}
 
-			var refresh = false;
+			var refresh = false, name;
 
-			for (var name in timelines) {
-				var timeline = this.timelines[name];
+			for (name in timelines) {
+				if (timelines.hasOwnProperty(name)) {
+					var timeline = this.timelines[name];
 
-				if (timeline) {
-					var enable = timelines[name] ? true : false;
+					if (timeline) {
+						var enable = timelines[name] ? true : false;
 
-					if (timeline.enabled !== enable) {
-						timeline.enabled = enable;
-						refresh = true;
+						if (timeline.enabled !== enable) {
+							timeline.enabled = enable;
+							refresh = true;
+						}
 					}
 				}
 			}
@@ -381,23 +382,27 @@
 			this.timeline.points = [];
 
 			for (name in this.timelines) {
-				timeline = this.timelines[name];
+				if (this.timelines.hasOwnProperty(name)) {
+					timeline = this.timelines[name];
 
-				if (!timeline.enabled) {
-					continue;
-				}
-
-				timelinePoints = timeline.points;
-
-				for (ms in timelinePoints) {
-					if (points[ms] == undefined) {
-						points[ms] = [];
+					if (!timeline.enabled) {
+						continue;
 					}
 
-					for (k = 0, length = timelinePoints[ms].length; k < length; k++) {
-						point = timelinePoints[ms][k];
-						point.timelineName = name;
-						points[ms].push(point);
+					timelinePoints = timeline.points;
+
+					for (ms in timelinePoints) {
+						if (timelinePoints.hasOwnProperty(ms)) {
+							if (points[ms] === undefined) {
+								points[ms] = [];
+							}
+
+							for (k = 0, length = timelinePoints[ms].length; k < length; k++) {
+								point = timelinePoints[ms][k];
+								point.timelineName = name;
+								points[ms].push(point);
+							}
+						}
 					}
 				}
 			}
@@ -405,8 +410,10 @@
 			points = sortObject(points);
 
 			for (ms in points) {
-				for (k = 0, length = points[ms].length; k < length; k++) {
-					this.timeline.points.push(points[ms][k]);
+				if (points.hasOwnProperty(ms)) {
+					for (k = 0, length = points[ms].length; k < length; k++) {
+						this.timeline.points.push(points[ms][k]);
+					}
 				}
 			}
 
@@ -422,15 +429,15 @@
 		 * Get the timeline points from any time to the end
 		 */
 		getPoints: function (from) {
-			if (from == undefined) {
+			if (from === undefined) {
 				from = 0;
 			}
 
 			from = from.secondsTo('ms');
 
-			var points = [];
+			var points = [], k, length = this.timeline.points.length;
 
-			for (var k = 0, length = this.timeline.points.length; k < length; k++) {
+			for (k = 0; k < length; k++) {
 				if (from <= this.timeline.points[k].end) {
 					points.push(this.timeline.points[k]);
 				}
@@ -472,13 +479,14 @@
 
 			var ms = this.time().secondsTo('ms');
 			var total_ms = this.totalTime().secondsTo('ms');
+			var point, k, length;
 
 			//Execute "out" functions
-			var length = this.timeline.outPoints.length;
+			length = this.timeline.outPoints.length;
 
 			if (length) {
-				for (var k = 0; k < length; k++) {
-					var point = this.timeline.outPoints[k];
+				for (k = 0; k < length; k++) {
+					point = this.timeline.outPoints[k];
 
 					if (point && (ms < point.start || ms > point.end || !this.timelines[point.timelineName].enabled)) {
 						point.executeOut(this, [point.data, this.timelines[point.timelineName].data]);
@@ -489,7 +497,7 @@
 
 			//Execute "in" functions
 			while (this.timeline.inPoints && this.timeline.inPoints[0] && this.timeline.inPoints[0].start <= ms && this.timeline.inPoints[0].start < total_ms) {
-				var point = this.timeline.inPoints.shift();
+				point = this.timeline.inPoints.shift();
 
 				if (point.execute(this, [point.data, this.timelines[point.timelineName].data]) && point.waiting) {
 					this.timeline.outPoints.push(point);
@@ -507,10 +515,10 @@
 				new_ms = this.timeline.inPoints[0].start;
 			}
 
-			var length = this.timeline.outPoints.length;
+			length = this.timeline.outPoints.length;
 
 			if (length) {
-				for (var k = 0; k < length; k++) {
+				for (k = 0; k < length; k++) {
 					if (!new_ms || this.timeline.outPoints[k].end < new_ms) {
 						new_ms = this.timeline.outPoints[k].end;
 					}
