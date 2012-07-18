@@ -103,6 +103,27 @@
 
 
 	/**
+	 * function playbackRate (playbackRate)
+	 *
+	 * Get the playback rate
+	 */
+	$media.prototype.playbackRate = function (playbackRate) {
+		//if playbackRate no supported
+		if (!('playbackRate' in this.element)) {
+			return (playbackRate === undefined) ? 1 : this;
+		}
+
+		if (playbackRate === undefined) {
+			return this.element.playbackRate;
+		}
+
+		this.element.playbackRate = playbackRate;
+
+		return this;
+	}
+
+
+	/**
 	 * function mimeType (ext)
 	 *
 	 * Get the source type
