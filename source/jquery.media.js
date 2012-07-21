@@ -34,9 +34,9 @@
 
 
 	/**
-	 * function get ()
+	 * Returns the html audio/video element
 	 *
-	 * Returns the html media element
+	 * @return html element
 	 */
 	window.$media.prototype.get = function () {
 		return this.element;
@@ -45,9 +45,9 @@
 
 
 	/**
-	 * function jQuery ()
+	 * Returns the jquery object with the audio/video element
 	 *
-	 * Returns the jquery object
+	 * @return jQuery object
 	 */
 	window.$media.prototype.jQuery = function () {
 		return this.$element;
@@ -56,9 +56,17 @@
 
 
 	/**
-	 * function canPlay ([source])
+	 * Check if the browser can play the source or a specific codec
+	 * canPlay();
+	 * canPlay('ogg');
+	 * canPlay('video/mp4');
 	 *
-	 * Check if the browser can play the media
+	 * @param source A specific source to check. If it's not defined, checks the element sources
+	 *
+	 * @return false If the browser doesn't support audio/video element
+	 * @return 0 If the browser supports audio/video element but can't play the sources/specific codec
+	 * @return 1 If the browser maybe can play
+	 * @return 2 If the browser probably can play
 	 */
 	window.$media.prototype.canPlay = function (source) {
 		var length, result, r, i;
@@ -73,8 +81,7 @@
 				return this.canPlay((source.substring(source.lastIndexOf('.') + 1)).toLowerCase().split('#', 2)[0]);
 			}
 
-			source = this.sources();
-
+			source = this.source(true);
 			length = source.length;
 			result = 0;
 
@@ -104,9 +111,13 @@
 
 
 	/**
-	 * function playbackRate (playbackRate)
+	 * Get/set the playback rate
+	 * If the browser doesn't support playbackRate property does nothing
 	 *
-	 * Get the playback rate
+	 * @param float playbackRate The new playback rate
+	 *
+	 * @return this (for setters)
+	 * @return float (for getters)
 	 */
 	$media.prototype.playbackRate = function (playbackRate) {
 		//if playbackRate no supported
@@ -126,9 +137,12 @@
 
 
 	/**
-	 * function mimeType (ext)
+	 * Gets the source type for a specific extension
 	 *
-	 * Get the source type
+	 * @param string ext The extension (for example 'ogg', 'mp3', etc)
+	 *
+	 * @return string The mimetype of the extension (for example 'video/ogg').
+	 * @return undefined If the extension is not valid.
 	 */
 	window.$media.prototype.mimeType = function (ext) {
 		switch (ext) {
@@ -153,9 +167,19 @@
 
 
 	/**
-	 * function source ([source], [autoload])
+	 * Get/set the sources for the media element
 	 *
-	 * Get or set source values
+	 * source();
+	 * source('my-video.ogv');
+	 * source(['my-video.ogv', 'my-video.mp4']);
+	 * source({src: 'my-video.ogv', type: 'video/ogv'});
+	 * source([{src: 'my-video.ogv', type: 'video/ogv'}, {src: 'my-video.mp4', type: 'video/mp4'}]);
+	 *
+	 * @param string/array/object sources The new sources for the element.
+	 * @param bool autoload Set to false to disable the automatic autoload for the new sources
+	 *
+	 * @return string/array (for getter)
+	 * @return this (for setter)
 	 */
 	window.$media.prototype.source = function (sources, autoload) {
 		var $media = this.$element;
@@ -218,15 +242,19 @@
 
 
 	/**
-	 * function attr (name, [value])
+	 * Get or set media attributes. It works like attr() jQuery function
 	 *
-	 * Get or set media attributes
+	 * attr('poster');
+	 * attr('poster', 'new-poster.jpg');
+	 * attr({poster: 'new-poster.jpg'});
+	 *
+	 * @param string The name of the parameter
+	 * @param string The new value of the parameter
+	 *
+	 * @return mixed (for getter)
+	 * @return this (for setter)
 	 */
 	window.$media.prototype.attr = function (name, value) {
-		if (name === 'src' || name === 'sources') {
-			return this.sources(value);
-		}
-
 		if (value === undefined) {
 			return this.$element.attr(name);
 		}
@@ -238,9 +266,16 @@
 
 
 	/**
-	 * function prop (name, [value])
+	 * Get or set media properties. It works like prop() jQuery function
 	 *
-	 * Get or set media properties
+	 * prop('controls');
+	 * prop('controls', true);
+	 *
+	 * @param string The name of the property
+	 * @param string The new value of the property
+	 *
+	 * @return mixed (for getter)
+	 * @return this (for setter)
 	 */
 	window.$media.prototype.prop = function (name, value) {
 		if (value === undefined) {
@@ -254,9 +289,16 @@
 
 
 	/**
-	 * function width (videoWidth)
+	 * Get or set the width of the media element
 	 *
-	 * Get or set the width value
+	 * width();
+	 * width(true);
+	 * width(234);
+	 *
+	 * @param bool/int videoWidth Set true to return the real width of the video. Set number to change the width of the video
+	 *
+	 * @return integer (for getter)
+	 * @return this (for setter)
 	 */
 	window.$media.prototype.width = function (videoWidth) {
 		if (videoWidth === true) {
@@ -274,9 +316,16 @@
 
 
 	/**
-	 * function height (videoHeight)
+	 * Get or set the height of the media element
 	 *
-	 * Get or set the height value
+	 * height();
+	 * height(true);
+	 * height(234);
+	 *
+	 * @param bool/int videoHeight Set true to return the real height of the video. Set number to change the height of the video
+	 *
+	 * @return integer (for getter)
+	 * @return this (for setter)
 	 */
 	window.$media.prototype.height = function (videoHeight) {
 		if (videoHeight === true) {
@@ -294,10 +343,14 @@
 
 
 	/**
-	 * function play (fn)
-	 * function play ()
+	 * Plays the media or adds a play event listener
 	 *
-	 * Plays media or bind a function to play event
+	 * play (fn)
+	 * play ()
+	 *
+	 * @param function fn The function to the event listener
+	 *
+	 * @return this
 	 */
 	window.$media.prototype.play = function (fn) {
 		if ($.isFunction(fn)) {
@@ -311,12 +364,17 @@
 
 
 	/**
-	 * function fullScreen (fn)
-	 * function fullScreen (bool)
-	 * function fullScreen ()
-	 *
 	 * Toggles fullscreen mode or binds a function to fullscreen event
 	 * This method works only in webkit and mozilla platforms
+	 *
+	 * function fullScreen (fn)
+	 * function fullScreen (true)
+	 * function fullScreen (false)
+	 * function fullScreen ()
+	 *
+	 * @param function/bool fn The function to the event listener. Set true or false to enter or exit of fullscreen
+	 *
+	 * @return this
 	 */
 	window.$media.prototype.fullScreen = function (fn) {
 		if ($.isFunction(fn)) {
@@ -349,10 +407,16 @@
 
 
 	/**
-	 * function playing (fn)
-	 * function playing ()
-	 *
 	 * Return if the media is playing or bind a function to playing event
+	 * The playing event is similar to timeupdate event but it doesn't trigger if the video is paused or ended
+	 *
+	 * playing (fn)
+	 * playing ()
+	 *
+	 * @param function fn The function to the event listener
+	 *
+	 * @return bool True if the media is playing, false if not
+	 * @return this On bind event
 	 */
 	window.$media.prototype.playing = function (fn) {
 		if ($.isFunction(fn)) {
@@ -366,10 +430,15 @@
 
 
 	/**
-	 * function waiting (fn)
-	 * function waiting ()
-	 *
 	 * Return if the media is waiting or bind a function to waiting event
+	 *
+	 * waiting (fn)
+	 * waiting ()
+	 *
+	 * @param function fn The function to the event listener
+	 *
+	 * @return bool True if the media is waiting, false if not
+	 * @return this On bind event
 	 */
 	window.$media.prototype.waiting = function (fn) {
 		if ($.isFunction(fn)) {
@@ -383,10 +452,14 @@
 
 
 	/**
-	 * function pause (fn)
-	 * function pause ()
+	 * Pauses the media or adds a play event listener
 	 *
-	 * Pauses media or bind a function to pause event
+	 * pause (fn)
+	 * pause ()
+	 *
+	 * @param function fn The function to the event listener
+	 *
+	 * @return this
 	 */
 	window.$media.prototype.pause = function (fn) {
 		if ($.isFunction(fn)) {
@@ -400,10 +473,15 @@
 
 
 	/**
+	 * Toggle between play and pause, or bind a function to playPause event
+	 * playPause event is not the same than play or pause events (separately)
+	 *
 	 * function playPause (fn)
 	 * function playPause ()
 	 *
-	 * Play the media if it's paused or pause if it's playing media or bind a function to playPause event
+	 * @param function fn The function to the event listener
+	 *
+	 * @return this
 	 */
 	window.$media.prototype.playPause = function (fn) {
 		if ($.isFunction(fn)) {
@@ -423,18 +501,20 @@
 
 
 	/**
+	 * Stops media (pauses, goes to start and stops loading the sources) or bind a function to stop event
+	 *
 	 * function stop (fn)
 	 * function stop ()
 	 *
-	 * Stops media (pause and go to start) or bind a function to stop event
+	 * @param function fn The function to the event listener
+	 *
+	 * @return this
 	 */
 	window.$media.prototype.stop = function (fn) {
 		if ($.isFunction(fn)) {
 			this.on('stop', fn);
 		} else {
-			this.pause().reload();
-
-			this.trigger('stop');
+			this.pause().reload().trigger('stop');
 		}
 
 		return this;
@@ -442,10 +522,14 @@
 
 
 	/**
-	 * function end (fn)
-	 * function end ()
+	 * Goes to the end of the media or adds a end (ended) event listener
 	 *
-	 * Goes to the end of the media or bind a function to end event
+	 * end (fn)
+	 * end ()
+	 *
+	 * @param function fn The function to the event listener
+	 *
+	 * @return this
 	 */
 	window.$media.prototype.end = function (fn) {
 		if ($.isFunction(fn)) {
@@ -459,10 +543,14 @@
 
 
 	/**
-	 * function remove (fn)
-	 * function remove ()
-	 *
 	 * Removes the video/audio element or bind a function to remove event
+	 *
+	 * remove (fn)
+	 * remove ()
+	 *
+	 * @param function fn The function to the event listener
+	 *
+	 * @return this On bind event
 	 */
 	window.$media.prototype.remove = function (fn) {
 		if ($.isFunction(fn)) {
@@ -485,10 +573,18 @@
 
 
 	/**
-	 * function seek (fn)
-	 * function seek (time)
+	 * Seek for specific point of media or adds a seek event listener
 	 *
-	 * Seek for specific point of media or bind a function to seek event
+	 * seek (fn)
+	 * seek (23)
+	 * seek ('+23')
+	 * seek ('05:04')
+	 * seek ('50%')
+	 * ...
+	 *
+	 * @param function/string/int fn The function to the event listener or the point to seek
+	 *
+	 * @return this
 	 */
 	window.$media.prototype.seek = function (fn) {
 		if ($.isFunction(fn)) {
@@ -508,9 +604,15 @@
 
 
 	/**
-	 * function seeking (fn)
+	 * Return if the media is seeking or bind a function to seeking event
 	 *
-	 * Bind a function to seeking event or trigger the event
+	 * seeking (fn)
+	 * seeking ()
+	 *
+	 * @param function fn The function to the event listener
+	 *
+	 * @return bool True if the media is seeking, false if not
+	 * @return this On bind event
 	 */
 	window.$media.prototype.seeking = function (fn) {
 		if ($.isFunction(fn)) {
@@ -524,11 +626,16 @@
 
 
 	/**
-	 * function volume (fn)
-	 * function volume (vol)
-	 * function volume ()
+	 * Set/set the volume value of media or bind a function to volume event
 	 *
-	 * Set a volume value of media, bind a function to volume event or return the current value (in 1-0 range)
+	 * volume (fn)
+	 * volume (0.5)
+	 * volume ()
+	 *
+	 * @param function/float fn The function to the event listener or the new volume value (0-1 range)
+	 *
+	 * @return float (for getter)
+	 * @return this (for setter / on bind event)
 	 */
 	window.$media.prototype.volume = function (fn) {
 		if (device === 'ios') {
@@ -549,12 +656,19 @@
 	};
 
 
+
 	/**
-	 * function mute (fn)
-	 * function mute (mute)
-	 * function mute ()
+	 * Get/set mute to the media or bind a function to mute event
 	 *
-	 * Mute or unmute the media or bind a function to mute event
+	 * mute (fn)
+	 * mute (true)
+	 * mute (false)
+	 * mute ()
+	 *
+	 * @param function/bool fn The function to the event listener. True to mute, false to unmute and void to toggle
+	 *
+	 * @return float (for getter)
+	 * @return this (for setter / on bind event)
 	 */
 	window.$media.prototype.mute = function (fn) {
 		if (device === 'ios') {
@@ -577,10 +691,16 @@
 	};
 
 
+
 	/**
-	 * function on (event, fn)
+	 * Adds an event listener to media element
 	 *
-	 * Bind a function to specific event
+	 * on('click', fn)
+	 *
+	 * @param string event The event name. You can set more than one event space separated
+	 * @param function fn The function to execute on trigger the event
+	 * 
+	 * @return this
 	 */
 	window.$media.prototype.on = function (event, fn) {
 		var registeredEvents = this.$element.data('events') || {}, events = event.split(' '), i, length = events.length, that = this;
@@ -646,9 +766,16 @@
 
 
 	/**
-	 * function off (event, fn)
+	 * Removes one or more event listener to media element
 	 *
-	 * Unbind a function to specific event
+	 * off('click', fn)
+	 * off('click')
+	 * off()
+	 *
+	 * @param string event The event name. You can set more than one event space separated
+	 * @param function fn The function to delete in the event
+	 * 
+	 * @return this
 	 */
 	window.$media.prototype.off = function (event, fn) {
 		if (fn) {
@@ -662,9 +789,14 @@
 
 
 	/**
-	 * function trigger (event, [data])
-	 *
 	 * Trigger an event
+	 *
+	 * trigger('click')
+	 *
+	 * @param string event The event name to trigger.
+	 * @param array data Optional arguments to pass to function events
+	 * 
+	 * @return this
 	 */
 	window.$media.prototype.trigger = function (event, data) {
 		this.$element.trigger(event, data);
@@ -673,10 +805,17 @@
 	};
 
 
+
 	/**
-	 * function time (time)
+	 * Returns the current time of the media or a specific point in seconds
 	 *
-	 * Return the current time of the media in time or a specific point
+	 * time()
+	 * time('+10')
+	 * time('10%')
+	 *
+	 * @param string time The point of the media you get
+	 * 
+	 * @return float The time in seconds
 	 */
 	window.$media.prototype.time = function (time) {
 		if (time === undefined) {
@@ -720,9 +859,15 @@
 
 
 	/**
-	 * function totalTime ()
+	 * Returns the media duration in seconds or bind a function when the duration is available
 	 *
-	 * Return the media duration in seconds
+	 * totalTime()
+	 * totalTime(fn)
+	 *
+	 * @param function fn The function to the event listener
+	 *
+	 * @return float The duration of the media
+	 * @return this On bind event
 	 */
 	window.$media.prototype.totalTime = function (fn) {
 		if (!$.isFunction(fn)) {
@@ -736,10 +881,18 @@
 
 
 	/**
-	 * function ready ([state], fn)
-	 * function ready (fn)
+	 * Returns if the media is ready to play or bind a function on ready event
 	 *
-	 * Return if the video is ready to play
+	 * ready()
+	 * ready(2)
+	 * ready(fn)
+	 * ready(2, fn)
+	 *
+	 * @param int state The minimal state for the video to evaluate as ready (3 by default)
+	 * @param function fn The function to the event listener
+	 *
+	 * @return boolean True if is ready, false if not
+	 * @return this On bind event
 	 */
 	window.$media.prototype.ready = function (state, fn) {
 		if (typeof state !== 'number') {
@@ -765,9 +918,9 @@
 
 
 	/**
-	 * function reload ()
+	 * Reload the media element (back to inital state)
 	 *
-	 * Reload the video
+	 * @return this
 	 */
 	window.$media.prototype.reload = function () {
 		this.sources(this.sources());
@@ -777,10 +930,12 @@
 
 
 	/**
-	 * function extend (name, value)
-	 * function extend (object)
+	 * Extends this media instance with other functions and properties
 	 *
-	 * Extends $media with other functions
+	 * extend('myFunction', fn);
+	 *
+	 * @param string/object name The name of the property or an object with all new properties
+	 * @param mixed value The value of the property
 	 */
 	window.$media.prototype.extend = function (name, value) {
 		if (typeof name !== 'object') {
@@ -794,10 +949,12 @@
 
 
 	/**
-	 * function extend (name, value)
-	 * function extend (object)
+	 * Extends the $media prototype with other functions or properties
 	 *
-	 * Extends $media with other functions
+	 * $media.extend('myFunction', fn);
+	 *
+	 * @param string/object name The name of the property or an object with all new properties
+	 * @param mixed value The value of the property
 	 */
 	window.$media.extend = function (name, value) {
 		if (typeof name !== 'object') {
@@ -814,9 +971,12 @@
 
 
 	/**
-	 * function jQuery.media (selector, properties)
-	 *
 	 * Creates and returns a new $media object
+	 *
+	 * @param string/html/jQuery selector The selector of the media element
+	 * @param string/object properties The properties of the media element
+	 *
+	 * @return The $media intance.
 	 */
 	$.media = function (selector, properties) {
 		if (properties) {
@@ -849,9 +1009,11 @@
 
 
 	/**
-	 * function jQuery.mediaVideo (properties)
+	 * Creates a new html video element and returns a $media object with it
 	 *
-	 * Creates a video element and returns a $media object with it
+	 * @param string/object The src or an object with all properties of the media element
+	 *
+	 * @return The $media instance
 	 */
 	$.mediaVideo = function (properties) {
 		if (typeof properties === 'string' || $.isArray(properties)) {
@@ -863,9 +1025,11 @@
 
 
 	/**
-	 * function jQuery.mediaAudio (properties)
+	 * Creates a new html audio element and returns a $media object with it
 	 *
-	 * Creates an audio element and returns a $media object with it
+	 * @param string/object The src or an object with all properties of the media element
+	 *
+	 * @return The $media instance
 	 */
 	$.mediaAudio = function (properties) {
 		if (typeof properties === 'string' || $.isArray(properties)) {
@@ -879,9 +1043,9 @@
 
 
 /**
- * function String.toSeconds ()
+ * Extends the String object to convert any number to seconds
  *
- * Convert any number to seconds
+ * '00:34'.toSeconds(); // 34
  */
 String.prototype.toSeconds = function () {
 	'use strict';
@@ -908,10 +1072,13 @@ String.prototype.toSeconds = function () {
 };
 
 
+
 /**
- * function String.secondsTo (outputFormat)
+ * Extends the String object to convert any number value to seconds
  *
- * Convert a seconds time value to any other time format
+ * '34'.secondsTo('mm:ss'); // '00:34'
+ *
+ * @param string outputFormat One of the avaliable output formats ('ms', 'mm:ss', 'hh:mm:ss', 'hh:mm:ss.ms')
  */
 String.prototype.secondsTo = function (outputFormat) {
 	'use strict';
@@ -920,10 +1087,11 @@ String.prototype.secondsTo = function (outputFormat) {
 };
 
 
+
 /**
- * function Number.toSeconds ()
+ * Extends the Number object to convert any number to seconds
  *
- * Convert any number to seconds
+ * (23.34345).toSeconds(); // 23.343
  */
 Number.prototype.toSeconds = function () {
 	'use strict';
@@ -933,9 +1101,11 @@ Number.prototype.toSeconds = function () {
 
 
 /**
- * function Number.secondsTo (outputFormat)
+ * Extends the Number object to convert any number value to seconds
  *
- * Convert a seconds time value to any other time format
+ * 34.secondsTo('mm:ss'); // '00:34'
+ *
+ * @param string outputFormat One of the avaliable output formats ('ms', 'mm:ss', 'hh:mm:ss', 'hh:mm:ss.ms')
  */
 Number.prototype.secondsTo = function (outputFormat) {
 	'use strict';
