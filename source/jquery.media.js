@@ -1,5 +1,5 @@
 /**
- * $media jQuery plugin (v.1.3.3)
+ * $media jQuery plugin (v.2.0.0)
  *
  * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
  *
@@ -154,6 +154,7 @@
 
 			case 'ogg':
 			case 'ogv':
+			case 'oga':
 				return this.type + '/ogg';
 
 			case 'webm':
@@ -178,12 +179,11 @@
 	 * source([{src: 'my-video.ogv', type: 'video/ogv'}, {src: 'my-video.mp4', type: 'video/mp4'}]);
 	 *
 	 * @param string/array/object sources The new sources for the element.
-	 * @param bool autoload Set to false to disable the automatic autoload for the new sources
 	 *
 	 * @return string/array (for getter)
 	 * @return this (for setter)
 	 */
-	window.$media.prototype.source = function (sources, autoload) {
+	window.$media.prototype.source = function (sources) {
 		var $media = this.$element;
 
 		//Getter
@@ -233,10 +233,7 @@
 			});
 		}
 
-		//Autoload
-		if (autoload !== false) {
-			this.element.load();
-		}
+		this.element.load();
 
 		return this;
 	};
@@ -535,7 +532,7 @@
 	 */
 	window.$media.prototype.end = function (fn) {
 		if ($.isFunction(fn)) {
-			this.bind('end', fn);
+			this.on('end', fn);
 		} else {
 			this.pause().seek(this.element.duration);
 		}
@@ -590,16 +587,16 @@
 	 */
 	window.$media.prototype.seek = function (fn) {
 		if ($.isFunction(fn)) {
-			this.on('seek', fn);
-		} else {
-			this.ready(1, function () {
-				var time = this.time(fn);
-
-				if (this.element.currentTime !== time) {
-					this.element.currentTime = time;
-				}
-			});
+			return this.on('seek', fn);
 		}
+		
+		this.ready(1, function () {
+			var time = this.time(fn);
+
+			if (this.element.currentTime !== time) {
+				this.element.currentTime = time;
+			}
+		});
 
 		return this;
 	};
@@ -649,10 +646,18 @@
 		}
 
 		if ($.isFunction(fn)) {
-			this.on('volume', fn);
-		} else {
-			this.element.volume = fn;
+			return this.on('volume', fn);
 		}
+
+		if (typeof fn === 'string') {
+			if (fn.indexOf('+') === 0) {
+				fn = this.element.volume + parseFloat(fn);
+			} else if (fn.indexOf('-') === 0) {
+				fn = this.element.volume - parseFloat(fn);
+			}
+		}
+
+		this.element.volume = (fn < 0) ? 0 : ((fn > 1) ? 1 : fn);
 
 		return this;
 	};
@@ -669,8 +674,7 @@
 	 *
 	 * @param function/bool fn The function to the event listener. True to mute, false to unmute and void to toggle
 	 *
-	 * @return float (for getter)
-	 * @return this (for setter / on bind event)
+	 * @return this
 	 */
 	window.$media.prototype.mute = function (fn) {
 		if (device === 'ios') {
@@ -705,7 +709,7 @@
 	 * @return this
 	 */
 	window.$media.prototype.on = function (event, fn) {
-		var registeredEvents = this.$element.data('events') || {}, events = event.split(' '), i, length = events.length, that = this;
+		var registeredEvents = this.$element.data('events') || {}, events = event.toLowerCase().split(' '), i, length = events.length, that = this;
 
 		fn = $.proxy(fn, this);
 
@@ -780,10 +784,29 @@
 	 * @return this
 	 */
 	window.$media.prototype.off = function (event, fn) {
+		var events = event.toLowerCase().split(' '), i, length = events.length;
+
 		if (fn) {
-			this.$element.unbind(event, $.proxy(fn, this));
-		} else {
-			this.$element.unbind(event);
+			fn = $.proxy(fn, this);
+		}
+
+		for (i = 0; i < length; i++) {
+			switch (events[i]) {
+				case 'end':
+					this.$element.unbind('ended', fn);
+					break;
+
+				case 'seek':
+					this.$element.unbind('seeked', fn);
+					break;
+
+				case 'volume':
+					this.$element.unbind('volumechange', fn);
+					break;
+
+				default:
+					this.$element.unbind(events[i], fn);
+			}
 		}
 
 		return this;
@@ -801,7 +824,54 @@
 	 * @return this
 	 */
 	window.$media.prototype.trigger = function (event, data) {
-		this.$element.trigger(event, data);
+		switch (event) {
+			case 'end':
+				this.$element.trigger('ended', data);
+				break;
+
+			case 'seek':
+				this.$element.trigger('seeked', data);
+				break;
+
+			case 'volume':
+				this.$element.trigger('volumechange', data);
+				break;
+
+			default:
+				this.$element.trigger(event, data);
+		}
+
+		return this;
+	};
+
+
+	/**
+	 * Execute all handles attached to the media for an event
+	 *
+	 * triggerHandler('click')
+	 *
+	 * @param string event The event name to trigger.
+	 * @param array data Optional arguments to pass to function events
+	 * 
+	 * @return this
+	 */
+	window.$media.prototype.triggerHandler = function (event, data) {
+		switch (event) {
+			case 'end':
+				this.$element.triggerHandler('ended', data);
+				break;
+
+			case 'seek':
+				this.$element.triggerHandler('seeked', data);
+				break;
+
+			case 'volume':
+				this.$element.triggerHandler('volumechange', data);
+				break;
+
+			default:
+				this.$element.triggerHandler(event, data);
+		}
 
 		return this;
 	};
@@ -828,52 +898,46 @@
 			return 0;
 		}
 
-		time = '' + time;
-
-		var int_time = 0;
-
-		if (time.indexOf('+') === 0 || time.indexOf('-') === 0) {
-			var sum = time.substr(1).toSeconds();
-
-			if (time.indexOf('-') === 0) {
-				sum = -sum;
-			}
-
-			if (time.indexOf('%') === -1) {
-				int_time = sum + this.element.currentTime.toSeconds();
+		if (typeof time === 'string') {
+			if (time.indexOf('+') === 0) {
+				time = this.time() + this.time(time.substr(1));
+			} else if (time.indexOf('-') === 0) {
+				time = this.time() - this.time(time.substr(1));
+			} else if (time.indexOf('%') === -1) {
+				time = time.toSeconds();
 			} else {
-				int_time = Math.round((this.totalTime() / 100) * parseInt(sum, 10)) + this.element.currentTime.toSeconds();
+				time = ((this.duration()/100) * parseFloat(time)).toSeconds();
 			}
-		} else if (time.indexOf('%') !== -1) {
-			int_time = Math.round((this.totalTime() / 100) * time.toSeconds());
 		} else {
-			int_time = time.toSeconds();
+			time = time.toSeconds();
 		}
 
-		if (int_time < 0) {
-			int_time = 0;
-		} else if (int_time > this.totalTime()) {
-			int_time = this.totalTime();
+		if (time < 0) {
+			return 0;
 		}
 
-		return int_time;
+		if (time > this.duration()) {
+			return this.duration();
+		}
+
+		return time;
 	};
 
 
 	/**
 	 * Returns the media duration in seconds or bind a function when the duration is available
 	 *
-	 * totalTime()
-	 * totalTime(fn)
+	 * duration()
+	 * duration(fn)
 	 *
 	 * @param function fn The function to the event listener
 	 *
 	 * @return float The duration of the media
 	 * @return this On bind event
 	 */
-	window.$media.prototype.totalTime = function (fn) {
+	window.$media.prototype.duration = function (fn) {
 		if (!$.isFunction(fn)) {
-			return this.element.duration.toSeconds();
+			return (this.element.duration || 0).toSeconds();
 		}
 
 		return this.ready(1, function () {
@@ -899,7 +963,7 @@
 	window.$media.prototype.ready = function (state, fn) {
 		if (typeof state !== 'number') {
 			fn = state;
-			state = 3;
+			state = 2;
 		}
 
 		if (!$.isFunction(fn)) {
@@ -912,7 +976,7 @@
 			var that = this;
 			setTimeout(function () {
 				that.ready(state, fn);
-			}, 13);
+			}, 100);
 		}
 
 		return this;
@@ -925,7 +989,7 @@
 	 * @return this
 	 */
 	window.$media.prototype.reload = function () {
-		this.sources(this.sources());
+		this.source(this.source());
 
 		return this;
 	};
@@ -1048,6 +1112,8 @@
  * Extends the String object to convert any number to seconds
  *
  * '00:34'.toSeconds(); // 34
+ *
+ * @return float The value in seconds
  */
 String.prototype.toSeconds = function () {
 	'use strict';
@@ -1081,6 +1147,8 @@ String.prototype.toSeconds = function () {
  * '34'.secondsTo('mm:ss'); // '00:34'
  *
  * @param string outputFormat One of the avaliable output formats ('ms', 'mm:ss', 'hh:mm:ss', 'hh:mm:ss.ms')
+ *
+ * @return string The value in the new format
  */
 String.prototype.secondsTo = function (outputFormat) {
 	'use strict';
@@ -1094,6 +1162,8 @@ String.prototype.secondsTo = function (outputFormat) {
  * Extends the Number object to convert any number to seconds
  *
  * (23.34345).toSeconds(); // 23.343
+ *
+ * @return float The value in seconds
  */
 Number.prototype.toSeconds = function () {
 	'use strict';
@@ -1108,6 +1178,8 @@ Number.prototype.toSeconds = function () {
  * 34.secondsTo('mm:ss'); // '00:34'
  *
  * @param string outputFormat One of the avaliable output formats ('ms', 'mm:ss', 'hh:mm:ss', 'hh:mm:ss.ms')
+ *
+ * @return string The value in the new format
  */
 Number.prototype.secondsTo = function (outputFormat) {
 	'use strict';
@@ -1136,8 +1208,10 @@ Number.prototype.secondsTo = function (outputFormat) {
 
 			var ss = time;
 
-			if (outputFormat === 'hh:mm:ss') {
+			if (outputFormat.indexOf('.ms') === -1) {
 				ss = Math.round(ss);
+			} else {
+				ss = Math.round(ss*1000)/1000;
 			}
 			ss = (ss < 10) ? ("0" + ss) : ss;
 
