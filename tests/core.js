@@ -7,8 +7,8 @@ test("Loading media elements", function() {
 	deepEqual(media.get(), videoElement, 'Get html media element');
 	deepEqual(media.jQuery(), $(videoElement), 'Get jQuery instance with the media element');
 
-	ok(video.canPlay(), 'Can play the dinamic video?');
-	ok(media.canPlay(), 'Can play the DOM video?');
+	ok(video.canPlayType(), 'Can play the dinamic video?');
+	ok(media.canPlayType(), 'Can play the DOM video?');
 
 	stop();
 
@@ -22,12 +22,12 @@ test("Loading media elements", function() {
 			deepEqual(this.ready(), true, 'DOM video is ready?');
 			deepEqual(video.source(), media.source(), 'Dinamic and DOM video have the same src?');
 			
-			ok(video.canPlay(), 'Can really play the dinamic video?');
-			ok(media.canPlay(), 'Can really play the DOM video?');
+			ok(video.canPlayType(), 'Can really play the dinamic video?');
+			ok(media.canPlayType(), 'Can really play the DOM video?');
 
 			video.source(sources);
 			deepEqual(video.source(true), sources, 'Added new sources?');
-			ok(video.canPlay(), 'Can play the new sources?');
+			ok(video.canPlayType(), 'Can play the new sources?');
 
 			stop();
 
@@ -36,7 +36,7 @@ test("Loading media elements", function() {
 
 				deepEqual(this.ready(), true, 'New sources are ready?');
 				deepEqual(this.duration().secondsTo('mm:ss'), '11:50', 'New sources duration');
-				ok(this.canPlay(), 'Can really play the new sources?');
+				ok(this.canPlayType(), 'Can really play the new sources?');
 			});
 		});
 	});
