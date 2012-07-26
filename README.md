@@ -86,6 +86,7 @@ API
 * [waiting](#waiting) Bind an event handler to the "waiting" JavaScript event, or check if the media element is waiting
 * [width](#width) Works like jquery's width() function, but can retrieve the videoWidth value (the real with of the video)
 
+
 * [toSeconds](#toseconds) Converts any text/number value to seconds. A number with 3 decimals maximum (for miliseconds)
 * [secondsTo](#secondsTo) Converts any text/number value to any other output format ('ms', 'mm:ss', 'hh:mm:ss', 'hh:mm:ss.ms')
 
