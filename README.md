@@ -50,52 +50,44 @@ var audio = new $mediaAudio(['my-audio.ogg', 'my-audio.mp3']);
 API
 ---
 
-* [get](#get) Returns the DOM video/audio element
-* [$get](#get-1) Returns the jQuery video/audio element
-
-* [canPlayType](#canPlaytype) Check if the browser can play its sources or another specific codec
-* [loadedMetadata](#loadedMetadata) Bind an event handler to the "loadedmetadata" JavaScript event, or check if the metadata has been loaded.
-* [loadedData](#loadedData) Bind an event handler to the "loadeddata" JavaScript event, or check if the data has been loaded
+* [attr](#attr) Works like jquery's attr() function.
 * [canPlay](#canPlay) Bind an event handler to the "canplay" JavaScript event, or check if the media can start to play
 * [canPlayThrough](#canPlayThrough) Bind an event handler to the "canplaythrough" JavaScript event, or check if the media can start to play until the end
-
-* [source](#source) Source getter/setter
-* [attr](#attr) Works like jquery's attr() function.
-* [prop](#prop) Works like jquery's prop() function.
-* [width](#width) Works like jquery's width() function, but can retrieve the videoWidth value (the real with of the video)
-* [height](#height) Works like jquery's height() function, but can retrieve the videoHeight value (the real with of the video)
-
-* [play](#play) Bind an event handler to the "play" JavaScript event, or trigger that event on the media element.
-* [pause](#pause) Bind an event handler to the "pause" JavaScript event, or trigger that event on the media element.
-* [playPause](#playPause) Bind an event handler to the "playpause" JavaScript event, or play or pause the media element and trigger the 'playpause' event.
-* [stop](#stop) Bind an event handler to the "stop" JavaScript event, or pause and reload the sources and and trigger the 'stop' event.
-* [seek](#seek) Bind an event handler to the "seeked" JavaScript event, or change the currentTime property
-* [seeking](#seeking) Bind an event handler to the "seeking" JavaScript event, or check if the media element is seeking
-* [ended](#ended) Bind an event handler to the "ended" JavaScript event, or check if the media resource was reached.
-* [playing](#playing) Bind an event handler to the "playing" JavaScript event, or check if the media element is playing
-* [waiting](#waiting) Bind an event handler to the "waiting" JavaScript event, or check if the media element is waiting
-
-* [volume](#volume) Bind an event handler to the "volumechange" JavaScript event, or get the volume value
-* [muted](#muted) Bind an event handler to the "muted" JavaScript event (non browser native), get the muted value or set another value
-* [on](#on) Attach an event handler function for one or more events to the media element. It works like jQuery's on() function
-* [off](#off) Remove an event handler. It works like jQuery's off() function
-* [trigger](#trigger) Execute all handlers and behaviors attached to the matched elements for the given event type. It works like jQuery's trigger function
-* [triggerHandler](#triggerHandler) Execute all handlers attached to an element for an event.. It works like jQuery's triggerHandler function
-
-* [playbackRate](#playbackRate) Bind an event handler to the "ratechange" JavaScript event, or returns the playbackRate property of the media element
-* [time](#time) Returns the current time of the media element or another specific point
+* [canPlayType](#canPlaytype) Check if the browser can play its sources or another specific codec
 * [duration](#duration) Bind an event handler to the "durationchange" JavaScript event or get the duration value. 
-
-* [reload](#reload) Reload the media resource
-* [remove](#remove) Remove the media element from the DOM and all its properties. You can also bind an event handler to the "remove" javascript event (not browser native)
+* [ended](#ended) Bind an event handler to the "ended" JavaScript event, or check if the media resource was reached.
 * [error](#error) Bind an event handler to the "error" JavaScript event, or check if an error ocurred while fetching the media data and returns an error object with the code
-
 * [extend](#extend) Extend the instance with more parameters or functions
 * [$media.extend](#mediaextend) Extend all instances with more parameters or functions
+* [get](#get) Returns the DOM video/audio element
+* [$get](#get-1) Returns the jQuery video/audio element
+* [height](#height) Works like jquery's height() function, but can retrieve the videoHeight value (the real with of the video)
+* [loadedData](#loadedData) Bind an event handler to the "loadeddata" JavaScript event, or check if the data has been loaded
+* [loadedMetadata](#loadedMetadata) Bind an event handler to the "loadedmetadata" JavaScript event, or check if the metadata has been loaded.
+* [muted](#muted) Bind an event handler to the "muted" JavaScript event (non browser native), get the muted value or set another value
+* [off](#off) Remove an event handler. It works like jQuery's off() function
+* [on](#on) Attach an event handler function for one or more events to the media element. It works like jQuery's on() function
+* [pause](#pause) Bind an event handler to the "pause" JavaScript event, or trigger that event on the media element.
+* [play](#play) Bind an event handler to the "play" JavaScript event, or trigger that event on the media element.
+* [playbackRate](#playbackRate) Bind an event handler to the "ratechange" JavaScript event, or returns the playbackRate property of the media element
+* [playing](#playing) Bind an event handler to the "playing" JavaScript event, or check if the media element is playing
+* [playPause](#playPause) Bind an event handler to the "playpause" JavaScript event, or play or pause the media element and trigger the 'playpause' event.
+* [prop](#prop) Works like jquery's prop() function.
+* [reload](#reload) Reload the media resource
+* [remove](#remove) Remove the media element from the DOM and all its properties. You can also bind an event handler to the "remove" javascript event (not browser native)
+* [seek](#seek) Bind an event handler to the "seeked" JavaScript event, or change the currentTime property
+* [seeking](#seeking) Bind an event handler to the "seeking" JavaScript event, or check if the media element is seeking
+* [source](#source) Source getter/setter
+* [stop](#stop) Bind an event handler to the "stop" JavaScript event, or pause and reload the sources and and trigger the 'stop' event.
+* [time](#time) Returns the current time of the media element or another specific point
+* [trigger](#trigger) Execute all handlers and behaviors attached to the matched elements for the given event type. It works like jQuery's trigger function
+* [triggerHandler](#triggerHandler) Execute all handlers attached to an element for an event.. It works like jQuery's triggerHandler function
+* [volume](#volume) Bind an event handler to the "volumechange" JavaScript event, or get the volume value
+* [waiting](#waiting) Bind an event handler to the "waiting" JavaScript event, or check if the media element is waiting
+* [width](#width) Works like jquery's width() function, but can retrieve the videoWidth value (the real with of the video)
 
 * [toSeconds](#toseconds) Converts any text/number value to seconds. A number with 3 decimals maximum (for miliseconds)
 * [secondsTo](#secondsTo) Converts any text/number value to any other output format ('ms', 'mm:ss', 'hh:mm:ss', 'hh:mm:ss.ms')
-
 
 
 #### get()
