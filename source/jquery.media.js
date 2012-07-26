@@ -742,30 +742,31 @@
 	/**
 	 * Get/set mute to the media or bind a function to mute event
 	 *
-	 * mute (fn)
-	 * mute (true)
-	 * mute (false)
-	 * mute ()
+	 * muted (fn)
+	 * muted (true)
+	 * muted (false)
+	 * muted ()
 	 *
 	 * @param function/bool fn The function to the event listener. True to mute, false to unmute and void to toggle
 	 *
 	 * @return this
 	 */
-	window.$media.prototype.mute = function (fn) {
+	window.$media.prototype.muted = function (fn) {
+		if (fn === undefined) {
+			return this.element.muted;
+		}
+
 		if (device === 'ios') {
 			return this;
 		}
 
 		if ($.isFunction(fn)) {
-			this.bind('mute', fn);
-		} else {
-			if (typeof fn === 'boolean') {
-				this.element.muted = fn;
-			} else {
-				this.element.muted = this.element.muted ? false : true;
-			}
+			return this.bind('muted', fn);
+		}
 
-			this.trigger('mute', [this.element.muted]);
+		if (typeof fn === 'boolean' && (this.element.muted !== fn)) {
+			this.element.muted = fn;
+			return this.trigger('muted');
 		}
 
 		return this;
