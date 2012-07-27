@@ -535,7 +535,7 @@
 	 */
 	window.$media.prototype.end = function (fn) {
 		if ($.isFunction(fn)) {
-			this.bind('end', fn);
+			this.on('end', fn);
 		} else {
 			this.pause().seek(this.element.duration);
 		}
@@ -678,7 +678,7 @@
 		}
 
 		if ($.isFunction(fn)) {
-			this.bind('mute', fn);
+			this.on('mute', fn);
 		} else {
 			if (typeof fn === 'boolean') {
 				this.element.muted = fn;
