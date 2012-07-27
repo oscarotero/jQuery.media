@@ -51,8 +51,6 @@ API
 ---
 
 * [attr](#attr) Works like jquery's attr() function.
-* [canPlay](#canPlay) Bind an event handler to the "canplay" JavaScript event, or check if the media can start to play
-* [canPlayThrough](#canPlayThrough) Bind an event handler to the "canplaythrough" JavaScript event, or check if the media can start to play until the end
 * [canPlayType](#canPlaytype) Check if the browser can play its sources or another specific codec
 * [duration](#duration) Bind an event handler to the "durationchange" JavaScript event or get the duration value. 
 * [ended](#ended) Bind an event handler to the "ended" JavaScript event, or check if the media resource was reached.
@@ -62,8 +60,6 @@ API
 * [get](#get) Returns the DOM video/audio element
 * [$get](#get-1) Returns the jQuery video/audio element
 * [height](#height) Works like jquery's height() function, but can retrieve the videoHeight value (the real with of the video)
-* [loadedData](#loadedData) Bind an event handler to the "loadeddata" JavaScript event, or check if the data has been loaded
-* [loadedMetadata](#loadedMetadata) Bind an event handler to the "loadedmetadata" JavaScript event, or check if the metadata has been loaded.
 * [muted](#muted) Bind an event handler to the "muted" JavaScript event (non browser native), get the muted value or set another value
 * [off](#off) Remove an event handler. It works like jQuery's off() function
 * [on](#on) Attach an event handler function for one or more events to the media element. It works like jQuery's on() function
@@ -73,6 +69,7 @@ API
 * [playing](#playing) Bind an event handler to the "playing" JavaScript event, or check if the media element is playing
 * [playPause](#playPause) Bind an event handler to the "playpause" JavaScript event, or play or pause the media element and trigger the 'playpause' event.
 * [prop](#prop) Works like jquery's prop() function.
+* [readyState](#readystate) Bind an event handler to any readyState JavaScript event, or check a specific readyState
 * [reload](#reload) Reload the media resource
 * [remove](#remove) Remove the media element from the DOM and all its properties. You can also bind an event handler to the "remove" javascript event (not browser native)
 * [seek](#seek) Bind an event handler to the "seeked" JavaScript event, or change the currentTime property
@@ -129,67 +126,25 @@ if (video.canPlayType(video/ogg)) {
 }
 ```
 
-#### loadedMetadata()
+#### readyState()
 
-Bind an event handler to the "loadedmetadata" JavaScript event, or check if the metadata has been loaded.
-
-The event is fired when the user agent has just determined the duration and dimensions of the media resource and the text tracks are ready.
-
-```javascript
-var video = $.media('#my-video');
-
-video.loadedMetadata(); //Returns true if metadata has been loaded, false if not
-
-video.loadedMetadata(function () {
-	alert('The metada of this video has been loaded');
-});
-```
-
-#### loadedData()
-
-Bind an event handler to the "loadeddata" JavaScript event, or check if the data has been loaded
-
-The event is fired when the user agent can render the media data at the current playback position for the first time.
+Bind an event handler to any readyState JavaScript event, or check a specific readyState.
+There are five possible states:
+* 0: Nothing has been loaded
+* 1: Metadata (duration and dimensions) have been loaded
+* 2: The data for the current frame has been loaded
+* 3: The data for the current frame and next frame has been loaded, so the playback could start
+* 4: Enought data has been loaded to start playback now until the end without stops
 
 ```javascript
 var video = $.media('#my-video');
 
-video.loadedData(); //Returns true if current data has been loaded, false if not
+video.readyState(); //Returns 0, 1, 2, 3 or 4, depending of the readyState
 
-video.loadedMetadata(function () {
-	alert('The data of this frame has been loaded');
-});
-```
+video.readyState(2); //Returns true if the readyState is equal or upper than 2, or false
 
-#### canPlay()
-
-Bind an event handler to the "canplay" JavaScript event, or check if the media can start to play
-
-The event is fired when the user agent can resume playback of the media data, but estimates that if playback were to be started now, the media resource could not be rendered at the current playback rate up to its end without having to stop for further buffering of content. 
-
-```javascript
-var video = $.media('#my-video');
-
-video.canPlay(); //Returns true if enought data has been loaded and can start playing, false if not
-
-video.canPlay(function () {
-	alert('This video can play now');
-});
-```
-
-#### canPlayThrough()
-
-Bind an event handler to the "canplaythrough" JavaScript event, or check if the media can start to play until the end
-
-The event is fired when the user agent estimates that if playback were to be started now, the media resource could be rendered at the current playback rate all the way to its end without having to stop for further buffering.
-
-```javascript
-var video = $.media('#my-video');
-
-video.canPlayThrough(); //Returns true if enought data has been loaded to play until the end, false if not
-
-video.canPlayThrough(function () {
-	alert('This video can play now');
+video.readyState(3, function () {
+	alert('The video can start to play now');
 });
 ```
 

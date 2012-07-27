@@ -11,6 +11,8 @@
 (function ($) {
 	'use strict';
 
+	var readyStates = ['loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough'];
+
 	//Detect device
 	var device = navigator.userAgent.toLowerCase();
 
@@ -79,70 +81,43 @@
 
 		if (source === undefined) {
 			if (this.source()) {
-				source = this.source();
-				return this.canPlay((source.substring(source.lastIndexOf('.') + 1)).toLowerCase().split('#', 2)[0]);
+				return this.canPlayType(this.source());
 			}
 
 			source = this.source(true);
+		}
+
+		if ($.isArray(source)) {
 			length = source.length;
 			result = 0;
 
 			for (i = 0; i < length; ++i) {
-				r = this.canPlay((source[i].substring(source[i].lastIndexOf('.') + 1)).toLowerCase().split('#', 2)[0]);
+				r = this.canPlayType(source[i]);
 				result = (r > result) ? r : result;
 			}
 
 			return result;
 		}
 
+		if (source.indexOf('.') !== -1) {
+			source = (source.substring(source.lastIndexOf('.') + 1)).toLowerCase().split('#', 2)[0];
+		}
+
 		if (/^[a-z0-9]+$/i.test(source)) {
 			source = this.mimeType(source);
 		}
 
-		switch (this.element.canPlayType(source)) {
-			case 'probably':
-				return 2;
+		if (source) {
+			switch (this.element.canPlayType(source)) {
+				case 'probably':
+					return 2;
 
-			case 'maybe':
-				return 1;
+				case 'maybe':
+					return 1;
+			}
 		}
 
 		return 0;
-	};
-
-
-	/**
-	 * Check if the metadata has been loaded (readyState >= 1) or binds a function to loadedmetadata event
-	 *
-	 * @param function fn A function to bind to loadedmetadata event
-	 *
-	 * @return this (for bind event)
-	 * @return boolean (for getters)
-	 */
-	window.$media.prototype.loadedMetadata = function (fn) {
-		if ($.isFunction(fn)) {
-			return this.on('loadedmetadata', fn);
-		}
-
-		return (this.element.readyState >= 1) ? true : false;
-	};
-
-
-
-	/**
-	 * Check if the data of the current position has been loaded (readyState >= 2) or binds a function to loadeddata event
-	 *
-	 * @param function fn A function to bind to loadeddata event
-	 *
-	 * @return this (for bind event)
-	 * @return boolean (for getters)
-	 */
-	window.$media.prototype.loadedData = function (fn) {
-		if ($.isFunction(fn)) {
-			return this.on('loadeddata', fn);
-		}
-
-		return (this.element.readyState >= 2) ? true : false;
 	};
 
 
@@ -155,29 +130,22 @@
 	 * @return this (for bind event)
 	 * @return boolean (for getters)
 	 */
-	window.$media.prototype.canPlay = function (fn) {
-		if ($.isFunction(fn)) {
-			return this.on('canplay', fn);
+	window.$media.prototype.readyState = function (state, fn) {
+		if (arguments.length === 0) {
+			return this.element.readyState;
 		}
 
-		return (this.element.readyState >= 3) ? true : false;
-	};
-
-
-	/**
-	 * Check if the browser can play the resource until the end (readyState >= 4) or binds a function to canPlayThrough event
-	 *
-	 * @param function fn A function to bind to canplaythrough event
-	 *
-	 * @return this (for bind event)
-	 * @return boolean (for getters)
-	 */
-	window.$media.prototype.canPlayThrough = function (fn) {
-		if ($.isFunction(fn)) {
-			return this.on('canplaythrough', fn);
+		if (arguments.length === 1) {
+			return (this.element.readyState >= state) ? true : false;
+		}
+		
+		if ($.isFunction(fn) && readyStates[state - 1]) {
+			return this.on(readyStates[state - 1], fn);
 		}
 
-		return (this.element.readyState >= 4) ? true : false;
+		$.error('Invalid arguments for readyState function');
+
+		return this;
 	};
 
 
@@ -350,7 +318,11 @@
 	 * @return this (for setter)
 	 */
 	window.$media.prototype.attr = function (name, value) {
-		this.$element.attr.apply(this.$element, Array.prototype.slice.call(arguments));
+		if ((arguments.length === 1) && (typeof name !== "object")) {
+			return this.$element.attr(name);
+		}
+
+		this.$element.attr(name, value);
 
 		return this;
 	};
