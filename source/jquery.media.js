@@ -1,5 +1,5 @@
 /**
- * $media jQuery plugin (v.2.0.0)
+ * $media jQuery plugin (v.1.3.3)
  *
  * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
  *
@@ -20,6 +20,8 @@
 		device = 'browser';
 	}
 
+
+	//$media constructor
 	window.$media = function (element) {
 		this.element = element;
 		this.$element = $(element);
@@ -49,7 +51,7 @@
 	 *
 	 * @return jQuery object
 	 */
-	window.$media.prototype.$get = function () {
+	window.$media.prototype.jQuery = function () {
 		return this.$element;
 	};
 
@@ -57,9 +59,9 @@
 
 	/**
 	 * Check if the browser can play the source or a specific codec
-	 * canPlayType();
-	 * canPlayType('ogg');
-	 * canPlayType('video/mp4');
+	 * canPlay();
+	 * canPlay('ogg');
+	 * canPlay('video/mp4');
 	 *
 	 * @param source A specific source to check. If it's not defined, checks the element sources
 	 *
@@ -68,7 +70,7 @@
 	 * @return 1 If the browser maybe can play
 	 * @return 2 If the browser probably can play
 	 */
-	window.$media.prototype.canPlayType = function (source) {
+	window.$media.prototype.canPlay = function (source) {
 		var length, result, r, i;
 
 		if (!(this.element.canPlayType)) {
@@ -109,113 +111,17 @@
 	};
 
 
-	/**
-	 * Check if the metadata has been loaded (readyState >= 1) or binds a function to loadedmetadata event
-	 *
-	 * @param function fn A function to bind to loadedmetadata event
-	 *
-	 * @return this (for bind event)
-	 * @return boolean (for getters)
-	 */
-	window.$media.prototype.loadedMetadata = function (fn) {
-		if ($.isFunction(fn)) {
-			return this.on('loadedmetadata', fn);
-		}
-
-		return (this.element.readyState >= 1) ? true : false;
-	};
-
-
 
 	/**
-	 * Check if the data of the current position has been loaded (readyState >= 2) or binds a function to loadeddata event
-	 *
-	 * @param function fn A function to bind to loadeddata event
-	 *
-	 * @return this (for bind event)
-	 * @return boolean (for getters)
-	 */
-	window.$media.prototype.loadedData = function (fn) {
-		if ($.isFunction(fn)) {
-			return this.on('loadeddata', fn);
-		}
-
-		return (this.element.readyState >= 2) ? true : false;
-	};
-
-
-
-	/**
-	 * Check if the browser can play now the resource (readyState >= 3) or binds a function to canPlay event
-	 *
-	 * @param function fn A function to bind to canplay event
-	 *
-	 * @return this (for bind event)
-	 * @return boolean (for getters)
-	 */
-	window.$media.prototype.canPlay = function (fn) {
-		if ($.isFunction(fn)) {
-			return this.on('canplay', fn);
-		}
-
-		return (this.element.readyState >= 3) ? true : false;
-	};
-
-
-	/**
-	 * Check if the browser can play the resource until the end (readyState >= 4) or binds a function to canPlayThrough event
-	 *
-	 * @param function fn A function to bind to canplaythrough event
-	 *
-	 * @return this (for bind event)
-	 * @return boolean (for getters)
-	 */
-	window.$media.prototype.canPlayThrough = function (fn) {
-		if ($.isFunction(fn)) {
-			return this.on('canplaythrough', fn);
-		}
-
-		return (this.element.readyState >= 4) ? true : false;
-	};
-
-
-
-	/**
-	 * Returns the current error or binds a function to error event
-	 *
-	 * @param function fn A function to bind to error event
-	 *
-	 * @return this (for bind event)
-	 * @return boolean (for getters)
-	 */
-	window.$media.prototype.error = function (fn) {
-		if ($.isFunction(fn)) {
-			return this.on('error', fn);
-		}
-
-		return (this.element.error || false);
-	}
-
-
-
-	/**
-	 * Get/set the playback rate or bind a function to ratechange event
+	 * Get/set the playback rate
 	 * If the browser doesn't support playbackRate property does nothing
 	 *
-	 * playbackRate()
-	 * playbackRate(0.5)
-	 * playbackRate(fn)
-	 *
-	 * @param float/function fn The new playback rate or the function to bind to ratechange event
+	 * @param float playbackRate The new playback rate
 	 *
 	 * @return this (for setters)
 	 * @return float (for getters)
 	 */
-	$media.prototype.playbackRate = function (fn) {
-		if ($.isFunction(fn)) {
-			return this.on('ratechange', fn);
-		}
-
+	$media.prototype.playbackRate = function (playbackRate) {
 		//if playbackRate no supported
 		if (!('playbackRate' in this.element)) {
 			return (playbackRate === undefined) ? 1 : this;
@@ -248,7 +154,6 @@
 
 			case 'ogg':
 			case 'ogv':
-			case 'oga':
 				return this.type + '/ogg';
 
 			case 'webm':
@@ -273,11 +178,12 @@
 	 * source([{src: 'my-video.ogv', type: 'video/ogv'}, {src: 'my-video.mp4', type: 'video/mp4'}]);
 	 *
 	 * @param string/array/object sources The new sources for the element.
+	 * @param bool autoload Set to false to disable the automatic autoload for the new sources
 	 *
 	 * @return string/array (for getter)
 	 * @return this (for setter)
 	 */
-	window.$media.prototype.source = function (sources) {
+	window.$media.prototype.source = function (sources, autoload) {
 		var $media = this.$element;
 
 		//Getter
@@ -327,7 +233,10 @@
 			});
 		}
 
-		this.element.load();
+		//Autoload
+		if (autoload !== false) {
+			this.element.load();
+		}
 
 		return this;
 	};
@@ -348,7 +257,11 @@
 	 * @return this (for setter)
 	 */
 	window.$media.prototype.attr = function (name, value) {
-		this.$element.attr.apply(this.$element, Array.prototype.slice.call(arguments));
+		if (value === undefined) {
+			return this.$element.attr(name);
+		}
+
+		this.$element.attr(name, value);
 
 		return this;
 	};
@@ -367,7 +280,11 @@
 	 * @return this (for setter)
 	 */
 	window.$media.prototype.prop = function (name, value) {
-		this.$element.prop.apply(this.$element, Array.prototype.slice.call(arguments));
+		if (value === undefined) {
+			return this.$element.prop(name);
+		}
+
+		this.$element.prop(name, value);
 
 		return this;
 	};
@@ -390,7 +307,11 @@
 			return this.element.videoWidth;
 		}
 
-		this.$element.width.apply(this.$element, Array.prototype.slice.call(arguments));
+		if (videoWidth === undefined) {
+			return this.$element.width();
+		}
+
+		this.$element.width(videoWidth);
 
 		return this;
 	};
@@ -413,7 +334,11 @@
 			return this.element.videoHeight;
 		}
 
-		this.$element.height.apply(this.$element, Array.prototype.slice.call(arguments));
+		if (videoHeight === undefined) {
+			return this.$element.height();
+		}
+
+		this.$element.height(videoHeight);
 
 		return this;
 	};
@@ -485,6 +410,7 @@
 
 	/**
 	 * Return if the media is playing or bind a function to playing event
+	 * The playing event is similar to timeupdate event but it doesn't trigger if the video is paused or ended
 	 *
 	 * playing (fn)
 	 * playing ()
@@ -539,10 +465,8 @@
 	 */
 	window.$media.prototype.pause = function (fn) {
 		if ($.isFunction(fn)) {
-			return this.on('pause', fn);
-		}
-
-		if (!this.element.paused) {
+			this.on('pause', fn);
+		} else if (!this.element.paused) {
 			this.element.pause();
 		}
 
@@ -563,16 +487,18 @@
 	 */
 	window.$media.prototype.playPause = function (fn) {
 		if ($.isFunction(fn)) {
-			return this.on('playPause', fn);
-		}
-
-		if (this.element.paused) {
-			this.play();
+			this.on('playPause', fn);
 		} else {
-			this.pause();
+			if (this.element.paused) {
+				this.play();
+			} else {
+				this.pause();
+			}
+
+			this.trigger('playPause', [this.element.paused]);
 		}
 
-		return this.trigger('playPause', [this.element.paused]);
+		return this;
 	};
 
 
@@ -588,30 +514,33 @@
 	 */
 	window.$media.prototype.stop = function (fn) {
 		if ($.isFunction(fn)) {
-			return this.on('stop', fn);
+			this.on('stop', fn);
+		} else {
+			this.pause().reload().trigger('stop');
 		}
-		
-		return this.pause().reload().trigger('stop');
+
+		return this;
 	};
 
 
 	/**
-	 * Returns if it has reached the end of media or adds a ended event listener
+	 * Goes to the end of the media or adds a end (ended) event listener
 	 *
-	 * ended (fn)
-	 * ended ()
+	 * end (fn)
+	 * end ()
 	 *
 	 * @param function fn The function to the event listener
 	 *
-	 * @return bool True if the media is ended, false if not
-	 * @return this On bind event
+	 * @return this
 	 */
-	window.$media.prototype.ended = function (fn) {
+	window.$media.prototype.end = function (fn) {
 		if ($.isFunction(fn)) {
-			return this.on('ended', fn);
+			this.bind('end', fn);
+		} else {
+			this.pause().seek(this.element.duration);
 		}
 
-		return this.element.ended;
+		return this;
 	};
 
 
@@ -627,7 +556,8 @@
 	 */
 	window.$media.prototype.remove = function (fn) {
 		if ($.isFunction(fn)) {
-			return this.on('remove', fn);
+			this.on('remove', fn);
+			return this;
 		}
 
 		this.trigger('remove');
@@ -660,16 +590,16 @@
 	 */
 	window.$media.prototype.seek = function (fn) {
 		if ($.isFunction(fn)) {
-			return this.on('seeked', fn);
-		}
-		
-		this.ready(1, function () {
-			var time = this.time(fn);
+			this.on('seek', fn);
+		} else {
+			this.ready(1, function () {
+				var time = this.time(fn);
 
-			if (this.element.currentTime !== time) {
-				this.element.currentTime = time;
-			}
-		});
+				if (this.element.currentTime !== time) {
+					this.element.currentTime = time;
+				}
+			});
+		}
 
 		return this;
 	};
@@ -719,18 +649,10 @@
 		}
 
 		if ($.isFunction(fn)) {
-			return this.on('volumechange', fn);
+			this.on('volume', fn);
+		} else {
+			this.element.volume = fn;
 		}
-
-		if (typeof fn === 'string') {
-			if (fn.indexOf('+') === 0) {
-				fn = this.element.volume + parseFloat(fn);
-			} else if (fn.indexOf('-') === 0) {
-				fn = this.element.volume - parseFloat(fn);
-			}
-		}
-
-		this.element.volume = (fn < 0) ? 0 : ((fn > 1) ? 1 : fn);
 
 		return this;
 	};
@@ -740,31 +662,31 @@
 	/**
 	 * Get/set mute to the media or bind a function to mute event
 	 *
-	 * muted (fn)
-	 * muted (true)
-	 * muted (false)
-	 * muted ()
+	 * mute (fn)
+	 * mute (true)
+	 * mute (false)
+	 * mute ()
 	 *
 	 * @param function/bool fn The function to the event listener. True to mute, false to unmute and void to toggle
 	 *
-	 * @return this
+	 * @return float (for getter)
+	 * @return this (for setter / on bind event)
 	 */
-	window.$media.prototype.muted = function (fn) {
-		if (fn === undefined) {
-			return this.element.muted;
-		}
-
+	window.$media.prototype.mute = function (fn) {
 		if (device === 'ios') {
 			return this;
 		}
 
 		if ($.isFunction(fn)) {
-			return this.bind('muted', fn);
-		}
+			this.bind('mute', fn);
+		} else {
+			if (typeof fn === 'boolean') {
+				this.element.muted = fn;
+			} else {
+				this.element.muted = this.element.muted ? false : true;
+			}
 
-		if (typeof fn === 'boolean' && (this.element.muted !== fn)) {
-			this.element.muted = fn;
-			return this.trigger('muted');
+			this.trigger('mute', [this.element.muted]);
 		}
 
 		return this;
@@ -783,7 +705,7 @@
 	 * @return this
 	 */
 	window.$media.prototype.on = function (event, fn) {
-		var registeredEvents = this.$element.data('events') || {}, events = event.toLowerCase().split(' '), i, length = events.length, that = this;
+		var registeredEvents = this.$element.data('events') || {}, events = event.split(' '), i, length = events.length, that = this;
 
 		fn = $.proxy(fn, this);
 
@@ -811,6 +733,30 @@
 					this.$element.bind('fullScreen', fn);
 					break;
 
+				case 'end':
+					this.$element.bind('ended', fn);
+					break;
+
+				case 'playing':
+					if (!registeredEvents[events[i]]) {
+						this.$element.on('timeupdate', function () {
+							if (!that.paused && !that.ended) {
+								that.trigger('playing');
+							}
+						});
+					}
+
+					this.$element.bind('playing', fn);
+					break;
+
+				case 'seek':
+					this.$element.bind('seeked', fn);
+					break;
+
+				case 'volume':
+					this.$element.bind('volumechange', fn);
+					break;
+
 				default:
 					this.$element.bind(events[i], fn);
 			}
@@ -834,29 +780,10 @@
 	 * @return this
 	 */
 	window.$media.prototype.off = function (event, fn) {
-		var events = event.toLowerCase().split(' '), i, length = events.length;
-
 		if (fn) {
-			fn = $.proxy(fn, this);
-		}
-
-		for (i = 0; i < length; i++) {
-			switch (events[i]) {
-				case 'end':
-					this.$element.unbind('ended', fn);
-					break;
-
-				case 'seek':
-					this.$element.unbind('seeked', fn);
-					break;
-
-				case 'volume':
-					this.$element.unbind('volumechange', fn);
-					break;
-
-				default:
-					this.$element.unbind(events[i], fn);
-			}
+			this.$element.unbind(event, $.proxy(fn, this));
+		} else {
+			this.$element.unbind(event);
 		}
 
 		return this;
@@ -874,54 +801,7 @@
 	 * @return this
 	 */
 	window.$media.prototype.trigger = function (event, data) {
-		switch (event) {
-			case 'end':
-				this.$element.trigger('ended', data);
-				break;
-
-			case 'seek':
-				this.$element.trigger('seeked', data);
-				break;
-
-			case 'volume':
-				this.$element.trigger('volumechange', data);
-				break;
-
-			default:
-				this.$element.trigger(event, data);
-		}
-
-		return this;
-	};
-
-
-	/**
-	 * Execute all handles attached to the media for an event
-	 *
-	 * triggerHandler('click')
-	 *
-	 * @param string event The event name to trigger.
-	 * @param array data Optional arguments to pass to function events
-	 * 
-	 * @return this
-	 */
-	window.$media.prototype.triggerHandler = function (event, data) {
-		switch (event) {
-			case 'end':
-				this.$element.triggerHandler('ended', data);
-				break;
-
-			case 'seek':
-				this.$element.triggerHandler('seeked', data);
-				break;
-
-			case 'volume':
-				this.$element.triggerHandler('volumechange', data);
-				break;
-
-			default:
-				this.$element.triggerHandler(event, data);
-		}
+		this.$element.trigger(event, data);
 
 		return this;
 	};
@@ -948,49 +828,94 @@
 			return 0;
 		}
 
-		if (typeof time === 'string') {
-			if (time.indexOf('+') === 0) {
-				time = this.time() + this.time(time.substr(1));
-			} else if (time.indexOf('-') === 0) {
-				time = this.time() - this.time(time.substr(1));
-			} else if (time.indexOf('%') === -1) {
-				time = time.toSeconds();
-			} else {
-				time = ((this.duration()/100) * parseFloat(time)).toSeconds();
+		time = '' + time;
+
+		var int_time = 0;
+
+		if (time.indexOf('+') === 0 || time.indexOf('-') === 0) {
+			var sum = time.substr(1).toSeconds();
+
+			if (time.indexOf('-') === 0) {
+				sum = -sum;
 			}
+
+			if (time.indexOf('%') === -1) {
+				int_time = sum + this.element.currentTime.toSeconds();
+			} else {
+				int_time = Math.round((this.totalTime() / 100) * parseInt(sum, 10)) + this.element.currentTime.toSeconds();
+			}
+		} else if (time.indexOf('%') !== -1) {
+			int_time = Math.round((this.totalTime() / 100) * time.toSeconds());
 		} else {
-			time = time.toSeconds();
+			int_time = time.toSeconds();
 		}
 
-		if (time < 0) {
-			return 0;
+		if (int_time < 0) {
+			int_time = 0;
+		} else if (int_time > this.totalTime()) {
+			int_time = this.totalTime();
 		}
 
-		if (time > this.duration()) {
-			return this.duration();
-		}
-
-		return time;
+		return int_time;
 	};
 
 
 	/**
-	 * Returns the media duration in seconds or bind a function on the durationchange event
+	 * Returns the media duration in seconds or bind a function when the duration is available
 	 *
-	 * duration()
-	 * duration(fn)
+	 * totalTime()
+	 * totalTime(fn)
 	 *
 	 * @param function fn The function to the event listener
 	 *
 	 * @return float The duration of the media
 	 * @return this On bind event
 	 */
-	window.$media.prototype.duration = function (fn) {
-		if ($.isFunction(fn)) {
-			return this.on('durationchange', fn);
+	window.$media.prototype.totalTime = function (fn) {
+		if (!$.isFunction(fn)) {
+			return this.element.duration.toSeconds();
 		}
 
-		return (this.element.duration || 0).toSeconds();
+		return this.ready(1, function () {
+			$.proxy(fn, this)(this.element.duration.toSeconds());
+		});
+	};
+
+
+	/**
+	 * Returns if the media is ready to play or bind a function on ready event
+	 *
+	 * ready()
+	 * ready(2)
+	 * ready(fn)
+	 * ready(2, fn)
+	 *
+	 * @param int state The minimal state for the video to evaluate as ready (3 by default)
+	 * @param function fn The function to the event listener
+	 *
+	 * @return boolean True if is ready, false if not
+	 * @return this On bind event
+	 */
+	window.$media.prototype.ready = function (state, fn) {
+		if (typeof state !== 'number') {
+			fn = state;
+			state = 3;
+		}
+
+		if (!$.isFunction(fn)) {
+			return (this.element.readyState < state) ? false : true;
+		}
+
+		if (this.element.readyState >= state) {
+			$.proxy(fn, this)();
+		} else {
+			var that = this;
+			setTimeout(function () {
+				that.ready(state, fn);
+			}, 13);
+		}
+
+		return this;
 	};
 
 
@@ -1000,7 +925,7 @@
 	 * @return this
 	 */
 	window.$media.prototype.reload = function () {
-		this.source(this.source());
+		this.sources(this.sources());
 
 		return this;
 	};
@@ -1123,8 +1048,6 @@
  * Extends the String object to convert any number to seconds
  *
  * '00:34'.toSeconds(); // 34
- *
- * @return float The value in seconds
  */
 String.prototype.toSeconds = function () {
 	'use strict';
@@ -1158,8 +1081,6 @@ String.prototype.toSeconds = function () {
  * '34'.secondsTo('mm:ss'); // '00:34'
  *
  * @param string outputFormat One of the avaliable output formats ('ms', 'mm:ss', 'hh:mm:ss', 'hh:mm:ss.ms')
- *
- * @return string The value in the new format
  */
 String.prototype.secondsTo = function (outputFormat) {
 	'use strict';
@@ -1173,8 +1094,6 @@ String.prototype.secondsTo = function (outputFormat) {
  * Extends the Number object to convert any number to seconds
  *
  * (23.34345).toSeconds(); // 23.343
- *
- * @return float The value in seconds
  */
 Number.prototype.toSeconds = function () {
 	'use strict';
@@ -1189,8 +1108,6 @@ Number.prototype.toSeconds = function () {
  * 34.secondsTo('mm:ss'); // '00:34'
  *
  * @param string outputFormat One of the avaliable output formats ('ms', 'mm:ss', 'hh:mm:ss', 'hh:mm:ss.ms')
- *
- * @return string The value in the new format
  */
 Number.prototype.secondsTo = function (outputFormat) {
 	'use strict';
@@ -1219,10 +1136,8 @@ Number.prototype.secondsTo = function (outputFormat) {
 
 			var ss = time;
 
-			if (outputFormat.indexOf('.ms') === -1) {
+			if (outputFormat === 'hh:mm:ss') {
 				ss = Math.round(ss);
-			} else {
-				ss = Math.round(ss*1000)/1000;
 			}
 			ss = (ss < 10) ? ("0" + ss) : ss;
 
