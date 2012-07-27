@@ -1,5 +1,5 @@
 /**
- * $media.tween (0.2.0)
+ * $media.tween (0.1.0)
  *
  * Require:
  * $media
@@ -14,62 +14,20 @@
 (function($) {
 	'use strict';
 
-	var normalizePoints = function (points) {
-		points.sort(function (a, b) {
-			return a.ms - b.ms;
-		});
-
-		var nPoints = [];
-		var previous = points[0];
-		nPoints.push(previous);
-
-		for (var i = 1, length = points.length; i < length; i++) {
-			var current = points[i];
-			var diff_ms = (current.ms - previous.ms);
-
-			if (diff_ms > 210) {
-				var num_interpolations = Math.ceil(diff_ms / 200);
-				var diff_x = ((current.coords[0] - previous.coords[0]) / num_interpolations);
-				var diff_y = ((current.coords[1] - previous.coords[1]) / num_interpolations);
-
-				diff_ms = Math.round(diff_ms / num_interpolations);
-
-				for (var n = 1; n < num_interpolations; n++) {
-					nPoints.push({
-						ms: previous.ms + (diff_ms * n),
-						status: current.status,
-						coords: [
-							Math.round((previous.coords[0] + (diff_x * n)) * 100) / 100,
-							Math.round((previous.coords[1] + (diff_y * n)) * 100) / 100
-						]
-					});
-				}
-			}
-			
-			nPoints.push(current);
-			previous = current;
-		}
-
-		return nPoints;
-	};
-
 	//Tweens class
 	window.$media.Tween = function (name, settings) {
 		this.name = name;
+		this.points = settings.points;
 		this.target = $(settings.target).hide();
 		this.enabled = false;
-		this.data = settings.data || {};
-
+		this.currentPos = 0;
+		this.lastPos = this.points.length - 1;
 		this.status = 'out';
 		this["in"] = settings["in"];
 		this.out = settings.out;
 		this.statusChange = settings.statusChange;
 		this.create = settings.create;
 		this.destroy = settings.destroy;
-
-		this.points = normalizePoints(settings.points);
-		this.length = this.points.length - 1;
-		this.position = 0;
 	};
 
 
@@ -86,53 +44,39 @@
 			}
 		},
 
-		reset: function () {
-			this.position = 0;
-		},
-
-		currentPoint: function () {
-			return this.points[this.position];
-		},
-
-		nextPoint: function () {
-			if (this.position < this.length) {
-				return this.points[++this.position];
-			}
-		},
-
-		firstPoint: function () {
-			return this.points[0];
-		},
-
-		lastPoint: function () {
-			return this.points[this.length];
-		},
-
+		/**
+		 * function move (ms)
+		 *
+		 * Adds one or more points to the tween
+		 */
 		getPoint: function (ms) {
-			if ((this.enabled === false) || (this.firstPoint().ms > ms) || (this.lastPoint().ms < ms)) {
+			if ((this.enabled === false) || (this.points[0].ms > ms) || (this.points[this.lastPos].ms < ms)) {
+				this.currentPos = 0;
 				return false;
 			}
 
-			if (this.currentPoint().ms > ms) {
-				return true;
+			if (this.points[this.currentPos].ms > ms) {
+				this.currentPos = 0;
 			}
 
-			while (this.currentPoint().ms < ms) {
-				if (!this.nextPoint()) {
-					return false;
-				}
+			var point;
+
+			while (this.points[this.currentPos] && this.points[this.currentPos].ms <= ms) {
+				point = this.points[this.currentPos];
+				this.currentPos++;
 			}
 
-			return this.currentPoint();
+			if (point) {
+				this.currentPos--;
+				return point;
+			}
+
+			return false;
 		},
 
 		execute: function (media) {
 			var ms = media.time().secondsTo('ms');
 			var point = this.getPoint(ms);
-
-			if (point === true) {
-				return;
-			}
 
 			if (point) {
 				this.target.css({
@@ -160,11 +104,7 @@
 					}
 				}
 
-				return;
-
-			}
-
-			if (this.status !== 'out') {
+			} else if (this.status !== 'out') {
 				this.status = 'out';
 				this.target.hide();
 
@@ -190,7 +130,6 @@
 				this.tweens = {};
 
 				this.on('play seek', function () {
-					this.refreshTweens();
 					this.executeTweens();
 				});
 			}
@@ -313,7 +252,7 @@
 
 			for (name in this.tweens) {
 				if (this.tweens.hasOwnProperty(name)) {
-					this.tweens[name].reset();
+					this.tweens[name].refresh();
 				}
 			}
 

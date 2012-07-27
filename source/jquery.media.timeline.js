@@ -14,7 +14,7 @@
 (function ($) {
 	'use strict';
 
-	//Private function to sort the parameters of an object
+	//sort object
 	var sortObject = function (o) {
 		var sorted = {}, key, keys = [];
 
@@ -36,7 +36,7 @@
 	};
 
 
-	//Point constructor
+	//Point class
 	window.$media.Point = function (settings) {
 		settings = settings || {};
 		this.data = settings.data || {};
@@ -62,12 +62,6 @@
 	};
 
 	window.$media.Point.prototype = {
-
-		/**
-		 * Sets the start and end of the point based in the media object
-		 *
-		 * @param media The $media instance
-		 */
 		updateTime: function (media) {
 			if (!media) {
 				return;
@@ -81,15 +75,6 @@
 			}
 		},
 
-
-		/**
-		 * Executes the "in" function of the point
-		 *
-		 * @param thisArg The value of the variable "this"
-		 * @param array args The arguments passed to the function
-		 *
-		 * @return boolean True is the function has executed, false if not
-		 */
 		execute: function (thisArg, args) {
 			if (this.waiting) {
 				return false;
@@ -104,15 +89,6 @@
 			return true;
 		},
 
-		
-		/**
-		 * Executes the "out" function of the point
-		 *
-		 * @param thisArg The value of the variable "this"
-		 * @param array args The arguments passed to the function
-		 *
-		 * @return boolean True is the function has executed, false if not
-		 */
 		executeOut: function (thisArg, args) {
 			if (!this.waiting || !this.fn_out) {
 				this.waiting = false;
@@ -127,7 +103,7 @@
 	};
 
 
-	//Timeline constructor
+	//Timeline class
 	window.$media.Timeline = function (data) {
 		this.data = data || {};
 		this.points = {};
@@ -136,12 +112,10 @@
 
 
 	window.$media.Timeline.prototype = {
-
 		/**
-		 * Saves the points into the timeline
+		 * function applyPointsToMedia (points)
 		 *
-		 * @param media The $media instance related with the timeline
-		 * @param points Array with the points to save.
+		 * Adds one or more points to the timeline
 		 */
 		savePoints: function (media, points) {
 			if (!media || !points || !points.length) {
@@ -153,7 +127,7 @@
 			for (i = 0, length = points.length; i < length; ++i) {
 				point = points[i];
 
-				if (!totaltime && (point.relative === true)) {
+				if (!totaltime && point.relative === true) {
 					percent.push(point);
 					continue;
 				}
@@ -182,16 +156,16 @@
 			if (this.enabled) {
 				media.refreshTimeline();
 			}
+
+			return this;
 		},
 
 
 		/**
-		 * Creates one or more points and saves in the timeline
+		 * function addPoint (object point)
+		 * function addPoint (array points)
 		 *
-		 * @param media The $media instance related with the timeline
-		 * @param points Array with the settings for the points
-		 *
-		 * @return this
+		 * Adds one or more points to the timeline
 		 */
 		addPoints: function (media, points) {
 			var newPoints = [], i, length = points.length;
@@ -212,12 +186,9 @@
 	window.$media.extend({
 
 		/**
-		 * Creates a new timeline
+		 * function setTimeline (name, [options])
 		 *
-		 * @param string name The name for the timeline
-		 * @param object options The settings for the timeline
-		 *
-		 * @return this
+		 * Gets a timeline
 		 */
 		setTimeline: function (name, options) {
 			options = options || {};
@@ -266,7 +237,7 @@
 
 
 		/**
-		 * Sets more
+		 * function setTimelinePoints (name, [points])
 		 *
 		 * Gets a timeline
 		 */

@@ -20,8 +20,6 @@
 		device = 'browser';
 	}
 
-
-	//$media constructor
 	window.$media = function (element) {
 		this.element = element;
 		this.$element = $(element);

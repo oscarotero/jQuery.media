@@ -14,9 +14,9 @@
 			var video;
 
 			$(document).ready(function () {
-				var json = 'files/tweens.json';
+				var json = '../chicos/tweens.json';
 				json = false;
-				var src = 'http://anavallasuiza.com/share/benches-of-istanbul/projects/tophane/street.ogv';
+				var src = 'http://localhost/istanbul-project/projects/findikli/street.ogv';
 
 				video = $.media('#video');
 				video.source(src);
@@ -153,21 +153,12 @@
 					}
 
 					if (e.keyCode === 37) {
-						if (e.shiftKey) {
-							video.seek('-2');
-						} else {
-							video.seek('-0.2');
-						}
-						
+						video.seek('-0.2');
 						return;
 					}
 
 					if (e.keyCode === 39) {
-						if (e.shiftKey) {
-							video.seek('+2');
-						} else {
-							video.seek('+0.2');
-						}
+						video.seek('+0.2');
 						return;
 					}
 
@@ -194,7 +185,6 @@
 
 									this.setTween(tweenName, {
 										enabled: true,
-										data: points,
 										points: points,
 										target: $('<div>' + tweenName + ' <em class="status"></em></div>').appendTo('#contenedor'),
 										out: outFn,
@@ -202,8 +192,6 @@
 										statusChange: statusChangeFn,
 										destroy: destroyFn
 									}).seek(points[0].ms / 1000).play();
-
-									this.tweens[tweenName].capturedPoints = points;
 								});
 							} else {
 								video.captureTweenStart({
@@ -231,7 +219,7 @@
 					if (video.tweens) {
 						$.each(video.tweens, function (name, value) {
 							tweens[name] = {
-								points: value.capturedPoints
+								points: value.points
 							};
 						});
 					}
@@ -249,8 +237,6 @@
 			#contenedor {
 				position: relative;
 				float: left;
-				max-width: 100%;
-
 			}
 
 			#contenedor > div {
@@ -289,9 +275,6 @@
 			#captures li.selected {
 				background: black;
 				color: white;
-			}
-			#video {
-				max-width: 100%;
 			}
 		</style>
 	</head>
