@@ -11,8 +11,6 @@
 (function ($) {
 	'use strict';
 
-	var readyStates = ['loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough'];
-
 	//Detect device
 	var device = navigator.userAgent.toLowerCase();
 
@@ -139,32 +137,18 @@
 			return (this.element.readyState >= state) ? true : false;
 		}
 		
-		if ($.isFunction(fn) && readyStates[state - 1]) {
-			return this.on(readyStates[state - 1], fn);
-		}
+		if (this.element.readyState >= state) {
+			$.proxy(fn, this)();
+		} else {
+			var that = this;
 
-		$.error('Invalid arguments for readyState function');
+			setTimeout(function () {
+				that.readyState(state, fn);
+			}, 100);
+		}
 
 		return this;
 	};
-
-
-
-	/**
-	 * Returns the current error or binds a function to error event
-	 *
-	 * @param function fn A function to bind to error event
-	 *
-	 * @return this (for bind event)
-	 * @return boolean (for getters)
-	 */
-	window.$media.prototype.error = function (fn) {
-		if ($.isFunction(fn)) {
-			return this.on('error', fn);
-		}
-
-		return (this.element.error || false);
-	}
 
 
 
@@ -188,14 +172,18 @@
 
 		//if playbackRate no supported
 		if (!('playbackRate' in this.element)) {
-			return (playbackRate === undefined) ? 1 : this;
+			return (fn === undefined) ? 1 : this;
 		}
 
-		if (playbackRate === undefined) {
+		if (fn === undefined) {
 			return this.element.playbackRate;
 		}
 
-		this.element.playbackRate = playbackRate;
+		if (this.element.playbackRate !== fn) {
+			this.element.playbackRate = fn;
+
+			return this.trigger('ratechange');
+		}
 
 		return this;
 	}
@@ -341,7 +329,11 @@
 	 * @return this (for setter)
 	 */
 	window.$media.prototype.prop = function (name, value) {
-		this.$element.prop.apply(this.$element, Array.prototype.slice.call(arguments));
+		if ((arguments.length === 1) && (typeof name !== "object")) {
+			return this.$element.prop(name);
+		}
+
+		this.$element.prop(name, value);
 
 		return this;
 	};
@@ -364,7 +356,11 @@
 			return this.element.videoWidth;
 		}
 
-		this.$element.width.apply(this.$element, Array.prototype.slice.call(arguments));
+		if (arguments.length === 0) {
+			return this.$element.width();
+		}
+
+		this.$element.width(videoWidth);
 
 		return this;
 	};
@@ -387,7 +383,11 @@
 			return this.element.videoHeight;
 		}
 
-		this.$element.height.apply(this.$element, Array.prototype.slice.call(arguments));
+		if (arguments.length === 0) {
+			return this.$element.height();
+		}
+
+		this.$element.height(videoHeight);
 
 		return this;
 	};
@@ -411,6 +411,28 @@
 		}
 
 		return this;
+	};
+
+
+	/**
+	 * Return if the media is playing or bind a function to playing event
+	 *
+	 * playing (fn)
+	 * playing ()
+	 *
+	 * @param function fn The function to the event listener
+	 *
+	 * @return bool True if the media is playing, false if not
+	 * @return this On bind event
+	 */
+	window.$media.prototype.playing = function (fn) {
+		if ($.isFunction(fn)) {
+			this.on('playing', fn);
+
+			return this;
+		}
+
+		return (this.element.paused || this.element.ended) ? false : true;
 	};
 
 
@@ -457,27 +479,6 @@
 	};
 
 
-	/**
-	 * Return if the media is playing or bind a function to playing event
-	 *
-	 * playing (fn)
-	 * playing ()
-	 *
-	 * @param function fn The function to the event listener
-	 *
-	 * @return bool True if the media is playing, false if not
-	 * @return this On bind event
-	 */
-	window.$media.prototype.playing = function (fn) {
-		if ($.isFunction(fn)) {
-			this.on('playing', fn);
-
-			return this;
-		}
-
-		return (this.element.paused || this.element.ended) ? false : true;
-	};
-
 
 	/**
 	 * Return if the media is waiting or bind a function to waiting event
@@ -497,7 +498,7 @@
 			return this;
 		}
 
-		return (this.element.readyState > 2) ? false : true;
+		return this.readyState(3) ? false : true;
 	};
 
 
@@ -537,7 +538,7 @@
 	 */
 	window.$media.prototype.playPause = function (fn) {
 		if ($.isFunction(fn)) {
-			return this.on('playPause', fn);
+			return this.on('playpause', fn);
 		}
 
 		if (this.element.paused) {
@@ -546,7 +547,7 @@
 			this.pause();
 		}
 
-		return this.trigger('playPause', [this.element.paused]);
+		return this.triggerHandler('playpause');
 	};
 
 
@@ -604,15 +605,13 @@
 			return this.on('remove', fn);
 		}
 
-		this.trigger('remove');
-
-		this.$element.remove();
+		this.triggerHandler('remove').$element.remove();
 
 		var prop;
 
 		for (prop in this) {
 			if (this.hasOwnProperty(prop)) {
-				this[prop] = {};
+				this[prop] = null;
 			}
 		}
 	};
@@ -637,7 +636,7 @@
 			return this.on('seeked', fn);
 		}
 		
-		this.ready(1, function () {
+		this.readyState(1, function () {
 			var time = this.time(fn);
 
 			if (this.element.currentTime !== time) {
@@ -685,10 +684,14 @@
 	 */
 	window.$media.prototype.volume = function (fn) {
 		if (device === 'ios') {
+			if (arguments.length === 0) {
+				return 1;
+			}
+
 			return this;
 		}
 
-		if (fn === undefined) {
+		if (arguments.length === 0) {
 			return this.element.volume;
 		}
 
@@ -733,12 +736,13 @@
 		}
 
 		if ($.isFunction(fn)) {
-			return this.bind('muted', fn);
+			return this.on('muted', fn);
 		}
 
 		if (typeof fn === 'boolean' && (this.element.muted !== fn)) {
 			this.element.muted = fn;
-			return this.trigger('muted');
+
+			return this.triggerHandler('muted');
 		}
 
 		return this;
@@ -824,10 +828,6 @@
 					this.$element.unbind('seeked', fn);
 					break;
 
-				case 'volume':
-					this.$element.unbind('volumechange', fn);
-					break;
-
 				default:
 					this.$element.unbind(events[i], fn);
 			}
@@ -849,16 +849,8 @@
 	 */
 	window.$media.prototype.trigger = function (event, data) {
 		switch (event) {
-			case 'end':
-				this.$element.trigger('ended', data);
-				break;
-
 			case 'seek':
 				this.$element.trigger('seeked', data);
-				break;
-
-			case 'volume':
-				this.$element.trigger('volumechange', data);
 				break;
 
 			default:
@@ -881,16 +873,8 @@
 	 */
 	window.$media.prototype.triggerHandler = function (event, data) {
 		switch (event) {
-			case 'end':
-				this.$element.triggerHandler('ended', data);
-				break;
-
 			case 'seek':
 				this.$element.triggerHandler('seeked', data);
-				break;
-
-			case 'volume':
-				this.$element.triggerHandler('volumechange', data);
 				break;
 
 			default:

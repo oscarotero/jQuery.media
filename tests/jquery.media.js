@@ -1,30 +1,18 @@
+var sources = ["http://archive.org/download/Lets_Sing_with_Popeye_1936/Popeye_Lets_Sing_with_Popeye_1934_512kb.mp4", "http://ia600409.us.archive.org/10/items/Lets_Sing_with_Popeye_1936/Popeye_Lets_Sing_with_Popeye_1934.ogv"];
+var sources2 = ["http://media.w3.org/2010/05/sintel/trailer.mp4", "http://media.w3.org/2010/05/sintel/trailer.webm", "http://media.w3.org/2010/05/sintel/trailer.ogv"];
 var getMedia = function () {
 	return $.media('#video');
 }
 
-
-test("attr()", function() {
+test("get(), $get()", function() {
 	var media = getMedia();
+	var dom = document.getElementById('video');
+	var $dom = $('#video');
 
-	deepEqual(media.attr('id'), 'video');
-	deepEqual(media.attr('controls', 'controls'), media);
-	deepEqual(media.attr('controls'), 'controls');
-});
-
-
-test("readyState()", function () {
-	var media = getMedia();
-
-	deepEqual(media.readyState(), 0);
-	deepEqual(media.readyState(0), true);
-
-	stop();
-
-	media.readyState(1, function () {
-		start();
-
-		ok(this.duration());
-	});
+	deepEqual(media.get(), media.element);
+	deepEqual(media.get(), dom);
+	deepEqual(media.$get(), media.$element);
+	deepEqual(media.get(), $dom.get(0));
 });
 
 
@@ -37,18 +25,350 @@ test("canPlayType()", function () {
 });
 
 
-test("duration()", function () {
+test("readyState()", function () {
 	var media = getMedia();
 
-	deepEqual(media.duration(), 0);
+	deepEqual(media.readyState(), 0);
+	deepEqual(media.readyState(0), true);
 
 	stop();
 
-	media.duration(function () {
+	media.readyState(1, function () {
+		ok(this.duration());
+
+		this.play().pause().readyState(2, function () {
+			ok(this.readyState() >= 2);
+
+			this.readyState(3, function () {
+				ok(this.readyState() >= 3);
+
+				this.readyState(4, function () {
+					start();
+					ok(this.readyState() >= 4);
+				});
+			});
+		});
+	});
+});
+
+
+test("playbackRate()", function() {
+	var media = getMedia();
+
+	deepEqual(media.playbackRate(), 1);
+
+	media.playbackRate(function () {
+		deepEqual(media.playbackRate(), 2);
+	});
+
+	deepEqual(media.playbackRate(2), media);
+});
+
+
+test("attr()", function() {
+	var media = getMedia();
+
+	deepEqual(media.attr('id'), 'video');
+	deepEqual(media.attr({
+		'id': 'video2',
+		'poster': ''
+	}), media);
+	deepEqual(media.attr('controls', 'controls'), media);
+	deepEqual(media.attr('controls'), 'controls');
+});
+
+
+test("prop()", function() {
+	var media = getMedia();
+
+	deepEqual(media.prop('controls', true), media);
+	deepEqual(media.attr('controls'), 'controls');
+});
+
+test("width()", function() {
+	var media = getMedia();
+
+	deepEqual(media.width(true), media.get().videoWidth);
+	deepEqual(media.width(300), media);
+	deepEqual(media.width(), 300);
+});
+
+test("height()", function() {
+	var media = getMedia();
+
+	deepEqual(media.height(true), media.get().videoHeight);
+	deepEqual(media.height(300), media);
+	deepEqual(media.height(), 300);
+});
+
+
+test("play(), playing()", function() {
+	var media = getMedia();
+
+	media.play(function () {
+		start();
+
+		deepEqual(media.playing(), true, 'play event: playing true');
+		deepEqual(media.get().paused, false, 'play event: paused false');
+
+		media.seek('100%');
+		stop();
+	});
+
+	media.ended(function () {
+		start();
+
+		deepEqual(media.playing(), false, 'ended event: playing false');
+		deepEqual(media.get().ended, true, 'ended event: ended true');
+	});
+
+	deepEqual(media.play(), media, 'play returns media');
+	stop();
+});
+
+test("waiting()", function () {
+	var media = getMedia();
+
+	media.waiting(function () {
+		start();
+
+		deepEqual(this.waiting(), true);
+		deepEqual(this.readyState(3), false);
+
+		stop();
+
+		this.readyState(3, function () {
+			start();
+
+			deepEqual(this.waiting(), false);
+		});
+	});
+
+	media.source(sources2).play();
+
+	deepEqual(media.waiting(), true);
+
+	stop();
+});
+
+test("pause()", 3, function() {
+	var media = getMedia();
+
+	media.pause(function () {
+		start();
+
+		deepEqual(media.get().paused, true);
+	});
+
+	deepEqual(media.pause(), media);
+	
+	media.play(function () {
+		deepEqual(media.pause(), media);
+	});
+
+	media.play();
+
+	stop();
+});
+
+
+test("playPause()", 4, function() {
+	var media = getMedia();
+
+	media.playPause(function () {
+		ok(true, 'playPause event');
+	});
+
+	media.play(function () {
+		deepEqual(this.playing(), true, 'play event');
+		
+		this.playPause();
+	});
+
+	media.pause(function () {
+		start();
+
+		deepEqual(this.playing(), false, 'pause event');
+	});
+
+	media.playPause();
+
+	stop();
+});
+
+
+test("stop()", function() {
+	var media = getMedia();
+
+	media.stop(function () {
+		deepEqual(this.playing(), false);
+		deepEqual(this.readyState(1), false);
+		deepEqual(this.time(), 0);
+	});
+
+	media.stop();
+});
+
+
+test("ended()", function() {
+	var media = getMedia();
+
+	deepEqual(media.ended(), false);
+
+	media.ended(function () {
+		start();
+
+		deepEqual(this.ended(), true);
+	});
+
+	media.seek('100%').play();
+
+	stop();
+});
+
+
+test("remove()", function() {
+	var media = getMedia();
+
+	media.remove(function () {
+		ok(true, 'remove event');
+	});
+
+	media.remove();
+
+	deepEqual(document.getElementById('video'), null);
+
+	deepEqual(media.get(), null);
+	deepEqual(media.$get(), null);
+});
+
+
+test("seek(), seeking()", 3, function() {
+	var media = getMedia();
+
+	media.seek(function () {
+		start();
+
+		deepEqual(this.time(), 24, 'seek event: time');
+		deepEqual(this.seeking(), false, 'seek event: seeking false');
+	});
+
+	media.seeking(function () {
+		ok(true, 'seeking event');
+	});
+
+	media.seek(24);
+
+	stop();
+});
+
+
+test("volume()", 3, function() {
+	var media = getMedia();
+
+	media.volume(function () {
+		start();
+
+		deepEqual(this.volume(), 0.5);
+	});
+
+	deepEqual(media.volume(), 1);
+	deepEqual(media.volume(0.5), media);
+
+	stop();
+});
+
+
+test("muted()", 2, function() {
+	var media = getMedia();
+
+	deepEqual(media.muted(), false, 'muted false on init');
+
+	media.muted(function () {
+		deepEqual(media.muted(), true, 'muted event');
+	});
+
+	media.muted(true);
+	media.muted(true);
+	media.muted(true);
+});
+
+
+/*
+test("fullScreen()", function() {
+	var media = getMedia();
+});
+
+test("on()", function() {
+	var media = getMedia();
+});
+
+test("off()", function() {
+	var media = getMedia();
+});
+
+test("trigger()", function() {
+	var media = getMedia();
+});
+
+test("triggerHandler()", function() {
+	var media = getMedia();
+});
+*/
+
+
+test("time()", function () {
+	var media = getMedia();
+
+	stop();
+
+	media.readyState(1, function () {
+		start();
+
+		deepEqual(media.time(), 0);
+		deepEqual(media.time('20'), 20);
+		deepEqual(media.time('100%'), media.duration());
+		deepEqual(media.time('50%'), (media.duration()/2).toSeconds());
+	});
+});
+
+
+test("duration()", function () {
+	var media = getMedia();
+
+	stop();
+
+	media.readyState(1, function () {
 		start();
 
 		ok(media.duration());
 		deepEqual(media.duration(), media.get().duration.toSeconds());
-		ok(media.readyState(1));
+	});
+});
+
+
+test("source()", function() {
+	var media = getMedia();
+
+	deepEqual(media.source(), media.get().currentSrc);
+	deepEqual(media.source(true), sources);
+	deepEqual(media.source(media.source()), media);
+	
+	stop();
+
+	media.readyState(1, function () {
+		start();
+		deepEqual(media.source(true)[0], media.source());
+
+		this.source(sources2);
+
+		stop();
+
+		this.readyState(1, function () {
+			start();
+
+			deepEqual(this.source(), media.get().currentSrc);
+			deepEqual(this.source(true), sources2);
+		});
 	});
 });
