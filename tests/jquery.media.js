@@ -1,8 +1,14 @@
 var sources = ["http://archive.org/download/Lets_Sing_with_Popeye_1936/Popeye_Lets_Sing_with_Popeye_1934_512kb.mp4", "http://ia600409.us.archive.org/10/items/Lets_Sing_with_Popeye_1936/Popeye_Lets_Sing_with_Popeye_1934.ogv"];
 var sources2 = ["http://media.w3.org/2010/05/sintel/trailer.mp4", "http://media.w3.org/2010/05/sintel/trailer.webm", "http://media.w3.org/2010/05/sintel/trailer.ogv"];
+var media;
+
 var getMedia = function () {
-	return $.media('#video');
+	media = $.media('#video');
+	
+	return media;
 }
+
+module('pasive');
 
 test("get(), $get()", function() {
 	var media = getMedia();
@@ -25,43 +31,16 @@ test("canPlayType()", function () {
 });
 
 
-test("readyState()", function () {
-	var media = getMedia();
-
-	deepEqual(media.readyState(), 0);
-	deepEqual(media.readyState(0), true);
-
-	stop();
-
-	media.readyState(1, function () {
-		ok(this.duration());
-
-		this.play().pause().readyState(2, function () {
-			ok(this.readyState() >= 2);
-
-			this.readyState(3, function () {
-				ok(this.readyState() >= 3);
-
-				this.readyState(4, function () {
-					start();
-					ok(this.readyState() >= 4);
-				});
-			});
-		});
-	});
-});
-
-
 test("playbackRate()", function() {
 	var media = getMedia();
 
-	deepEqual(media.playbackRate(), 1);
+	deepEqual(media.playbackRate(), 1, 'playbackRate init: 1');
 
 	media.playbackRate(function () {
-		deepEqual(media.playbackRate(), 2);
+		deepEqual(media.playbackRate(), 2, 'playbackRate event');
 	});
 
-	deepEqual(media.playbackRate(2), media);
+	deepEqual(media.playbackRate(2), media, 'playbackRate change: 2');
 });
 
 
@@ -99,6 +78,101 @@ test("height()", function() {
 	deepEqual(media.height(true), media.get().videoHeight);
 	deepEqual(media.height(300), media);
 	deepEqual(media.height(), 300);
+});
+
+test("volume()", 3, function() {
+	var media = getMedia();
+
+	media.volume(function () {
+		start();
+
+		deepEqual(this.volume(), 0.5);
+	});
+
+	deepEqual(media.volume(), 1);
+	deepEqual(media.volume(0.5), media);
+
+	if ($media.support('volume')) {
+		stop();
+	} else {
+		ok(true, 'volume not supported');
+	}
+});
+
+
+test("muted()", 2, function() {
+	var media = getMedia();
+
+	deepEqual(media.muted(), false, 'muted false on init');
+
+	if ($media.support('muted')) {
+		media.muted(function () {
+			deepEqual(media.muted(), true, 'muted event');
+		});
+
+		media.muted(true);
+		media.muted(true);
+		media.muted(true);
+	} else {
+		ok(true, 'muted not supported');
+	}
+});
+
+
+test("remove()", function() {
+	var media = getMedia();
+
+	media.remove(function () {
+		ok(true, 'remove event');
+	});
+
+	media.remove();
+
+	deepEqual(document.getElementById('video'), null);
+
+	deepEqual(media.get(), null);
+	deepEqual(media.$get(), null);
+});
+
+
+test("stop()", function() {
+	var media = getMedia();
+
+	media.stop(function () {
+		deepEqual(this.playing(), false);
+		deepEqual(this.readyState(1), false);
+		deepEqual(this.time(), 0);
+	});
+
+	media.stop();
+});
+
+module('active');
+
+test("readyState()", function () {
+	var media = getMedia();
+
+	deepEqual(media.readyState(), 0);
+	deepEqual(media.readyState(0), true);
+
+	stop();
+
+	media.readyState(1, function () {
+		ok(this.duration());
+
+		this.play().pause().readyState(2, function () {
+			ok(this.readyState() >= 2);
+
+			this.readyState(3, function () {
+				ok(this.readyState() >= 3);
+
+				this.readyState(4, function () {
+					start();
+					ok(this.readyState() >= 4);
+				});
+			});
+		});
+	});
 });
 
 
@@ -197,19 +271,6 @@ test("playPause()", 4, function() {
 });
 
 
-test("stop()", function() {
-	var media = getMedia();
-
-	media.stop(function () {
-		deepEqual(this.playing(), false);
-		deepEqual(this.readyState(1), false);
-		deepEqual(this.time(), 0);
-	});
-
-	media.stop();
-});
-
-
 test("ended()", function() {
 	var media = getMedia();
 
@@ -227,29 +288,13 @@ test("ended()", function() {
 });
 
 
-test("remove()", function() {
-	var media = getMedia();
-
-	media.remove(function () {
-		ok(true, 'remove event');
-	});
-
-	media.remove();
-
-	deepEqual(document.getElementById('video'), null);
-
-	deepEqual(media.get(), null);
-	deepEqual(media.$get(), null);
-});
-
-
-test("seek(), seeking()", 3, function() {
+test("seek(), seeking()", function() {
 	var media = getMedia();
 
 	media.seek(function () {
 		start();
 
-		deepEqual(this.time(), 24, 'seek event: time');
+		deepEqual(Math.round(this.time()), 24, 'seek event: time');
 		deepEqual(this.seeking(), false, 'seek event: seeking false');
 	});
 
@@ -260,37 +305,6 @@ test("seek(), seeking()", 3, function() {
 	media.seek(24);
 
 	stop();
-});
-
-
-test("volume()", 3, function() {
-	var media = getMedia();
-
-	media.volume(function () {
-		start();
-
-		deepEqual(this.volume(), 0.5);
-	});
-
-	deepEqual(media.volume(), 1);
-	deepEqual(media.volume(0.5), media);
-
-	stop();
-});
-
-
-test("muted()", 2, function() {
-	var media = getMedia();
-
-	deepEqual(media.muted(), false, 'muted false on init');
-
-	media.muted(function () {
-		deepEqual(media.muted(), true, 'muted event');
-	});
-
-	media.muted(true);
-	media.muted(true);
-	media.muted(true);
 });
 
 
@@ -352,23 +366,26 @@ test("source()", function() {
 
 	deepEqual(media.source(), media.get().currentSrc);
 	deepEqual(media.source(true), sources);
-	deepEqual(media.source(media.source()), media);
 	
 	stop();
 
-	media.readyState(1, function () {
-		start();
-		deepEqual(media.source(true)[0], media.source());
+	media.readyState(1, function() {
+		deepEqual(media.source(media.source()), media);
 
-		this.source(sources2);
-
-		stop();
-
-		this.readyState(1, function () {
+		media.readyState(1, function () {
 			start();
+			deepEqual(media.source(true)[0], media.source());
 
-			deepEqual(this.source(), media.get().currentSrc);
-			deepEqual(this.source(true), sources2);
+			this.source(sources2);
+
+			stop();
+
+			this.readyState(1, function () {
+				start();
+
+				deepEqual(this.source(), media.get().currentSrc);
+				deepEqual(this.source(true), sources2);
+			});
 		});
 	});
 });

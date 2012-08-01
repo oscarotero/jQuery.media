@@ -11,14 +11,27 @@
 (function ($) {
 	'use strict';
 
-	//Detect device
-	var device = navigator.userAgent.toLowerCase();
+	//Support detection
+	var support = {
+		video: document.createElement('video'),
+		check: function (property) {
+			if (this[property] === undefined) {
+				switch (property) {
+					case 'volume':
+					case 'muted':
+						if (navigator.userAgent.toLowerCase().match(/(iphone|ipod|ipad)/)) {
+							this[property] = false;
+							break;
+						}
 
-	if (device.match(/(iphone|ipod|ipad)/)) {
-		device = 'ios';
-	} else {
-		device = 'browser';
-	}
+					default:
+						this[property] = ((property in this.video));
+				}
+			}
+
+			return this[property];
+		}
+	};
 
 
 	//$media constructor
@@ -31,6 +44,11 @@
 		} else if (this.$element.is('audio')) {
 			this.type = 'audio';
 		}
+	};
+
+	//Support detection
+	window.$media.support = function (property) {
+		return support.check(property);
 	};
 
 
@@ -166,13 +184,12 @@
 	 * @return float (for getters)
 	 */
 	$media.prototype.playbackRate = function (fn) {
-		if ($.isFunction(fn)) {
-			return this.on('ratechange', fn);
+		if (support.check('playbackRate') === false) {
+			return (arguments.length === 0) ? 1 : this;
 		}
 
-		//if playbackRate no supported
-		if (!('playbackRate' in this.element)) {
-			return (fn === undefined) ? 1 : this;
+		if ($.isFunction(fn)) {
+			return this.on('ratechange', fn);
 		}
 
 		if (fn === undefined) {
@@ -182,7 +199,11 @@
 		if (this.element.playbackRate !== fn) {
 			this.element.playbackRate = fn;
 
-			return this.trigger('ratechange');
+			if (this.element.playbackRate !== fn) {
+				support.playbackRate = false;
+			} else {
+				return this.triggerHandler('ratechange');
+			}
 		}
 
 		return this;
@@ -683,12 +704,8 @@
 	 * @return this (for setter / on bind event)
 	 */
 	window.$media.prototype.volume = function (fn) {
-		if (device === 'ios') {
-			if (arguments.length === 0) {
-				return 1;
-			}
-
-			return this;
+		if (support.check('volume') === false) {
+			return (arguments.length === 0) ? 1 : this;
 		}
 
 		if (arguments.length === 0) {
@@ -727,12 +744,12 @@
 	 * @return this
 	 */
 	window.$media.prototype.muted = function (fn) {
-		if (fn === undefined) {
-			return this.element.muted;
+		if (support.check('muted') === false) {
+			return (arguments.length === 0) ? false : this;
 		}
 
-		if (device === 'ios') {
-			return this;
+		if (fn === undefined) {
+			return this.element.muted;
 		}
 
 		if ($.isFunction(fn)) {
@@ -1137,7 +1154,7 @@ String.prototype.secondsTo = function (outputFormat) {
 Number.prototype.toSeconds = function () {
 	'use strict';
 
-	return Math.round(this * 1000) / 1000;
+	return Math.floor(this * 1000) / 1000;
 };
 
 
@@ -1157,7 +1174,7 @@ Number.prototype.secondsTo = function (outputFormat) {
 
 	switch (outputFormat) {
 		case 'ms':
-			return Math.round(time * 1000);
+			return Math.floor(time * 1000);
 
 		case 'mm:ss':
 		case 'hh:mm:ss':
@@ -1178,9 +1195,9 @@ Number.prototype.secondsTo = function (outputFormat) {
 			var ss = time;
 
 			if (outputFormat.indexOf('.ms') === -1) {
-				ss = Math.round(ss);
+				ss = Math.floor(ss);
 			} else {
-				ss = Math.round(ss*1000)/1000;
+				ss = Math.floor(ss*1000)/1000;
 			}
 			ss = (ss < 10) ? ("0" + ss) : ss;
 
