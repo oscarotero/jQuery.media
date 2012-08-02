@@ -14,22 +14,29 @@
 	//Support detection
 	var support = {
 		video: document.createElement('video'),
+		tests: {},
 		check: function (property) {
-			if (this[property] === undefined) {
+			if (this.tests[property] === undefined) {
 				switch (property) {
+					case 'fullscreen':
+						this.tests.fullscreen = ((this.video.requestFullScreen || this.video.mozRequestFullScreen || this.video.webkitRequestFullScreen));
+
 					case 'volume':
+						this.video.volume = 0.5;
+						this.tests.volume = (this.video.volume === 0.5);
+						break;
+
 					case 'muted':
-						if (navigator.userAgent.toLowerCase().match(/(iphone|ipod|ipad)/)) {
-							this[property] = false;
-							break;
-						}
+						this.video.muted = true;
+						this.tests.muted = (this.video.muted === true);
+						break;
 
 					default:
-						this[property] = ((property in this.video));
+						this.tests[property] = ((property in this.video));
 				}
 			}
 
-			return this[property];
+			return this.tests[property];
 		}
 	};
 
@@ -656,12 +663,23 @@
 		if ($.isFunction(fn)) {
 			return this.on('seeked', fn);
 		}
-		
+
+		var time = fn;
+
 		this.readyState(1, function () {
-			var time = this.time(fn);
+			time = this.time(time);
 
 			if (this.element.currentTime !== time) {
-				this.element.currentTime = time;
+				var element = this.element;
+				var fn = function () {
+					try {
+						element.currentTime = time;
+					} catch(err) {
+						window.setTimeout(fn, 100);
+					}
+				};
+
+				fn();
 			}
 		});
 
