@@ -16,16 +16,7 @@
 				video = $.media('video');
 				var log = $('#log');
 
-				$(document).on('touchmove', function () {
-					log.html('touchmove ' + video.time());
-				});
-				$(document).on('touchstart', function () {
-					log.html('touchstart ' + video.time());
-				});
-				$(document).on('touchend', function () {
-					log.html('touchend ' + video.time());
-				});
-
+				
 				video.setTimeline('first', {
 					enabled: true,
 					points: [

@@ -1,8 +1,8 @@
 /**
- * $media.timeline (2.2.2)
+ * $media.timeline (3.0.0)
  *
  * Require:
- * $media
+ * $media 2.x
  *
  * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
  *
@@ -148,12 +148,12 @@
 				return;
 			}
 
-			var percent = [], totaltime = media.totalTime(), i, length, point;
+			var percent = [], duration = media.duration(), i, length, point;
 
 			for (i = 0, length = points.length; i < length; ++i) {
 				point = points[i];
 
-				if (!totaltime && (point.relative === true)) {
+				if (!duration && (point.relative === true)) {
 					percent.push(point);
 					continue;
 				}
@@ -170,7 +170,7 @@
 			if (percent.length) {
 				var that = this;
 
-				media.totalTime(function () {
+				media.readyState(1, function () {
 					that.savePoints(this, percent);
 
 					if (that.enabled) {
@@ -219,7 +219,7 @@
 		 *
 		 * @return this
 		 */
-		setTimeline: function (name, options) {
+		createTimeline: function (name, options) {
 			options = options || {};
 
 			if (!this.timeline || !this.timelines) {
@@ -233,7 +233,7 @@
 
 				this.on('play seeked', function () {
 					this.startTimeline();
-				}).seeking(function (event, time) {
+				}).on('seeking', function (event, time) {
 					var length = this.timeline.outPoints.length;
 
 					if (length) {
@@ -254,7 +254,7 @@
 			this.timelines[name] = new window.$media.Timeline(options.data);
 
 			if (options.points) {
-				this.setTimelinePoints(name, options.points);
+				this.addTimelinePoints(name, options.points);
 			}
 
 			if (options.enabled) {
@@ -270,18 +270,16 @@
 		 *
 		 * Gets a timeline
 		 */
-		setTimelinePoints: function (name, points) {
+		addTimelinePoints: function (name, points) {
 			if (!this.timelineExists(name)) {
 				return this;
 			}
 
-			var timeline = this.timelines[name];
-
 			if (!$.isArray(points)) {
 				points = [points];
 			}
-
-			timeline.addPoints(this, points);
+			
+			this.timelines[name].addPoints(this, points);
 
 			return this;
 		},
@@ -507,7 +505,7 @@
 			}
 
 			var ms = this.time().secondsTo('ms');
-			var total_ms = this.totalTime().secondsTo('ms');
+			var total_ms = this.duration().secondsTo('ms');
 			var point, k, length;
 
 			//Execute "out" functions

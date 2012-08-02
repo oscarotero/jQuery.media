@@ -1064,7 +1064,7 @@
 			return 0;
 		}
 
-		if (time > this.duration()) {
+		if (this.element.duration && (time > this.element.duration)) {
 			return this.duration();
 		}
 
