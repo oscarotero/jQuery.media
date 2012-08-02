@@ -1,0 +1,129 @@
+HTML5 MEDIA PROPERTIES
+
+- error
+- readyState
+- volume
+- ended
+- currentTime
+- duration
+- width
+- videoWidth
+- height
+- videoHeight
+- playbackRate
+- src
+- paused
+- seeking
+- muted
+- loop
+- autoplay
+- controls
+- poster
+- currentSrc
+- networkState
+- preload
+
+buffered
+startOffsetTime
+initialTime
+crossOrigin
+played
+seekable
+defaultPlaybackRate
+defaultMuted
+
+controller
+mediaGroup
+textTracks
+audioTracks
+videoTracks
+
+HTML5 MEDIA EVENTS
+
+- error
+- loadedmetadata
+- loadeddata
+- canplay
+- canplaythrough
+- volumechange
+- ended
+- play
+- pause
+- seeked
+- durationchange
+- ratechange
+- playing
+- waiting
+- seeking
+- timeupdate
+
+loadstart
+emptied
+progress
+stalled
+suspend
+abort
+
+HTML5 MEDIA FUNCTIONS
+
+- play()
+- pause()
+- canPlayType()
+
+load()
+
+
+
+JQUERY.MEDIA API:
+
+NAME			PROPERTY/FUNCTION	EVENTS
+readyState()	readyState			loadedmetadata
+									loadeddata
+									canplay
+									canplaythrough
+networkState()	networkState
+volume()		volume 				volumechange
+ended()			ended				ended
+play()			play()				play
+pause()			pause()				pause
+seek()			currentTime (set)	seeked
+seeking()		seeking				seeking
+time()			currentTime (get)	timeupdate
+duration()		duration 			durationchange
+width()			width
+				videoWidth
+height()		height
+				videoHeight
+canPlayType()	canPlayType()
+playbackRate()	playbackrate 		ratechange
+source()		src
+				currentSrc
+playing()		paused				playing
+waiting()		readyState			waiting
+muted()			muted
+loop()			loop
+autoplay()		autoplay
+controls()		controls
+poster()		poster
+preload()		preload
+
+
+OTHER FUNCTIONS
+
+playPause()
+stop()
+fullScreen()
+remove()
+reload()
+on()
+off()
+trigger()
+triggerHandler()
+get()
+$get()
+mimetype()
+extend()
+
+
+NOT IMPLEMENTED JET
+error()			error				error

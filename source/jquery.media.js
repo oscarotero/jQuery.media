@@ -27,8 +27,9 @@
 						break;
 
 					case 'muted':
-						this.video.muted = true;
-						this.tests.muted = (this.video.muted === true);
+					case 'autoplay':
+						this.video[property] = true;
+						this.tests[property] = (this.video[property] === true);
 						break;
 
 					default:
@@ -50,6 +51,11 @@
 			this.type = 'video';
 		} else if (this.$element.is('audio')) {
 			this.type = 'audio';
+		}
+
+		//Unify the preload property in all browsers
+		if (!this.$element.attr('preload')) {
+			this.preload('metadata');
 		}
 	};
 
@@ -146,12 +152,13 @@
 
 
 	/**
-	 * Check if the browser can play now the resource (readyState >= 3) or binds a function to canPlay event
+	 * Returns the current readyState property or binds a function when some the readyState becomes
 	 *
-	 * @param function fn A function to bind to canplay event
+	 * @param number state One of the four available states
+	 * @param function fn A function to bind to the event
 	 *
 	 * @return this (for bind event)
-	 * @return boolean (for getters)
+	 * @return boolean/number (for getters)
 	 */
 	window.$media.prototype.readyState = function (state, fn) {
 		if (arguments.length === 0) {
@@ -173,6 +180,23 @@
 		}
 
 		return this;
+	};
+
+
+	/**
+	 * Returns the current networkState property
+	 *
+	 * @param number state One of the three available states
+	 *
+	 * @return this (for bind event)
+	 * @return boolean/number (for getters)
+	 */
+	window.$media.prototype.networkState = function (state) {
+		if (arguments.length === 0) {
+			return this.element.networkState;
+		}
+
+		return (this.element.networkState === state) ? true : false;
 	};
 
 
@@ -321,50 +345,127 @@
 
 
 	/**
-	 * Get or set media attributes. It works like attr() jQuery function
+	 * Get or set loop property.
 	 *
-	 * attr('poster');
-	 * attr('poster', 'new-poster.jpg');
-	 * attr({poster: 'new-poster.jpg'});
+	 * loop();
+	 * loop(true);
+	 * loop(false);
 	 *
-	 * @param string The name of the parameter
-	 * @param string The new value of the parameter
+	 * @param boolean True for activate loop, false for don't
 	 *
-	 * @return mixed (for getter)
+	 * @return boolean (for getter)
 	 * @return this (for setter)
 	 */
-	window.$media.prototype.attr = function (name, value) {
-		if ((arguments.length === 1) && (typeof name !== "object")) {
-			return this.$element.attr(name);
+	window.$media.prototype.loop = function (value) {
+		if (arguments.length === 0) {
+			return this.element.loop;
 		}
 
-		this.$element.attr(name, value);
+		this.element.loop = value;
 
 		return this;
 	};
+
 
 
 	/**
-	 * Get or set media properties. It works like prop() jQuery function
+	 * Get or set autoplay property.
 	 *
-	 * prop('controls');
-	 * prop('controls', true);
+	 * autoplay();
+	 * autoplay(true);
+	 * autoplay(false);
 	 *
-	 * @param string The name of the property
-	 * @param string The new value of the property
+	 * @param boolean True for activate autoplay, false for don't
 	 *
-	 * @return mixed (for getter)
+	 * @return boolean (for getter)
 	 * @return this (for setter)
 	 */
-	window.$media.prototype.prop = function (name, value) {
-		if ((arguments.length === 1) && (typeof name !== "object")) {
-			return this.$element.prop(name);
+	window.$media.prototype.autoplay = function (value) {
+		if (support.check('autoplay') === false) {
+			return (arguments.length === 0) ? false : this;
 		}
 
-		this.$element.prop(name, value);
+		if (arguments.length === 0) {
+			return this.element.autoplay;
+		}
+
+		this.element.autoplay = value;
 
 		return this;
 	};
+
+
+
+	/**
+	 * Get or set controls property.
+	 *
+	 * controls();
+	 * controls(true);
+	 * controls(false);
+	 *
+	 * @param boolean True for activate controls, false for don't
+	 *
+	 * @return boolean (for getter)
+	 * @return this (for setter)
+	 */
+	window.$media.prototype.controls = function (value) {
+		if (arguments.length === 0) {
+			return this.element.controls;
+		}
+
+		this.element.controls = value;
+
+		return this;
+	};
+
+
+
+	/**
+	 * Get or set poster attribute.
+	 *
+	 * poster();
+	 * poster('new-poster.jpg');
+	 * poster('');
+	 *
+	 * @param string The new value for poster attribute
+	 *
+	 * @return string (for getter)
+	 * @return this (for setter)
+	 */
+	window.$media.prototype.poster = function (value) {
+		if (arguments.length === 0) {
+			return this.element.poster;
+		}
+
+		this.element.poster = value;
+
+		return this;
+	};
+
+
+
+	/**
+	 * Get or set preload attribute.
+	 *
+	 * preload();
+	 * preload('metadata');
+	 * preload('');
+	 *
+	 * @param string The new value for preload attribute
+	 *
+	 * @return string (for getter)
+	 * @return this (for setter)
+	 */
+	window.$media.prototype.preload = function (value) {
+		if (arguments.length === 0) {
+			return this.element.preload;
+		}
+
+		this.element.preload = value;
+
+		return this;
+	};
+
 
 
 	/**
@@ -922,7 +1023,7 @@
 
 
 	/**
-	 * Returns the current time of the media or a specific point in seconds
+	 * Returns the current time of the media or a specific point in seconds or add a listener to timeupdate event
 	 *
 	 * time()
 	 * time('+10')
@@ -933,8 +1034,12 @@
 	 * @return float The time in seconds
 	 */
 	window.$media.prototype.time = function (time) {
-		if (time === undefined) {
+		if (arguments.length === 0) {
 			return this.element.currentTime.toSeconds();
+		}
+
+		if ($.isFunction(time)) {
+			this.on('timeupdate', time);
 		}
 
 		if (isNaN(parseInt(time, 10))) {
@@ -1150,7 +1255,7 @@ String.prototype.toSeconds = function () {
  *
  * '34'.secondsTo('mm:ss'); // '00:34'
  *
- * @param string outputFormat One of the avaliable output formats ('ms', 'mm:ss', 'hh:mm:ss', 'hh:mm:ss.ms')
+ * @param string outputFormat One of the avaliable output formats ('ms', 'ss', 'mm:ss', 'hh:mm:ss', 'hh:mm:ss.ms')
  *
  * @return string The value in the new format
  */
@@ -1181,7 +1286,7 @@ Number.prototype.toSeconds = function () {
  *
  * 34.secondsTo('mm:ss'); // '00:34'
  *
- * @param string outputFormat One of the avaliable output formats ('ms', 'mm:ss', 'hh:mm:ss', 'hh:mm:ss.ms')
+ * @param string outputFormat One of the avaliable output formats ('ms', 'ss', 'mm:ss', 'hh:mm:ss', 'hh:mm:ss.ms')
  *
  * @return string The value in the new format
  */
@@ -1193,6 +1298,9 @@ Number.prototype.secondsTo = function (outputFormat) {
 	switch (outputFormat) {
 		case 'ms':
 			return Math.floor(time * 1000);
+
+		case 'ss':
+			return Math.floor(time);
 
 		case 'mm:ss':
 		case 'hh:mm:ss':

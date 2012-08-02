@@ -44,25 +44,51 @@ test("playbackRate()", function() {
 });
 
 
-test("attr()", function() {
+test("loop()", function() {
 	var media = getMedia();
 
-	deepEqual(media.attr('id'), 'video');
-	deepEqual(media.attr({
-		'id': 'video2',
-		'poster': ''
-	}), media);
-	deepEqual(media.attr('controls', 'controls'), media);
-	deepEqual(media.attr('controls'), 'controls');
+	deepEqual(media.loop(), false);
+	deepEqual(media.loop(true), media);
+	deepEqual(media.loop(), true);
 });
 
-
-test("prop()", function() {
+test("autoplay()", function() {
 	var media = getMedia();
 
-	deepEqual(media.prop('controls', true), media);
-	deepEqual(media.attr('controls'), 'controls');
+	deepEqual(media.autoplay(), false);
+	deepEqual(media.autoplay(true), media);
+
+	if ($media.support('autoplay')) {
+		deepEqual(media.autoplay(), true);
+	} else {
+		deepEqual(media.autoplay(), false);
+	}
 });
+
+test("controls()", function() {
+	var media = getMedia();
+
+	deepEqual(media.controls(), false);
+	deepEqual(media.controls(true), media);
+	deepEqual(media.controls(), true);
+});
+
+test("poster()", function() {
+	var media = getMedia();
+
+	deepEqual(media.poster(), '');
+	deepEqual(media.poster('new-poster.jpg'), media);
+	deepEqual(media.poster(), document.location + 'new-poster.jpg');
+});
+
+test("preload()", function() {
+	var media = getMedia();
+
+	deepEqual(media.preload(), 'metadata');
+	deepEqual(media.preload('auto'), media);
+	deepEqual(media.preload(), 'auto');
+});
+
 
 test("width()", function() {
 	var media = getMedia();
