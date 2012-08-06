@@ -17,7 +17,7 @@
 				var log = $('#log');
 
 				
-				video.setTimeline('first', {
+				video.createTimeline('first', {
 					enabled: true,
 					points: [
 						{
@@ -25,7 +25,7 @@
 							fn: function (point, timeline) {
 								log.html('First timeline, 2s');
 
-								this.setTimeline('second', {
+								this.createTimeline('second', {
 									points: {
 										time: 5,
 										fn: function () {
