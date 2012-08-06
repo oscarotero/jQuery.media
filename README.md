@@ -12,8 +12,14 @@ jQuery.media is a jQuery plugin that allows manage html5 video and audio element
 ```javascript
 var video = $.media('#my-video'); //Create a media element
 
-video.seek(3); //Goes to second 3
-video.seek('00:03'); //Goes to second 3
+video.controls(true); //Set the controls property to true
+
+var poster = video.poster(); //Get the poster value
+
+video.seek(3); //Go to second 3
+video.seek('00:03'); //Go to second 3
+video.seek('+20'); //Advance 20 seconds
+video.seek('50%'); //Go to 50% of the video duration
 
 video.play(function () {
 	alert('This is a play event!');
@@ -50,51 +56,113 @@ var audio = new $mediaAudio(['my-audio.ogg', 'my-audio.mp3']);
 API
 ---
 
-* [attr](#attr) Works like jquery's attr() function.
-* [canPlayType](#canPlaytype) Check if the browser can play its sources or another specific codec
-* [duration](#duration) Bind an event handler to the "durationchange" JavaScript event or get the duration value. 
-* [ended](#ended) Bind an event handler to the "ended" JavaScript event, or check if the media resource was reached.
-* [error](#error) Bind an event handler to the "error" JavaScript event, or check if an error ocurred while fetching the media data and returns an error object with the code
-* [extend](#extend) Extend the instance with more parameters or functions
-* [$media.extend](#mediaextend) Extend all instances with more parameters or functions
-* [get](#get) Returns the DOM video/audio element
-* [$get](#get-1) Returns the jQuery video/audio element
-* [height](#height) Works like jquery's height() function, but can retrieve the videoHeight value (the real with of the video)
-* [muted](#muted) Bind an event handler to the "muted" JavaScript event (non browser native), get the muted value or set another value
-* [off](#off) Remove an event handler. It works like jQuery's off() function
-* [on](#on) Attach an event handler function for one or more events to the media element. It works like jQuery's on() function
-* [pause](#pause) Bind an event handler to the "pause" JavaScript event, or trigger that event on the media element.
-* [play](#play) Bind an event handler to the "play" JavaScript event, or trigger that event on the media element.
-* [playbackRate](#playbackRate) Bind an event handler to the "ratechange" JavaScript event, or returns the playbackRate property of the media element
-* [playing](#playing) Bind an event handler to the "playing" JavaScript event, or check if the media element is playing
-* [playPause](#playPause) Bind an event handler to the "playpause" JavaScript event, or play or pause the media element and trigger the 'playpause' event.
-* [prop](#prop) Works like jquery's prop() function.
-* [readyState](#readystate) Bind an event handler to any readyState JavaScript event, or check a specific readyState
-* [reload](#reload) Reload the media resource
-* [remove](#remove) Remove the media element from the DOM and all its properties. You can also bind an event handler to the "remove" javascript event (not browser native)
-* [seek](#seek) Bind an event handler to the "seeked" JavaScript event, or change the currentTime property
-* [seeking](#seeking) Bind an event handler to the "seeking" JavaScript event, or check if the media element is seeking
-* [source](#source) Source getter/setter
-* [stop](#stop) Bind an event handler to the "stop" JavaScript event, or pause and reload the sources and and trigger the 'stop' event.
-* [time](#time) Returns the current time of the media element or another specific point
-* [trigger](#trigger) Execute all handlers and behaviors attached to the matched elements for the given event type. It works like jQuery's trigger function
-* [triggerHandler](#triggerHandler) Execute all handlers attached to an element for an event.. It works like jQuery's triggerHandler function
-* [volume](#volume) Bind an event handler to the "volumechange" JavaScript event, or get the volume value
-* [waiting](#waiting) Bind an event handler to the "waiting" JavaScript event, or check if the media element is waiting
-* [width](#width) Works like jquery's width() function, but can retrieve the videoWidth value (the real with of the video)
+#### Media attributes:
+
+* [loop](#loop)
+* [autoplay](#autoplay)
+* [controls](#controls)
+* [poster](#poster)
+* [preload](#preload)
+* [height](#height)
+* [width](#width)
+* [source](#source)
+
+#### Playback
+
+* [play](#play)
+* [playing](#playing)
+* [playPause](#playpause)
+* [pause](#pause)
+* [stop](#stop)
+* [time](#time)
+* [duration](#duration)
+* [seek](#seek)
+* [seeking](#seeking)
+* [ended](#ended)
+* [playbackRate](#playbackRate)
+* [volume](#volume)
+* [muted](#muted)
+* [fullscreen](#fullScreen)
+
+#### Loading utilities
+
+* [readyState](#readystate)
+* [networkState](#networkstate)
+* [reload](#reload)
+* [canPlayType](#canPlaytype)
+* [waiting](#waiting)
+
+#### Events
+
+* [off](#off)
+* [on](#on)
+* [trigger](#trigger)
+* [triggerHandler](#triggerHandler)
+
+#### Other utilities
+
+* [extend](#extend)
+* [$media.extend](#mediaextend)
+* [get](#get)
+* [$get](#get-1)
+* [remove](#remove)
+
+#### String/Number prototype
+
+* [toSeconds](#toseconds)
+* [secondsTo](#secondsTo)
 
 
-* [toSeconds](#toseconds) Converts any text/number value to seconds. A number with 3 decimals maximum (for miliseconds)
-* [secondsTo](#secondsTo) Converts any text/number value to any other output format ('ms', 'mm:ss', 'hh:mm:ss', 'hh:mm:ss.ms')
+#### loop()
 
+Returns the value of loop property or set a new value (true or false)
+
+```javascript
+video.loop(); //Getter
+video.loop(true); //Setter
+```
+
+#### autoplay()
+
+Returns the value of autoplay property or set a new value (true or false)
+
+```javascript
+video.autoplay(); //Getter
+video.autoplay(true); //Setter
+```
+
+#### controls()
+
+Returns the value of controls property or set a new value (true or false)
+
+```javascript
+video.controls(); //Getter
+video.controls(true); //Setter
+```
+
+#### poster()
+
+Returns the value of poster attribute or set a new value
+
+```javascript
+video.poster(); //Getter
+video.poster('screenshot.jpg'); //Setter
+```
+
+#### preload()
+
+Returns the value of preload property or set a new value (auto, metadata or none)
+
+```javascript
+video.preload(); //Getter
+video.preload('none'); //Setter
+```
 
 #### get()
 
 Returns the DOM video/audio element:
 
 ```javascript
-var video = $.media('#my-video');
-
 var video = video.get();
 ```
 
@@ -103,9 +171,7 @@ var video = video.get();
 Returns the jQuery video/audio element:
 
 ```javascript
-var video = $.media('#my-video');
-
-var video = video.$get();
+var $video = video.$get();
 ```
 
 #### canPlayType()
@@ -113,8 +179,6 @@ var video = video.$get();
 Check if the browser can play its sources or another specific codec
 
 ```javascript
-var video = $.media('#my-video');
-
 if (video.canPlayType()) {
 	alert('video can play its source');
 }
@@ -128,40 +192,33 @@ if (video.canPlayType(video/ogg)) {
 
 #### readyState()
 
-Bind an event handler to any readyState JavaScript event, or check a specific readyState.
-There are five possible states:
-* 0: Nothing has been loaded
-* 1: Metadata (duration and dimensions) have been loaded
-* 2: The data for the current frame has been loaded
-* 3: The data for the current frame and next frame has been loaded, so the playback could start
-* 4: Enought data has been loaded to start playback now until the end without stops
+Bind an event handler to any readyState JavaScript event, or check a specific readyState. There are five possible states:
+* 0 = HAVE_NOTHING - no information whether or not the audio/video is ready
+* 1 = HAVE_METADATA - metadata for the audio/video is ready
+* 2 = HAVE_CURRENT_DATA - data for the current playback position is available, but not enough data to play next frame/millisecond
+* 3 = HAVE_FUTURE_DATA - data for the current and at least the next frame is available
+* 4 = HAVE_ENOUGH_DATA - enough data available to start playing
 
 ```javascript
-var video = $.media('#my-video');
-
 video.readyState(); //Returns 0, 1, 2, 3 or 4, depending of the readyState
 
 video.readyState(2); //Returns true if the readyState is equal or upper than 2, or false
 
 video.readyState(3, function () {
-	alert('The video can start to play now');
+	alert('The readyState property is equal or upper than 3');
 });
 ```
 
-#### error()
+#### networkState()
 
-Bind an event handler to the "error" JavaScript event, or check if an error ocurred while fetching the media data and returns an error object with the code
+Returns the current networkState property. There are four possible states:
+* 0 = NETWORK_EMPTY - audio/video has not yet been initialized
+* 1 = NETWORK_IDLE - audio/video is active and has selected a resource, but is not using the network
+* 2 = NETWORK_LOADING - browser is downloading data
+* 3 = NETWORK_NO_SOURCE - no audio/video source found
 
 ```javascript
-var video = $.media('#my-video');
-
-video.error(); //Returns true if enought data has been loaded to play until the end, false if not
-
-video.error(function () {
-	var error = this.error();
-
-	console.log(error.code);
-});
+video.networkState(); //Returns 0, 1, 2 or 3, depending of the networkState
 ```
 
 #### playbackRate()
@@ -169,8 +226,6 @@ video.error(function () {
 Bind an event handler to the "ratechange" JavaScript event, or returns the playbackRate property of the media element
 
 ```javascript
-var video = $.media('#my-video');
-
 video.playbackRate(function () {
 	console.log('The current playback rate is ' + this.playbackRate());
 });
@@ -183,8 +238,6 @@ video.playbackRate(0.5); //Define a new playback rate
 Source getter/setter
 
 ```javascript
-var video = $.media('#my-video');
-
 var currentSource = video.source();
 var allDefinedSources = video.source(true);
 
@@ -205,35 +258,11 @@ video.source([
 ]);
 ```
 
-#### attr()
-
-Works like jquery's attr() function.
-
-```javascript
-var video = $.media('#my-video');
-
-video.attr('poster'); //Getter
-video.attr('poster', 'new-poster.jpg'); //Setter
-```
-
-#### prop()
-
-Works like jquery's prop() function.
-
-```javascript
-var video = $.media('#my-video');
-
-video.prop('controls'); //Getter
-video.prop('controls', true); //Setter
-```
-
 #### width()
 
 Works like jquery's width() function, but can retrieve the videoWidth value (the real with of the video)
 
 ```javascript
-var video = $.media('#my-video');
-
 video.width(); //Get the element dimmensions
 video.width(true); //Get the videoWidth property
 
@@ -245,8 +274,6 @@ video.width(300); //Setter
 Works like jquery's height() function, but can retrieve the videoHeight value (the real with of the video)
 
 ```javascript
-var video = $.media('#my-video');
-
 video.height(); //Get the element dimmensions
 video.height(true); //Get the videoHeight property
 
@@ -259,8 +286,6 @@ video.height(300); //Setter
 Bind an event handler to the "play" JavaScript event, or trigger that event on the media element.
 
 ```javascript
-var video = $.media('#my-video');
-
 video.play(function () {
 	alert('Playing');
 });
@@ -274,8 +299,6 @@ video.play();
 Bind an event handler to the "playing" JavaScript event, or check if the media element is playing
 
 ```javascript
-var video = $.media('#my-video');
-
 video.playing(function () {
 	alert('Video is playing');
 });
@@ -291,8 +314,6 @@ if (video.playing()) {
 Bind an event handler to the "waiting" JavaScript event, or check if the media element is waiting
 
 ```javascript
-var video = $.media('#my-video');
-
 video.waiting(function () {
 	alert('Video is waiting');
 });
@@ -307,8 +328,6 @@ if (video.waiting()) {
 Bind an event handler to the "pause" JavaScript event, or trigger that event on the media element.
 
 ```javascript
-var video = $.media('#my-video');
-
 video.pause(function () {
 	alert('Video is paused');
 });
@@ -323,8 +342,6 @@ Bind an event handler to the "playpause" JavaScript event, or play or pause the 
 This event is not browser native and is fired using playPause function, not play or pause functions.
 
 ```javascript
-var video = $.media('#my-video');
-
 video.playPause(); //Video plays
 video.playPause(); //Video pauses
 
@@ -340,9 +357,6 @@ Bind an event handler to the "stop" JavaScript event, or pause and reload the so
 This event is not browser native and is fired only using stop function.
 
 ```javascript
-var video = $.media('#my-video');
-
-video.play(); //Video plays
 video.stop(); //Video stops, and reload the sources
 ```
 
@@ -351,8 +365,6 @@ video.stop(); //Video stops, and reload the sources
 Bind an event handler to the "ended" JavaScript event, or check if the media resource was reached.
 
 ```javascript
-var video = $.media('#my-video');
-
 video.ended(function () {
 	alert('This is the end');
 });
@@ -367,8 +379,6 @@ if (video.ended()) {
 Remove the media element from the DOM and all its properties. You can also bind an event handler to the "remove" javascript event (not browser native)
 
 ```javascript
-var video = $.media('#my-video');
-
 video.remove(function () {
 	alert('The video has been removed');
 });
@@ -381,8 +391,6 @@ video.remove();
 Bind an event handler to the "seeked" JavaScript event, or change the currentTime property
 
 ```javascript
-var video = $.media('#my-video');
-
 video.seek(function () {
 	alert('current time is changed');
 });
@@ -405,8 +413,6 @@ video.seek('01:01:35.245');
 Bind an event handler to the "seeking" JavaScript event, or check if the media element is seeking
 
 ```javascript
-var video = $.media('#my-video');
-
 video.seeking(function () {
 	alert('Video is seeking');
 });
@@ -421,8 +427,6 @@ if (video.seeking()) {
 Bind an event handler to the "volumechange" JavaScript event, or get the volume value
 
 ```javascript
-var video = $.media('#my-video');
-
 video.volume(function () {
 	alert('Video volume is changed to ' + this.volume());
 });
@@ -436,8 +440,6 @@ video.volume(0.5);
 Bind an event handler to the "muted" JavaScript event (non browser native), get the muted value or set another value
 
 ```javascript
-var video = $.media('#my-video');
-
 video.muted(function () {
 	if (video.muted()) {
 		alert('video is muted');
@@ -456,8 +458,6 @@ video.muted(true); //Setter
 Attach an event handler function for one or more events to the media element. It works like jQuery's on() function
 
 ```javascript
-var video = $.media('#my-video');
-
 video.on('click', function () {
 	video.playPause();
 });
@@ -469,8 +469,6 @@ video.on('click', function () {
 Remove an event handler. It works like jQuery's off() function
 
 ```javascript
-var video = $.media('#my-video');
-
 video.on('click', function () {
 	video.playPause();
 });
@@ -484,8 +482,6 @@ video.off('click');
 Execute all handlers and behaviors attached to the matched elements for the given event type. It works like jQuery's trigger function
 
 ```javascript
-var video = $.media('#my-video');
-
 video.on('click', function () {
 	video.playPause();
 });
@@ -496,11 +492,9 @@ video.trigger('click');
 
 #### triggerHandler()
 
-Execute all handlers attached to an element for an event.. It works like jQuery's triggerHandler function
+Execute all handlers attached to an element for an event. It works like jQuery's triggerHandler function
 
 ```javascript
-var video = $.media('#my-video');
-
 video.on('play', function () {
 	video.volume(1);
 });
@@ -511,15 +505,16 @@ video.triggerHandler('play');
 
 #### time()
 
-Returns the current time of the media element or another specific point
+Returns the current time of the media element or another specific point or bind an event handler to the "timeupdate" JavaScript event
 
 ```javascript
-var video = $.media('#my-video');
-
 video.time(); //Get the current time
-
 video.time('+10'); //Get the current time + 10 seconds
 video.time('25%'); //Get the seconds of the 25% of the total duration
+
+video.time(function () {
+	console.log('current time is ' + this.time());
+});
 ```
 
 
@@ -530,8 +525,6 @@ Bind an event handler to the "durationchange" JavaScript event or get the durati
 If the duration is not available (metadata has been not loaded), returns 0 instead of NaN.
 
 ```javascript
-var video = $.media('#my-video');
-
 video.duration(); //Get the total duration
 
 video.duration(function () {
@@ -545,8 +538,6 @@ video.duration(function () {
 Reload the media resource
 
 ```javascript
-var video = $.media('#my-video');
-
 video.reload();
 ```
 
