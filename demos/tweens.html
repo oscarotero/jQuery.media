@@ -5,7 +5,7 @@
 		<meta charset="utf-8" />
 		<title>HTML5 Video Player</title>
 
-		<script src="files/jquery.js" type="text/javascript" charset="utf-8"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
 		<script src="../source/jquery.media.js" type="text/javascript" charset="utf-8"></script>
 		<script src="../source/jquery.media.tweens.js" type="text/javascript" charset="utf-8"></script>
 		<script src="../source/jquery.media.tweens.capture.js" type="text/javascript" charset="utf-8"></script>
@@ -16,7 +16,7 @@
 			$(document).ready(function () {
 				var json = 'files/tweens.json';
 				json = false;
-				var src = 'http://anavallasuiza.com/share/benches-of-istanbul/projects/tophane/street.ogv';
+				var src = 'files/video2.ogv';
 
 				video = $.media('#video');
 				video.source(src);
@@ -293,21 +293,33 @@
 			#video {
 				max-width: 100%;
 			}
+			.help {
+				clear: both;
+			}
 		</style>
 	</head>
 
 	<body>
 		<div id="panel">
-			<p>Pulsa &lt;Enter&gt; para comezar unha captura e para finalizala</p>
-			<p>Capturas gardadas:</p>
+			<p>Tweens:</p>
 			<ul id="captures">
 			</ul>
-			<button id="get-tweens">Damelo todo</button>
+			<button id="get-tweens">Get tweens in JSON</button>
 		</div>
 
 		<div id="contenedor">
 			<video id="video">
 			</video>
 		</div>
+
+		<ul class="help">
+			<li><strong>&lt;Enter&gt;</strong> Start/end a capture</li>
+			<li><strong>&lt;</strong> Move the cursor -0.2 seconds</li>
+			<li><strong>&gt;</strong> Move the cursor +0.2 seconds</li>
+			<li><strong>&lt;space&gt;</strong> Play/pause the video</li>
+			<li><strong>click</strong> Create a new point in the capturing tween</li>
+			<li><strong>alt + click</strong> Deletes the last point in the capturing tween</li>
+			<li><strong>shift + click</strong> Create a new point in the capturing tween and define a new status</li>
+		</ul>
 	</body>
 </html>

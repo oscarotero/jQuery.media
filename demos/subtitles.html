@@ -16,12 +16,12 @@
 			$(document).ready(function () {
 				video = $.media('video');
 
-				//Load and unload the subtitles
+				
 				$('#change_subtitles input:checkbox').click(function () {
 					var value = $(this).val();
 
 					if (!video.timelineExists(value)) {
-						video.setTimelineFromTrack(value, {
+						video.createTimelineFromTrack(value, {
 							track: value
 						});
 					}

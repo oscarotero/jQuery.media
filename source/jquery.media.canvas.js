@@ -19,10 +19,7 @@
 		}
 
 		media.canvas_context.drawImage(media.element, 0, 0, width, height);
-
-		if (settings.manipulation) {
-			$.proxy(settings.manipulation, media)(media.canvas_context, width, height);
-		}
+		settings.manipulation.apply(media, [media.canvas_context, width, height]);
 
 		setTimeout(function () {
 			timerCallback(media, settings, width, height);
@@ -30,7 +27,9 @@
 	};
 
 	window.$media.extend('toCanvas', function (canvas, settings) {
-		settings = settings || {};
+		settings = ($.isFunction(settings)) ? { manipulation: settings } : (settings || {});
+		settings = $.extend({manipulation: $.noop}, settings);
+
 		this.$canvas = $(canvas);
 
 		if (this.$canvas.data('toCanvas')) {
@@ -43,8 +42,8 @@
 		this.canvas = $(canvas).get(0);
 		this.canvas_context = this.canvas.getContext('2d');
 
-		this.play(function () {
-			this.ready(1, function () {
+		this.on('play seeked', function () {
+			this.readyState(1, function () {
 				var width = this.canvas.width = this.width(true);
 				var height = this.canvas.height = this.height(true);
 

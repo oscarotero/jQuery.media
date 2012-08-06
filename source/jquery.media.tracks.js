@@ -73,7 +73,7 @@
 	};
 
 
-	window.$media.extend('setTimelineFromTrack', function (name, options) {
+	window.$media.extend('createTimelineFromTrack', function (name, options) {
 		options = options || {};
 		options.data = options.data || {};
 
@@ -83,7 +83,7 @@
 			return false;
 		}
 
-		this.setTimeline(name, options);
+		this.createTimeline(name, options);
 
 		var media = this;
 
@@ -100,7 +100,7 @@
 				});
 			});
 
-			media.setTimelinePoints(name, points);
+			media.addTimelinePoints(name, points);
 		});
 
 		return this;

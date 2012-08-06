@@ -23,13 +23,13 @@
 						{
 							time: 2,
 							fn: function (point, timeline) {
-								log.html('estamos no segundo 2');
+								log.html('First timeline, 2s');
 
 								this.setTimeline('second', {
 									points: {
 										time: 5,
 										fn: function () {
-											log.html('metido o non timeline dentro doutro');
+											log.html('Second timeline, 5s');
 										}
 									}
 								});
@@ -37,16 +37,16 @@
 						},{
 							time: [3, '00:04'],
 							fn: function () {
-								log.html('estamos no segundo 3 a 4');
+								log.html('First timeline, 3-4s');
 								this.enableTimeline('second');
 							}
 						},{
 							time: [5, 6],
 							fn: function () {
-								log.html('estamos no segundo 5 a 6');
+								log.html('First timeline, in 5-6s');
 							},
 							fn_out: function () {
-								log.html('xa non estamos entre o 5 e 6');
+								log.html('First timeline, out 5-6s');
 							}
 						}
 					]

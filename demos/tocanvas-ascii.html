@@ -7,7 +7,7 @@
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
 		<script src="../source/jquery.media.js" type="text/javascript" charset="utf-8"></script>
-		<script src="../source/jquery.media.tocanvas.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../source/jquery.media.canvas.js" type="text/javascript" charset="utf-8"></script>
 		<script src="tocanvas-effects.js" type="text/javascript" charset="utf-8"></script>
 
 		<script type="text/javascript">
@@ -16,23 +16,21 @@
 			$(document).ready(function () {
 				var $ascii = $('#ascii');
 
-				video = $.mediaVideo('files/video2.ogv').toCanvas('canvas', {
-					manipulation: function (context, width, height) {
-						var frame = context.getImageData(0, 0, width, height);
-						var total = frame.data.length;
-						var ascii_frame = '';
+				video = $.mediaVideo('files/video2.ogv').toCanvas('canvas', function (context, width, height) {
+					var frame = context.getImageData(0, 0, width, height);
+					var total = frame.data.length;
+					var ascii_frame = '';
 
-						for (var i = 0; i < total; i += 4) {
-							effects.greyscale(frame.data, i);
-							ascii_frame += effects.ascii(frame.data, i, width);
-						}
-
-						context.putImageData(frame, 0, 0);
-						$ascii.html(ascii_frame);
+					for (var i = 0; i < total; i += 4) {
+						effects.greyscale(frame.data, i);
+						ascii_frame += effects.ascii(frame.data, i, width);
 					}
+
+					context.putImageData(frame, 0, 0);
+					$ascii.html(ascii_frame);
 				});
 
-				video.mute().play();
+				video.muted(true).play();
 			});
 		</script>
 		<style>
