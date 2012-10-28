@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>HTML5 Video Player</title>
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../source/jquery.media.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../source/jquery.media.sync.js" type="text/javascript" charset="utf-8"></script>
+
+		<script type="text/javascript">
+			$(document).ready(function () {
+				var video1 = $.media('#v1');
+				var video2 = $.media('#v2');
+				var video3 = $.media('#v3');
+				var video4 = $.media('#v4');
+
+				video1.syncWith(video2).syncWith(video3).syncWith(video4);
+			});
+		</script>
+	</head>
+
+	<body>
+		<div>
+			<video id="v1" src="http://people.opera.com/brucel/demo/video/leverage-a-synergy.ogv" controls></video>
+			<video id="v2" src="http://people.opera.com/brucel/demo/video/leverage-a-synergy.ogv" controls></video>
+			<video id="v3" src="http://people.opera.com/brucel/demo/video/leverage-a-synergy.ogv" controls></video>
+			<video id="v4" src="http://people.opera.com/brucel/demo/video/leverage-a-synergy.ogv" controls></video>
+		</div>
+	</body>
+</html>
