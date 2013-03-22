@@ -1,5 +1,5 @@
 /**
- * $media jQuery plugin (v.2.1.0)
+ * $media jQuery plugin (v.2.1.1)
  *
  * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
  *
