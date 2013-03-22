@@ -2,12 +2,10 @@
 	"name": "media",
 	"title": "jQuery.media",
 	"description": "jQuery based library to manage video and audio html5 elements",
-	"keywords": ["audio", "video", "html5"],
-	"homepage": "https://github.com/oscarotero/jQuery.media",
+	"keywords": ["audio", "video", "media"],
 	"version": "2.1.0",
 	"author": {
-		"name": "Oscar otero",
-		"email": "oom@oscarotero.com",
+		"name": "Oscar Otero",
 		"url": "http://oscarotero.com"
 	},
 	"licenses": [
@@ -16,10 +14,11 @@
 			"url": "http://opensource.org/licenses/AGPL-3.0"
 		}
 	],
-	"dependencies": {
-		"jquery": ">=1.7",
-	},
-
+	"homepage": "https://github.com/oscarotero/jQuery.media",
+	"bugs": "https://github.com/oscarotero/jQuery.media/issues",
 	"docs": "https://github.com/oscarotero/jQuery.media",
-	"bugs": "https://github.com/oscarotero/jQuery.media/issues"
+
+	"dependencies": {
+		"jquery": ">=1.7"
+	}
 }
