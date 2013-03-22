@@ -1,5 +1,5 @@
 /**
- * $media jQuery plugin (v.2.0.0)
+ * $media jQuery plugin (v.2.1.0)
  *
  * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
  *
@@ -147,6 +147,18 @@
 		}
 
 		return 0;
+	};
+
+
+	/**
+	 * Alias of readyState(1, fn), execute a function when the media element is ready to start playing
+	 *
+	 * @param function fn A function to execute when the media element is ready
+	 *
+	 * @return this
+	 */
+	window.$media.prototype.ready = function (fn) {
+		return this.readyState(1, fn);
 	};
 
 
