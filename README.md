@@ -86,6 +86,7 @@ API
 
 #### Loading utilities
 
+* [ready](#ready)
 * [readyState](#readystate)
 * [networkState](#networkstate)
 * [reload](#reload)
@@ -188,6 +189,16 @@ if (video.canPlayType('ogg')) {
 if (video.canPlayType(video/ogg)) {
 	alert('video can play video/ogg format');
 }
+```
+
+#### ready()
+
+Shortcut for readyState(1, fn), execute a function when the video is ready to play (have the metadata).
+
+```javascript
+video.ready(function () {
+	this.play();
+});
 ```
 
 #### readyState()
