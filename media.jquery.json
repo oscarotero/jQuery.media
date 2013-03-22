@@ -4,7 +4,7 @@
 	"description": "jQuery based library to manage video and audio html5 elements",
 	"keywords": ["audio", "video", "html5"],
 	"homepage": "https://github.com/oscarotero/jQuery.media",
-	"version": "1.3.3",
+	"version": "2.1.0",
 	"author": {
 		"name": "Oscar otero",
 		"email": "oom@oscarotero.com",
