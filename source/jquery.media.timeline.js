@@ -1,5 +1,5 @@
 /**
- * $media.timeline (3.0.0)
+ * $media.timeline (3.1.0)
  *
  * Require:
  * $media 2.x
@@ -79,6 +79,8 @@
 				this.start = media.time(this.time[0]).secondsTo('ms');
 				this.end = media.time(this.time[1]).secondsTo('ms');
 			}
+
+			this.data.time = [this.start/1000, this.end/1000];
 		},
 
 
@@ -233,17 +235,17 @@
 
 				this.on('play seeked', function () {
 					this.startTimeline();
-				}).on('seeking', function (event, time) {
+				}).on('seeking', function (event) {
 					var length = this.timeline.outPoints.length;
 
 					if (length) {
-						var ms = time.secondsTo('ms'), k;
+						var ms = this.time().secondsTo('ms'), k;
 
 						for (k = 0; k < length; k++) {
 							var point = this.timeline.outPoints[k];
 
 							if (point && (ms < point.start || ms > point.end)) {
-								point.executeOut();
+								point.executeOut(this, [point.data, this.timelines[point.timelineName].data]);
 								this.timeline.outPoints.splice(k, 1);
 							}
 						}
@@ -481,7 +483,7 @@
 		 * Execute the timeline functions
 		 */
 		startTimeline: function () {
-			if (!this.timeline.points.length && !this.timeline.inPoints.length && !this.timeline.outPoints.length) {
+			if (!this.timeline || (!this.timeline.points.length && !this.timeline.inPoints.length && !this.timeline.outPoints.length)) {
 				return;
 			}
 
@@ -500,7 +502,7 @@
 		 * Function to execute on timeOut
 		 */
 		timelineTimeout: function () {
-			if (!this.timeline.inPoints.length && !this.timeline.outPoints.length) {
+			if (!this.timeline || (!this.timeline.inPoints.length && !this.timeline.outPoints.length)) {
 				return;
 			}
 
