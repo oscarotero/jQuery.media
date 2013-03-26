@@ -48,14 +48,16 @@
 			$.error('fn is not a valid function');
 		}
 
+		if (!$.isArray(this.time)) {
+			this.time = [this.time, this.time];
+		}
+
 		if ($.isFunction(settings.fn_out)) {
 			this.fn_out = settings.fn_out;
 		} else if (settings.fn_out) {
 			$.error('fn_out is not a valid function');
-		}
-
-		if (!$.isArray(this.time)) {
-			this.time = [this.time, this.time];
+		} else {
+			this.time[1] = this.time[0];
 		}
 
 		this.relative = (this.time.join().indexOf('%') === -1) ? false : true;
