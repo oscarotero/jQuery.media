@@ -1,5 +1,5 @@
 /**
- * $media.timeline (3.1.0)
+ * $media.timeline (3.1.1)
  *
  * Require:
  * $media 2.x
@@ -56,7 +56,7 @@
 			this.fn_out = settings.fn_out;
 		} else if (settings.fn_out) {
 			$.error('fn_out is not a valid function');
-		} else {
+		} else if (this.time[1] === undefined) {
 			this.time[1] = this.time[0];
 		}
 
