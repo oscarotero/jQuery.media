@@ -1105,6 +1105,25 @@
 
 
 	/**
+	 * Get/set arbitrary data associated with this element.
+	 * 
+	 * @param string name Name of the data
+	 * @param value Value of the data. Set this value to create/edit the data
+	 * 
+	 * @return this (on set) or mixed (on get)
+	 */
+	window.$media.prototype.data = function (name, value) {
+		if (value === undefined) {
+			return this.$element.data(name);
+		}
+
+		this.$element.data(name, value);
+
+		return this;
+	}
+
+
+	/**
 	 * Reload the media element (back to inital state)
 	 *
 	 * @return this

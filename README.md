@@ -102,6 +102,7 @@ API
 
 #### Other utilities
 
+* [data](#data)
 * [extend](#extend)
 * [$media.extend](#mediaextend)
 * [get](#get)
@@ -552,6 +553,17 @@ Reload the media resource
 video.reload();
 ```
 
+#### data()
+
+Save or returns asociated data to this element. Works like jquery's .data()
+
+```javascript
+var video = $.media('#my-video');
+
+video.data('title', 'video title'); //Set data
+
+alert(video.data('title')); //Returns the data
+```
 
 #### extend()
 
