@@ -90,11 +90,6 @@ require([
 * [$get](#get-1)
 * [remove](#remove)
 
-### String/Number prototype
-
-* [toSeconds](#toseconds)
-* [secondsTo](#secondsTo)
-
 
 ### loop()
 
