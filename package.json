@@ -18,6 +18,7 @@
   "license": "MIT",
   "devDependencies": {
     "jquery": "^2.1.4",
+    "qunitjs": "^1.20.0",
     "requirejs": "^2.1.22"
   }
 }

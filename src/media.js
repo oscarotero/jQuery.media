@@ -1315,11 +1315,6 @@ define([
 		});
 	};
 
-	//Support detection
-	function support (property) {
-		return support.check(property);
-	};
-
 	//Export methods
 	return {
 		create: create,
@@ -1328,6 +1323,10 @@ define([
 		toSeconds: toSeconds,
 		secondsTo: secondsTo,
 		extend: extend,
-		support: support
+	
+		//Support detection
+		support: function (property) {
+			return support.check(property);
+		}
 	}
 });
