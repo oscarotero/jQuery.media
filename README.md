@@ -1,62 +1,43 @@
-jQuery.media plugin
-===================
+# jQuery.media plugin
 
-Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
-Released under the GNU Affero GPL version 3.
-More information at http://www.gnu.org/licenses/agpl-3.0.html
+Created by Oscar Otero (http://oscarotero.com)
 
 jQuery.media is a jQuery plugin that allows manage html5 video and audio elements: properties, events, etc.
 
-#### Example
+## Requirements:
+
+* jQuery
+* An AMD loader, for example: [requirejs](http://www.requirejs.org)
+
+## Usage example
 
 ```javascript
-var video = $.media('#my-video'); //Create a media element
+require([
+	'jquery',
+	'jquery.media'
+], function ($, Media) {
+	var video = Media.create('#my-video'); //Create a media element
 
-video.controls(true); //Set the controls property to true
+	video.controls(true); //Set the controls property to true
 
-var poster = video.poster(); //Get the poster value
+	var poster = video.poster(); //Get the poster value
 
-video.seek(3); //Go to second 3
-video.seek('00:03'); //Go to second 3
-video.seek('+20'); //Advance 20 seconds
-video.seek('50%'); //Go to 50% of the video duration
+	video.seek(3); //Go to second 3
+	video.seek('00:03'); //Go to second 3
+	video.seek('+20'); //Advance 20 seconds
+	video.seek('50%'); //Go to 50% of the video duration
 
-video.play(function () {
-	alert('This is a play event!');
+	video.play(function () {
+		alert('This is a play event!');
+	});
+
+	video.play(); //Plays the video (and trigger the play event)
 });
-
-video.play(); //Plays the video (and trigger the play event)
 ```
 
+## API
 
-Create new instance
--------------------
-
-jQuery way:
-
-```javascript
-var video = $.media('#my-video');
-```
-
-DOM:
-
-```javascript
-var video = new $media(document.getElementById('my-video'));
-```
-
-Creating DOM elements on the fly
-
-```javascript
-var video = new $mediaVideo('my-video.ogg');
-var audio = new $mediaAudio(['my-audio.ogg', 'my-audio.mp3']);
-```
-
-
-
-API
----
-
-#### Media attributes:
+### Media attributes:
 
 * [loop](#loop)
 * [autoplay](#autoplay)
@@ -67,7 +48,7 @@ API
 * [width](#width)
 * [source](#source)
 
-#### Playback
+### Playback
 
 * [play](#play)
 * [playing](#playing)
@@ -84,7 +65,7 @@ API
 * [muted](#muted)
 * [fullscreen](#fullScreen)
 
-#### Loading utilities
+### Loading utilities
 
 * [ready](#ready)
 * [readyState](#readystate)
@@ -93,29 +74,29 @@ API
 * [canPlayType](#canPlaytype)
 * [waiting](#waiting)
 
-#### Events
+### Events
 
 * [off](#off)
 * [on](#on)
 * [trigger](#trigger)
 * [triggerHandler](#triggerHandler)
 
-#### Other utilities
+### Other utilities
 
 * [data](#data)
 * [extend](#extend)
-* [$media.extend](#mediaextend)
+* [Media.extend](#mediaextend)
 * [get](#get)
 * [$get](#get-1)
 * [remove](#remove)
 
-#### String/Number prototype
+### String/Number prototype
 
 * [toSeconds](#toseconds)
 * [secondsTo](#secondsTo)
 
 
-#### loop()
+### loop()
 
 Returns the value of loop property or set a new value (true or false)
 
@@ -124,7 +105,7 @@ video.loop(); //Getter
 video.loop(true); //Setter
 ```
 
-#### autoplay()
+### autoplay()
 
 Returns the value of autoplay property or set a new value (true or false)
 
@@ -133,7 +114,7 @@ video.autoplay(); //Getter
 video.autoplay(true); //Setter
 ```
 
-#### controls()
+### controls()
 
 Returns the value of controls property or set a new value (true or false)
 
@@ -142,7 +123,7 @@ video.controls(); //Getter
 video.controls(true); //Setter
 ```
 
-#### poster()
+### poster()
 
 Returns the value of poster attribute or set a new value
 
@@ -151,7 +132,7 @@ video.poster(); //Getter
 video.poster('screenshot.jpg'); //Setter
 ```
 
-#### preload()
+### preload()
 
 Returns the value of preload property or set a new value (auto, metadata or none)
 
@@ -160,7 +141,7 @@ video.preload(); //Getter
 video.preload('none'); //Setter
 ```
 
-#### get()
+### get()
 
 Returns the DOM video/audio element:
 
@@ -168,7 +149,7 @@ Returns the DOM video/audio element:
 var video = video.get();
 ```
 
-#### $get()
+### $get()
 
 Returns the jQuery video/audio element:
 
@@ -176,7 +157,7 @@ Returns the jQuery video/audio element:
 var $video = video.$get();
 ```
 
-#### canPlayType()
+### canPlayType()
 
 Check if the browser can play its sources or another specific codec
 
@@ -192,7 +173,7 @@ if (video.canPlayType(video/ogg)) {
 }
 ```
 
-#### ready()
+### ready()
 
 Shortcut for readyState(1, fn), execute a function when the video is ready to play (have the metadata).
 
@@ -202,7 +183,7 @@ video.ready(function () {
 });
 ```
 
-#### readyState()
+### readyState()
 
 Bind an event handler to any readyState JavaScript event, or check a specific readyState. There are five possible states:
 * 0 = HAVE_NOTHING - no information whether or not the audio/video is ready
@@ -221,7 +202,7 @@ video.readyState(3, function () {
 });
 ```
 
-#### networkState()
+### networkState()
 
 Returns the current networkState property. There are four possible states:
 * 0 = NETWORK_EMPTY - audio/video has not yet been initialized
@@ -233,7 +214,7 @@ Returns the current networkState property. There are four possible states:
 video.networkState(); //Returns 0, 1, 2 or 3, depending of the networkState
 ```
 
-#### playbackRate()
+### playbackRate()
 
 Bind an event handler to the "ratechange" JavaScript event, or returns the playbackRate property of the media element
 
@@ -245,7 +226,7 @@ video.playbackRate(function () {
 video.playbackRate(0.5); //Define a new playback rate
 ```
 
-#### source()
+### source()
 
 Source getter/setter
 
@@ -270,7 +251,7 @@ video.source([
 ]);
 ```
 
-#### width()
+### width()
 
 Works like jquery's width() function, but can retrieve the videoWidth value (the real with of the video)
 
@@ -281,7 +262,7 @@ video.width(true); //Get the videoWidth property
 video.width(300); //Setter
 ```
 
-#### height()
+### height()
 
 Works like jquery's height() function, but can retrieve the videoHeight value (the real with of the video)
 
@@ -293,7 +274,7 @@ video.height(300); //Setter
 ```
 
 
-#### play()
+### play()
 
 Bind an event handler to the "play" JavaScript event, or trigger that event on the media element.
 
@@ -306,7 +287,7 @@ video.play();
 ```
 
 
-#### playing()
+### playing()
 
 Bind an event handler to the "playing" JavaScript event, or check if the media element is playing
 
@@ -321,7 +302,7 @@ if (video.playing()) {
 ```
 
 
-#### waiting()
+### waiting()
 
 Bind an event handler to the "waiting" JavaScript event, or check if the media element is waiting
 
@@ -335,7 +316,7 @@ if (video.waiting()) {
 }
 ```
 
-#### pause()
+### pause()
 
 Bind an event handler to the "pause" JavaScript event, or trigger that event on the media element.
 
@@ -347,7 +328,7 @@ video.pause(function () {
 video.pause();
 ```
 
-#### playPause()
+### playPause()
 
 Bind an event handler to the "playpause" JavaScript event, or play or pause the media element and trigger the 'playpause' event.
 
@@ -362,7 +343,7 @@ video.playPause(function () {
 });
 ```
 
-#### stop()
+### stop()
 
 Bind an event handler to the "stop" JavaScript event, or pause and reload the sources and and trigger the 'stop' event.
 
@@ -372,7 +353,7 @@ This event is not browser native and is fired only using stop function.
 video.stop(); //Video stops, and reload the sources
 ```
 
-#### ended()
+### ended()
 
 Bind an event handler to the "ended" JavaScript event, or check if the media resource was reached.
 
@@ -386,7 +367,7 @@ if (video.ended()) {
 }
 ```
 
-#### remove()
+### remove()
 
 Remove the media element from the DOM and all its properties. You can also bind an event handler to the "remove" javascript event (not browser native)
 
@@ -398,7 +379,7 @@ video.remove(function () {
 video.remove();
 ```
 
-#### seek()
+### seek()
 
 Bind an event handler to the "seeked" JavaScript event, or change the currentTime property
 
@@ -420,7 +401,7 @@ video.seek('01:01:35');
 video.seek('01:01:35.245');
 ```
 
-#### seeking()
+### seeking()
 
 Bind an event handler to the "seeking" JavaScript event, or check if the media element is seeking
 
@@ -434,7 +415,7 @@ if (video.seeking()) {
 }
 ```
 
-#### volume()
+### volume()
 
 Bind an event handler to the "volumechange" JavaScript event, or get the volume value
 
@@ -447,7 +428,7 @@ video.volume(0.5);
 ```
 
 
-#### muted()
+### muted()
 
 Bind an event handler to the "muted" JavaScript event (non browser native), get the muted value or set another value
 
@@ -465,7 +446,7 @@ video.muted(true); //Setter
 ```
 
 
-#### on()
+### on()
 
 Attach an event handler function for one or more events to the media element. It works like jQuery's on() function
 
@@ -476,7 +457,7 @@ video.on('click', function () {
 ```
 
 
-#### off()
+### off()
 
 Remove an event handler. It works like jQuery's off() function
 
@@ -489,7 +470,7 @@ video.off('click');
 ```
 
 
-#### trigger()
+### trigger()
 
 Execute all handlers and behaviors attached to the matched elements for the given event type. It works like jQuery's trigger function
 
@@ -502,7 +483,7 @@ video.trigger('click');
 ```
 
 
-#### triggerHandler()
+### triggerHandler()
 
 Execute all handlers attached to an element for an event. It works like jQuery's triggerHandler function
 
@@ -515,7 +496,7 @@ video.triggerHandler('play');
 ```
 
 
-#### time()
+### time()
 
 Returns the current time of the media element or another specific point or bind an event handler to the "timeupdate" JavaScript event
 
@@ -530,7 +511,7 @@ video.time(function () {
 ```
 
 
-#### duration()
+### duration()
 
 Bind an event handler to the "durationchange" JavaScript event or get the duration value.
 
@@ -545,7 +526,7 @@ video.duration(function () {
 ```
 
 
-#### reload()
+### reload()
 
 Reload the media resource
 
@@ -553,25 +534,25 @@ Reload the media resource
 video.reload();
 ```
 
-#### data()
+### data()
 
 Save or returns asociated data to this element. Works like jquery's .data()
 
 ```javascript
-var video = $.media('#my-video');
+var video = Media.create('#my-video');
 
 video.data('title', 'video title'); //Set data
 
 alert(video.data('title')); //Returns the data
 ```
 
-#### extend()
+### extend()
 
 Extend the instance with more parameters or functions
 
 ```javascript
-var video = $.media('#my-video');
-var video2 = $.media('#my-video2');
+var video = Media.create('#my-video');
+var video2 = Media.create('#my-video2');
 
 video.extend('goToStart', function () {
 	this.seek(0);
@@ -582,48 +563,18 @@ video2.goToStart(); //Throws an error exception, the function does not exists
 ```
 
 
-#### $media.extend()
+### Media.extend()
 
 Extend all instances with more parameters or functions
 
 ```javascript
-var video = $.media('#my-video');
-var video2 = $.media('#my-video2');
+var video = Media.create('#my-video');
+var video2 = Media.create('#my-video2');
 
-$media.extend('goToStart', function () {
+Media.extend('goToStart', function () {
 	this.seek(0);
 });
 
 video.goToStart(); //Goes to second 0
 video2.goToStart(); //Goes to second 0
-```
-
-
-Extending javascript native classes
------------------------------------
-
-jQuery.media extends String and Number classes with two new functions to work with time values more easily:
-
-#### toSeconds()
-
-Converts any text/number value to seconds. A number with 3 decimals maximum (for miliseconds):
-
-```javascript
-(23.4567).toSeconds(); //23.457
-
-'34.00'.toSeconds(); //34
-
-'00:34'.toSeconds(); //34
-
-'00:34.567'.toSeconds(); //34.567
-```
-
-#### secondsTo()
-
-Converts any text/number value to any other output format ('ms', 'mm:ss', 'hh:mm:ss', 'hh:mm:ss.ms')
-
-```javascript
-(23.4567).secondsTo('mm:ss'); //00:23.457
-
-'128.00'.secondsTo('hh:mm:ss'); //00:02:08
 ```
