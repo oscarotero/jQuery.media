@@ -4,36 +4,6 @@
 	<head>
 		<meta charset="utf-8" />
 		<title>HTML5 Video Player</title>
-
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
-		<script src="../source/jquery.media.js" type="text/javascript" charset="utf-8"></script>
-		<script src="../source/jquery.media.timeline.js" type="text/javascript" charset="utf-8"></script>
-		<script src="../source/jquery.media.tracks.js" type="text/javascript" charset="utf-8"></script>
-
-		<script type="text/javascript">
-			var video;
-
-			$(document).ready(function () {
-				video = $.media('video');
-
-				
-				$('#change_subtitles input:checkbox').click(function () {
-					var value = $(this).val();
-
-					if (!video.timelineExists(value)) {
-						video.createTimelineFromTrack(value, {
-							track: value
-						});
-					}
-
-					if ($(this).prop('checked')) {
-						video.enableTimeline(value);
-					} else {
-						video.disableTimeline(value);
-					}
-				});
-			});
-		</script>
 	</head>
 
 	<body>
@@ -59,5 +29,7 @@
 				<track id="sub-nl" kind="subtitles" src="files/nl.srt" srclang="nl" label="Dutch">
 			</video>
 		</div>
+
+		<script type="text/javascript" src="../node_modules/requirejs/require.js" data-main="js/main" data-module="subtitles"></script>
 	</body>
 </html>

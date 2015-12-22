@@ -1,0 +1,6 @@
+/tests/ export-ignore
+/demos/ export-ignore
+.* export-ignore
+
+# Set the line ending configuration
+* text=lf

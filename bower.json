@@ -1,9 +1,5 @@
 {
     "name": "jquery-media",
-    "version": "2.1.3",
-    "ignore": [
-        "tests"
-    ],
     "dependencies": {
     	"jquery": ">=1.7"
     }
