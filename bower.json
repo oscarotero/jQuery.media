@@ -1,6 +1,27 @@
 {
     "name": "jquery-media",
+    "main": "src/media.js",
+    "homepage": "https://github.com/oscarotero/jQuery.media",
+    "description": "Manage html5 video and audio elements",
+    "keywords": [
+        "media",
+        "jquery",
+        "video",
+        "audio",
+        "html5"
+    ],
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:oscarotero/jQuery.media.git"
+    },
     "dependencies": {
     	"jquery": ">=1.7"
-    }
+    },
+    "authors": [
+        {
+            "name": "Óscar Otero",
+            "email": "oom@oscarotero.com"
+        }
+    ]
 }

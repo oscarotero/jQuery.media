@@ -1,6 +1,13 @@
 {
   "name": "jquery-media",
   "description": "Manage html5 video and audio elements",
+  "keywords": [
+    "media",
+    "jquery",
+    "video",
+    "audio",
+    "html5"
+  ],
   "author": "Oscar Otero <oom@oscarotero.com>",
   "homepage": "https://github.com/oscarotero/jQuery.media",
   "bugs": "https://github.com/oscarotero/jQuery.media/issues",
